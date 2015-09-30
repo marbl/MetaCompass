@@ -15,7 +15,7 @@ GNU C/C++; Perl; BLAST; Bowtie 2
 
 
 # USAGE
-RUN METACOMPASS:
+
 -- I have a set of metagenomic reads, and want to perform comparative assembly.
 
     ./metacompass.pl -f/-q <input FASTA/FASTQ reads> [options] 
