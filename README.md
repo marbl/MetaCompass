@@ -10,7 +10,7 @@ GNU C/C++; Perl; BLAST; Bowtie 2
 
 # INSTALLATION:
     git clone https://github.com/marbl/MetaCompass.git
-    cd MetaCompassv1.0
+    cd MetaCompass
     ./install.pl
 
 
