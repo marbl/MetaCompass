@@ -1,0 +1,2518 @@
+6	Azorhizobium
+7	Azorhizobium caulinodans
+9	Buchnera aphidicola
+10	Cellvibrio
+13	Dictyoglomus
+14	Dictyoglomus thermophilum
+18	Pelobacter
+19	Pelobacter carbinolicus
+20	Phenylobacterium
+22	Shewanella
+24	Shewanella putrefaciens
+29	Myxococcales
+31	Myxococcaceae
+32	Myxococcus
+34	Myxococcus xanthus
+39	Cystobacteraceae
+40	Stigmatella
+41	Stigmatella aurantiaca
+49	Polyangiaceae
+56	Sorangium cellulosum
+64	Herpetosiphon
+65	Herpetosiphon aurantiacus
+71	Simonsiella
+72	Simonsiella muelleri
+75	Caulobacter
+81	Hyphomicrobium
+85	Hyphomonas
+88	Leptothrix
+96	Gallionella
+107	Spirosoma
+108	Spirosoma linguale
+112	Planctomycetales
+113	Gemmata
+114	Gemmata obscuriglobus
+118	Planctomyces
+120	Planctomyces limnophilus
+122	Planctomyces maris
+123	Pirellula
+124	Blastopirellula marina
+125	Pirellula staleyi
+126	Planctomycetaceae
+136	Spirochaetales
+137	Spirochaetaceae
+138	Borrelia
+139	Borrelia burgdorferi
+140	Borrelia hermsii
+142	Borrelia turicatae
+157	Treponema
+158	Treponema denticola
+159	Brachyspira hyodysenteriae
+160	Treponema pallidum
+162	Treponema phagedenis
+170	Leptospiraceae
+171	Leptospira
+172	Leptospira biflexa
+173	Leptospira interrogans
+174	Leptospira borgpetersenii
+179	Leptospirillum
+188	Magnetospirillum magnetotacticum
+191	Azospirillum
+194	Campylobacter
+195	Campylobacter coli
+196	Campylobacter fetus
+197	Campylobacter jejuni
+199	Campylobacter concisus
+200	Campylobacter curvus
+201	Campylobacter lari
+203	Campylobacter rectus
+204	Campylobacter showae
+209	Helicobacter
+210	Helicobacter pylori
+212	Helicobacter acinonychis
+213	Helicobacter cinaedi
+214	Helicobacter felis
+217	Helicobacter mustelae
+222	Achromobacter
+226	Alteromonas
+228	Pseudoalteromonas haloplanktis
+234	Brucella
+235	Brucella abortus
+236	Brucella ovis
+237	Flavobacterium
+250	Chryseobacterium gleum
+258	Sphingobacterium spiritivorum
+262	Francisella
+263	Francisella tularensis
+264	Francisella novicida
+265	Paracoccus
+266	Paracoccus denitrificans
+270	Thermus
+271	Thermus aquaticus
+272	Thermus caldophilus
+274	Thermus thermophilus
+277	Meiothermus ruber
+279	Xanthobacter
+280	Xanthobacter autotrophicus
+283	Comamonas
+285	Comamonas testosteroni
+286	Pseudomonas
+287	Pseudomonas aeruginosa
+288	Pseudoalteromonas atlantica
+294	Pseudomonas fluorescens
+300	Pseudomonas mendocina
+303	Pseudomonas putida
+305	Ralstonia solanacearum
+316	Pseudomonas stutzeri
+317	Pseudomonas syringae
+329	Ralstonia pickettii
+337	Burkholderia glumae
+338	Xanthomonas
+339	Xanthomonas campestris
+347	Xanthomonas oryzae
+352	Azotobacter
+354	Azotobacter vinelandii
+356	Rhizobiales
+357	Agrobacterium
+358	Agrobacterium tumefaciens
+373	Agrobacterium vitis
+374	Bradyrhizobium
+375	Bradyrhizobium japonicum
+379	Rhizobium
+380	Sinorhizobium fredii
+381	Mesorhizobium loti
+382	Sinorhizobium meliloti
+384	Rhizobium leguminosarum
+403	Methylococcaceae
+404	Methylobacillus
+405	Methylobacillus flagellatus
+407	Methylobacterium
+408	Methylobacterium extorquens
+413	Methylococcus
+414	Methylococcus capsulatus
+425	Methylosinus
+426	Methylosinus trichosporium
+429	Methylobacter
+433	Acetobacteraceae
+434	Acetobacter
+436	Gluconacetobacter hansenii
+438	Acetobacter pasteurianus
+441	Gluconobacter
+442	Gluconobacter oxydans
+444	Legionellaceae
+445	Legionella
+446	Legionella pneumophila
+450	Legionella longbeachae
+468	Moraxellaceae
+469	Acinetobacter
+470	Acinetobacter baumannii
+471	Acinetobacter calcoaceticus
+475	Moraxella
+480	Moraxella catarrhalis
+481	Neisseriaceae
+482	Neisseria
+483	Neisseria cinerea
+484	Neisseria flavescens
+485	Neisseria gonorrhoeae
+486	Neisseria lactamica
+487	Neisseria meningitidis
+488	Neisseria mucosa
+489	Neisseria polysaccharea
+490	Neisseria sicca
+495	Neisseria elongata
+497	Psychrobacter
+499	Thermomicrobium
+500	Thermomicrobium roseum
+505	Kingella oralis
+506	Alcaligenaceae
+517	Bordetella
+518	Bordetella bronchiseptica
+519	Bordetella parapertussis
+520	Bordetella pertussis
+521	Bordetella avium
+522	Acidiphilium
+524	Acidiphilium cryptum
+528	Ochrobactrum
+529	Ochrobactrum anthropi
+531	Polaribacter irgensii
+532	Beijerinckia
+533	Beijerinckia indica
+535	Chromobacterium
+536	Chromobacterium violaceum
+538	Eikenella
+539	Eikenella corrodens
+541	Zymomonas
+542	Zymomonas mobilis
+543	Enterobacteriaceae
+544	Citrobacter
+545	Citrobacter koseri
+547	Enterobacter
+550	Enterobacter cloacae
+551	Erwinia
+552	Erwinia amylovora
+553	Pantoea ananatis
+554	Pectobacterium carotovorum
+561	Escherichia
+562	Escherichia coli
+564	Escherichia fergusonii
+570	Klebsiella
+573	Klebsiella pneumoniae
+583	Proteus
+584	Proteus mirabilis
+586	Providencia
+587	Providencia rettgeri
+588	Providencia stuartii
+590	Salmonella
+613	Serratia
+618	Serratia odorifera
+620	Shigella
+621	Shigella boydii
+622	Shigella dysenteriae
+623	Shigella flexneri
+624	Shigella sonnei
+626	Xenorhabdus
+628	Xenorhabdus nematophila
+629	Yersinia
+630	Yersinia enterocolitica
+631	Yersinia intermedia
+632	Yersinia pestis
+633	Yersinia pseudotuberculosis
+634	Yersinia bercovieri
+635	Edwardsiella
+636	Edwardsiella tarda
+637	Arsenophonus
+638	Arsenophonus nasoniae
+641	Vibrionaceae
+642	Aeromonas
+644	Aeromonas hydrophila
+645	Aeromonas salmonicida
+657	Photobacterium
+661	Photobacterium angustum
+662	Vibrio
+663	Vibrio alginolyticus
+666	Vibrio cholerae
+668	Aliivibrio fischeri
+669	Vibrio harveyi
+670	Vibrio parahaemolyticus
+672	Vibrio vulnificus
+673	Grimontia hollisae
+674	Vibrio mimicus
+712	Pasteurellaceae
+713	Actinobacillus
+714	Aggregatibacter actinomycetemcomitans
+715	Actinobacillus pleuropneumoniae
+724	Haemophilus
+727	Haemophilus influenzae
+730	Haemophilus ducreyi
+731	Histophilus somni
+732	Aggregatibacter aphrophilus
+738	Haemophilus parasuis
+745	Pasteurella
+747	Pasteurella multocida
+754	Pasteurella dagmatis
+766	Rickettsiales
+768	Anaplasma
+769	Anaplasma centrale
+770	Anaplasma marginale
+772	Bartonellaceae
+773	Bartonella
+774	Bartonella bacilliformis
+775	Rickettsiaceae
+776	Coxiella
+777	Coxiella burnetii
+779	Ehrlichia ruminantium
+780	Rickettsia
+781	Rickettsia conorii
+782	Rickettsia prowazekii
+783	Rickettsia rickettsii
+784	Orientia tsutsugamushi
+785	Rickettsia typhi
+786	Rickettsia akari
+788	Rickettsia canadensis
+803	Bartonella quintana
+809	Chlamydiaceae
+810	Chlamydia
+813	Chlamydia trachomatis
+815	Bacteroidaceae
+816	Bacteroides
+817	Bacteroides fragilis
+818	Bacteroides thetaiotaomicron
+820	Bacteroides uniformis
+821	Bacteroides vulgatus
+823	Parabacteroides distasonis
+824	Campylobacter gracilis
+826	Sebaldella termitidis
+830	Butyrivibrio
+831	Butyrivibrio fibrisolvens
+832	Fibrobacter
+833	Fibrobacter succinogenes
+836	Porphyromonas
+837	Porphyromonas gingivalis
+838	Prevotella
+839	Prevotella ruminicola
+841	Roseburia
+843	Wolinella
+844	Wolinella succinogenes
+846	Oxalobacter
+847	Oxalobacter formigenes
+848	Fusobacterium
+850	Fusobacterium mortiferum
+851	Fusobacterium nucleatum
+853	Faecalibacterium prausnitzii
+856	Fusobacterium varium
+860	Fusobacterium periodonticum
+861	Fusobacterium ulcerans
+862	Syntrophomonas
+863	Syntrophomonas wolfei
+868	Cardiobacteriaceae
+869	Dichelobacter
+870	Dichelobacter nodosus
+872	Desulfovibrio
+876	Desulfovibrio desulfuricans
+878	Desulfovibrio fructosovorans
+880	Desulfovibrio salexigens
+881	Desulfovibrio vulgaris
+890	Desulfuromonas
+891	Desulfuromonas acetoxidans
+896	Desulfococcus
+897	Desulfococcus multivorans
+898	Desulfomicrobium
+899	Desulfomicrobium baculatum
+901	Desulfovibrio piger
+904	Acidaminococcus
+905	Acidaminococcus fermentans
+906	Megasphaera
+911	Nitrobacter
+912	Nitrobacter hamburgensis
+913	Nitrobacter winogradskyi
+914	Nitrosomonas
+915	Nitrosomonas europaea
+916	Nitrosomonas eutropha
+919	Thiobacillus
+920	Acidithiobacillus ferrooxidans
+921	Starkeya novella
+926	Thiomonas intermedia
+927	Halothiobacillus neapolitanus
+933	Thiomicrospira
+939	Hydrogenobacter
+940	Hydrogenobacter thermophilus
+942	Anaplasmataceae
+943	Ehrlichia
+944	Ehrlichia canis
+945	Ehrlichia chaffeensis
+948	Anaplasma phagocytophilum
+950	Neorickettsia risticii
+951	Neorickettsia sennetsu
+953	Wolbachia
+958	Bdellovibrio
+959	Bdellovibrio bacteriovorus
+963	Herbaspirillum
+964	Herbaspirillum seropedicae
+970	Selenomonas
+972	Halanaerobiaceae
+976	Bacteroidetes
+978	Cytophaga
+984	Pedobacter heparinus
+985	Cytophaga hutchinsonii
+986	Flavobacterium johnsoniae
+1006	Marivirga tractuosa
+1016	Capnocytophaga
+1017	Capnocytophaga gingivalis
+1018	Capnocytophaga ochracea
+1019	Capnocytophaga sputigena
+1021	Beggiatoa
+1023	Microscilla
+1027	Microscilla marina
+1033	Afipia
+1041	Erythrobacter
+1046	Chromatiaceae
+1049	Allochromatium vinosum
+1053	Halorhodospira halophila
+1060	Rhodobacter
+1061	Rhodobacter capsulatus
+1063	Rhodobacter sphaeroides
+1068	Rhodomicrobium
+1069	Rhodomicrobium vannielii
+1073	Rhodopseudomonas
+1076	Rhodopseudomonas palustris
+1081	Rhodospirillum
+1085	Rhodospirillum rubrum
+1090	Chlorobi
+1091	Chlorobium
+1092	Chlorobium limicola
+1094	Chlorobium phaeovibrioides
+1096	Chlorobium phaeobacteroides
+1097	Chlorobaculum tepidum
+1099	Pelodictyon
+1100	Pelodictyon luteolum
+1101	Prosthecochloris
+1102	Prosthecochloris aestuarii
+1106	Chloroflexaceae
+1107	Chloroflexus
+1108	Chloroflexus aurantiacus
+1117	Cyanobacteria
+1118	Chroococcales
+1125	Microcystis
+1126	Microcystis aeruginosa
+1129	Synechococcus
+1142	Synechocystis
+1148	Synechocystis sp. PCC 6803
+1150	Oscillatoriales
+1158	Oscillatoria
+1161	Nostocales
+1162	Nostocaceae
+1163	Anabaena
+1164	Anabaena azollae
+1172	Anabaena variabilis
+1177	Nostoc
+1188	Tolypothrix sp. PCC 7601
+1205	Trichodesmium
+1206	Trichodesmium erythraeum
+1212	Prochlorales
+1217	Prochlorococcaceae
+1218	Prochlorococcus
+1219	Prochlorococcus marinus
+1224	Proteobacteria
+1227	Nitrosococcus
+1229	Nitrosococcus oceani
+1231	Nitrosospira multiformis
+1232	Nitrosovibrio
+1236	Gammaproteobacteria
+1239	Firmicutes
+1243	Leuconostoc
+1245	Leuconostoc mesenteroides
+1247	Oenococcus oeni
+1249	Weissella paramesenteroides
+1253	Pediococcus
+1254	Pediococcus acidilactici
+1255	Pediococcus pentosaceus
+1257	Peptostreptococcus
+1260	Finegoldia magna
+1261	Peptostreptococcus anaerobius
+1263	Ruminococcus
+1264	Ruminococcus albus
+1265	Ruminococcus flavefaciens
+1268	Micrococcaceae
+1269	Micrococcus
+1270	Micrococcus luteus
+1276	Kytococcus sedentarius
+1279	Staphylococcus
+1280	Staphylococcus aureus
+1281	Staphylococcus carnosus
+1282	Staphylococcus epidermidis
+1283	Staphylococcus haemolyticus
+1290	Staphylococcus hominis
+1292	Staphylococcus warneri
+1297	Deinococcus-Thermus
+1298	Deinococcus
+1299	Deinococcus radiodurans
+1300	Streptococcaceae
+1301	Streptococcus
+1302	Streptococcus gordonii
+1303	Streptococcus oralis
+1304	Streptococcus salivarius
+1305	Streptococcus sanguinis
+1307	Streptococcus suis
+1308	Streptococcus thermophilus
+1309	Streptococcus mutans
+1311	Streptococcus agalactiae
+1313	Streptococcus pneumoniae
+1314	Streptococcus pyogenes
+1322	Blautia hansenii
+1328	Streptococcus anginosus
+1334	Streptococcus dysgalactiae
+1335	Streptococcus equinus
+1336	Streptococcus equi
+1349	Streptococcus uberis
+1350	Enterococcus
+1351	Enterococcus faecalis
+1352	Enterococcus faecium
+1353	Enterococcus gallinarum
+1357	Lactococcus
+1358	Lactococcus lactis
+1375	Aerococcus
+1377	Aerococcus viridans
+1378	Gemella
+1379	Gemella haemolysans
+1380	Atopobium
+1382	Atopobium parvulum
+1383	Atopobium rimae
+1385	Bacillales
+1386	Bacillus
+1390	Bacillus amyloliquefaciens
+1392	Bacillus anthracis
+1393	Brevibacillus brevis
+1396	Bacillus cereus
+1398	Bacillus coagulans
+1402	Bacillus licheniformis
+1404	Bacillus megaterium
+1405	Bacillus mycoides
+1406	Paenibacillus polymyxa
+1408	Bacillus pumilus
+1413	Bacillus cellulosilyticus
+1421	Lysinibacillus sphaericus
+1422	Geobacillus stearothermophilus
+1423	Bacillus subtilis
+1428	Bacillus thuringiensis
+1452	Bacillus atrophaeus
+1462	Geobacillus kaustophilus
+1464	Paenibacillus larvae
+1485	Clostridium
+1488	Clostridium acetobutylicum
+1491	Clostridium botulinum
+1492	Clostridium butyricum
+1493	Clostridium cellulovorans
+1496	Clostridium difficile
+1502	Clostridium perfringens
+1509	Clostridium sporogenes
+1511	Clostridium sticklandii
+1513	Clostridium tetani
+1515	Clostridium thermocellum
+1517	Thermoanaerobacterium thermosaccharolyticum
+1520	Clostridium beijerinckii
+1521	Clostridium cellulolyticum
+1525	Moorella thermoacetica
+1534	Clostridium kluyveri
+1535	Clostridium leptum
+1538	Clostridium ljungdahlii
+1542	Clostridium novyi
+1547	Clostridium ramosum
+1562	Desulfotomaculum
+1573	Clavibacter
+1575	Leifsonia xyli
+1578	Lactobacillus
+1579	Lactobacillus acidophilus
+1580	Lactobacillus brevis
+1582	Lactobacillus casei
+1584	Lactobacillus delbrueckii
+1587	Lactobacillus helveticus
+1590	Lactobacillus plantarum
+1596	Lactobacillus gasseri
+1597	Lactobacillus paracasei
+1598	Lactobacillus reuteri
+1599	Lactobacillus sakei
+1604	Lactobacillus amylovorus
+1613	Lactobacillus fermentum
+1623	Lactobacillus ruminis
+1624	Lactobacillus salivarius
+1633	Lactobacillus vaginalis
+1637	Listeria
+1638	Listeria ivanovii
+1639	Listeria monocytogenes
+1640	Listeria seeligeri
+1641	Listeria grayi
+1642	Listeria innocua
+1643	Listeria welshimeri
+1645	Renibacterium
+1646	Renibacterium salmoninarum
+1647	Erysipelothrix
+1648	Erysipelothrix rhusiopathiae
+1653	Corynebacteriaceae
+1654	Actinomyces
+1656	Actinomyces viscosus
+1660	Actinomyces odontolyticus
+1663	Arthrobacter
+1678	Bifidobacterium
+1680	Bifidobacterium adolescentis
+1681	Bifidobacterium bifidum
+1683	Bifidobacterium angulatum
+1685	Bifidobacterium breve
+1686	Bifidobacterium catenulatum
+1689	Bifidobacterium dentium
+1696	Brevibacterium
+1697	Corynebacterium ammoniagenes
+1703	Brevibacterium linens
+1705	Corynebacterium stationis
+1707	Cellulomonas
+1711	Cellulomonas flavigena
+1716	Corynebacterium
+1717	Corynebacterium diphtheriae
+1718	Corynebacterium glutamicum
+1719	Corynebacterium pseudotuberculosis
+1730	Eubacterium
+1735	Eubacterium biforme
+1743	Propionibacterium
+1744	Propionibacterium freudenreichii
+1747	Propionibacterium acnes
+1754	Thermoanaerobacter
+1757	Thermoanaerobacter ethanolicus
+1760	Actinobacteria (class)
+1762	Mycobacteriaceae
+1763	Mycobacterium
+1764	Mycobacterium avium
+1765	Mycobacterium bovis
+1767	Mycobacterium intracellulare
+1768	Mycobacterium kansasii
+1769	Mycobacterium leprae
+1772	Mycobacterium smegmatis
+1773	Mycobacterium tuberculosis
+1781	Mycobacterium marinum
+1804	Mycobacterium gilvum
+1809	Mycobacterium ulcerans
+1813	Amycolatopsis
+1817	Nocardia
+1827	Rhodococcus
+1833	Rhodococcus erythropolis
+1835	Saccharopolyspora
+1836	Saccharopolyspora erythraea
+1839	Nocardioides
+1851	Saccharomonospora
+1852	Saccharomonospora viridis
+1854	Frankia
+1859	Frankia alni
+1860	Geodermatophilus
+1861	Geodermatophilus obscurus
+1873	Micromonospora
+1883	Streptomyces
+1885	Streptomyces actuosus
+1888	Streptomyces albus
+1901	Streptomyces clavuligerus
+1902	Streptomyces coelicolor
+1906	Streptomyces fradiae
+1911	Streptomyces griseus
+1912	Streptomyces hygroscopicus
+1916	Streptomyces lividans
+1930	Streptomyces scabiei
+1938	Streptomyces viridochromogenes
+2000	Streptosporangium
+2001	Streptosporangium roseum
+2004	Streptosporangiaceae
+2006	Thermobispora bispora
+2012	Thermomonosporaceae
+2013	Nocardiopsis
+2014	Nocardiopsis dassonvillei
+2019	Thermomonospora
+2020	Thermomonospora curvata
+2021	Thermobifida fusca
+2037	Actinomycetales
+2038	Tropheryma
+2039	Tropheryma whipplei
+2040	Aeromicrobium
+2047	Rothia dentocariosa
+2049	Actinomycetaceae
+2050	Mobiluncus
+2051	Mobiluncus curtisii
+2052	Mobiluncus mulieris
+2053	Gordonia
+2054	Gordonia bronchialis
+2056	Sphaerobacter
+2057	Sphaerobacter thermophilus
+2060	Tsukamurella
+2061	Tsukamurella paurometabola
+2062	Streptomycetaceae
+2063	Kitasatospora
+2066	Kitasatospora setae
+2070	Pseudonocardiaceae
+2085	Mycoplasmatales
+2092	Mycoplasmataceae
+2093	Mycoplasma
+2095	Mycoplasma capricolum
+2096	Mycoplasma gallisepticum
+2097	Mycoplasma genitalium
+2098	Mycoplasma hominis
+2099	Mycoplasma hyopneumoniae
+2100	Mycoplasma hyorhinis
+2102	Mycoplasma mycoides
+2104	Mycoplasma pneumoniae
+2105	Mycoplasma leachii
+2107	Mycoplasma pulmonis
+2109	Mycoplasma synoviae
+2110	Mycoplasma agalactiae
+2111	Mycoplasma arthritidis
+2115	Mycoplasma fermentans
+2118	Mycoplasma mobile
+2129	Ureaplasma
+2130	Ureaplasma urealyticum
+2131	Spiroplasmataceae
+2132	Spiroplasma
+2133	Spiroplasma citri
+2146	Acholeplasmataceae
+2147	Acholeplasma
+2148	Acholeplasma laidlawii
+2151	Mesoplasma florum
+2158	Methanobacteriales
+2159	Methanobacteriaceae
+2172	Methanobrevibacter
+2173	Methanobrevibacter smithii
+2175	Methanohalophilus
+2176	Methanohalophilus mahii
+2178	Methanothermaceae
+2179	Methanothermus
+2180	Methanothermus fervidus
+2182	Methanococcales
+2183	Methanococcaceae
+2184	Methanococcus
+2187	Methanococcus vannielii
+2188	Methanococcus voltae
+2189	Methanotorris igneus
+2190	Methanocaldococcus jannaschii
+2191	Methanomicrobiales
+2192	Methanocorpusculum
+2194	Methanomicrobiaceae
+2198	Methanoculleus marisnigri
+2202	Methanospirillum
+2203	Methanospirillum hungatei
+2206	Methanosarcinaceae
+2207	Methanosarcina
+2208	Methanosarcina barkeri
+2209	Methanosarcina mazei
+2214	Methanosarcina acetivorans
+2222	Methanosaeta
+2224	Methanosaeta thermophila
+2225	Methanococcoides
+2231	Archaeoglobales
+2232	Archaeoglobaceae
+2233	Archaeoglobus
+2234	Archaeoglobus fulgidus
+2235	Halobacteriales
+2236	Halobacteriaceae
+2237	Haloarcula
+2238	Haloarcula marismortui
+2239	Halobacterium
+2242	Halobacterium salinarum
+2246	Haloferax volcanii
+2247	Halorubrum lacusprofundi
+2251	Haloferax
+2257	Natronomonas pharaonis
+2258	Thermococcales
+2259	Thermococcaceae
+2260	Pyrococcus
+2261	Pyrococcus furiosus
+2263	Thermococcus
+2266	Thermoproteales
+2267	Thermoproteaceae
+2268	Thermofilum
+2269	Thermofilum pendens
+2270	Thermoproteus
+2272	Desulfurococcaceae
+2273	Desulfurococcus
+2275	Desulfurococcus mucosus
+2276	Pyrobaculum
+2277	Pyrobaculum islandicum
+2279	Staphylothermus
+2280	Staphylothermus marinus
+2281	Sulfolobales
+2284	Sulfolobus
+2285	Sulfolobus acidocaldarius
+2287	Sulfolobus solfataricus
+2295	Desulfobacterium
+2296	Desulfobacterium autotrophicum
+2301	Thermoplasmatales
+2302	Thermoplasma
+2303	Thermoplasma acidophilum
+2307	Pyrodictiaceae
+2314	Methanoplanus
+2316	Methanosphaera
+2317	Methanosphaera stadtmanae
+2319	Methanopyrus
+2320	Methanopyrus kandleri
+2330	Halanaerobium
+2331	Halanaerobium praevalens
+2335	Thermotoga
+2336	Thermotoga maritima
+2337	Thermotoga neapolitana
+2370	Xylella
+2371	Xylella fastidiosa
+2383	Epulopiscium
+2419	Thermotogales
+2420	Thermosipho
+2421	Thermosipho africanus
+2422	Fervidobacterium
+2424	Fervidobacterium nodosum
+2425	Teredinibacter
+2426	Teredinibacter turnerae
+2433	Roseobacter
+2434	Roseobacter denitrificans
+2697	Heliobacterium
+2701	Gardnerella
+2702	Gardnerella vaginalis
+2713	Aquifex
+2714	Aquifex pyrophilus
+2717	Cardiobacterium
+2718	Cardiobacterium hominis
+2723	Hirschia
+2724	Hirschia baltica
+2733	Symbiobacterium
+2734	Symbiobacterium thermophilum
+2735	Verrucomicrobium
+2736	Verrucomicrobium spinosum
+2742	Marinobacter
+2743	Marinobacter hydrocarbonoclasticus
+2745	Halomonas
+2746	Halomonas elongata
+2747	Carnobacterium
+12916	Acidovorax
+12960	Azoarcus
+13134	Magnetospirillum
+13373	Burkholderia mallei
+13687	Sphingomonas
+13769	Natrialba magadii
+13773	Pyrobaculum aerophilum
+28025	Bifidobacterium animalis
+28026	Bifidobacterium pseudocatenulatum
+28031	Lysinibacillus fusiformis
+28035	Staphylococcus lugdunensis
+28037	Streptococcus mitis
+28048	Acidothermus
+28049	Acidothermus cellulolyticus
+28056	Micromonosporaceae
+28063	Heliobacillus
+28064	Heliobacillus mobilis
+28073	Lyngbya
+28080	Campylobacter upsaliensis
+28090	Acinetobacter lwoffii
+28105	Sinorhizobium
+28108	Alteromonas macleodii
+28110	Francisella philomiragia
+28111	Bacteroides eggerthii
+28116	Bacteroides ovatus
+28117	Alistipes putredinis
+28124	Porphyromonas endodontalis
+28125	Prevotella bivia
+28126	Prevotella buccae
+28127	Prevotella buccalis
+28132	Prevotella melaninogenica
+28135	Prevotella oris
+28137	Prevotella veroralis
+28141	Cronobacter sakazakii
+28151	Serratia proteamaculans
+28152	Yersinia kristensenii
+28172	Vibrio metschnikovii
+28175	Vibrio orientalis
+28196	Arcobacter
+28197	Arcobacter butzleri
+28199	Arcobacter nitrofigilis
+28211	Alphaproteobacteria
+28216	Betaproteobacteria
+28221	Deltaproteobacteria
+28227	Mycoplasma penetrans
+28228	Colwellia
+28229	Colwellia psychrerythraea
+28231	Geobacter
+28232	Geobacter metallireducens
+28236	Petrotoga
+28253	Marinomonas
+28256	Halomonadaceae
+28261	Thermodesulfovibrio
+28262	Thermodesulfovibrio yellowstonii
+28263	Arcanobacterium
+28264	Arcanobacterium haemolyticum
+28447	Clavibacter michiganensis
+28449	Neisseria subflava
+28450	Burkholderia pseudomallei
+28453	Sphingobacterium
+28889	Crenarchaeota
+28890	Euryarchaeota
+28895	Thermoanaerobacterium
+28901	Salmonella enterica
+28903	Mycoplasma bovis
+29291	Methanococcoides burtonii
+29292	Pyrococcus abyssi
+29321	Turicella otitidis
+29322	Eubacterium cellulosolvens
+29323	Thermoanaerobacter brockii
+29330	Alicyclobacillus
+29347	Clostridium scindens
+29348	Clostridium spiroforme
+29360	Clostridium lentocellum
+29361	Clostridium nexile
+29362	Clostridium papyrosolvens
+29380	Staphylococcus caprae
+29385	Staphylococcus saprophyticus
+29388	Staphylococcus capitis
+29391	Gemella morbillorum
+29430	Acinetobacter haemolyticus
+29438	Pseudomonas savastanoi
+29447	Xanthomonas albilineans
+29449	Rhizobium etli
+29459	Brucella melitensis
+29460	Brucella neotomae
+29461	Brucella suis
+29465	Veillonella
+29466	Veillonella parvula
+29471	Pectobacterium atrosepticum
+29483	Yersinia aldovae
+29484	Yersinia frederiksenii
+29485	Yersinia rohdei
+29486	Yersinia ruckeri
+29487	Photorhabdus
+29488	Photorhabdus luminescens
+29494	Vibrio furnissii
+29497	Vibrio splendidus
+29518	Borrelia afzelii
+29519	Borrelia garinii
+29521	Brachyspira
+29526	Syntrophobacter
+29543	Pelobacter propionicus
+29546	Lawsonia intracellularis
+29547	Epsilonproteobacteria
+29548	Rhodothermus
+29549	Rhodothermus marinus
+29574	Taylorella
+29575	Taylorella equigenitalis
+29580	Janthinobacterium
+31899	Caldicellulosiruptor bescii
+31909	Halothermothrix orenii
+31953	Bifidobacteriaceae
+31957	Propionibacteriaceae
+31969	Mollicutes
+31971	Eubacterium dolichum
+31977	Veillonellaceae
+31979	Clostridiaceae
+31984	Heliobacteriaceae
+31989	Rhodobacteraceae
+31993	Methylocystaceae
+31998	Methylobacterium radiotolerans
+32003	Nitrosomonadales
+32008	Burkholderia
+32011	Methylophilaceae
+32012	Thiomonas
+32025	Helicobacter hepaticus
+32033	Xanthomonadaceae
+32046	Synechococcus elongatus
+32049	Synechococcus sp. PCC 7002
+32051	Synechococcus sp. WH 7803
+32061	Chloroflexi (class)
+32064	Chloroflexales
+32066	Fusobacteria
+32067	Leptotrichia
+32068	Sebaldella
+32069	Aquificales
+32199	Buchnera
+32207	Rothia
+32257	Kingella
+32636	Halothermothrix
+33029	Anaerococcus hydrogenalis
+33031	Peptoniphilus lacrimalis
+33032	Anaerococcus lactolyticus
+33033	Parvimonas micra
+33034	Anaerococcus prevotii
+33036	Anaerococcus tetradius
+33037	Anaerococcus vaginalis
+33038	Ruminococcus gnavus
+33039	Ruminococcus torques
+33042	Coprococcus
+33043	Coprococcus eutactus
+33045	Bartonella grahamii
+33057	Thauera
+33059	Acidithiobacillus caldus
+33060	Yersinia mollaretii
+33071	Gloeobacter
+33072	Gloeobacter violaceus
+33075	Acidobacterium capsulatum
+33877	Agromyces
+33903	Streptomyces avermitilis
+33910	Amycolatopsis mediterranei
+33925	Entomoplasmataceae
+33926	Candidatus Phytoplasma
+33934	Anoxybacillus flavithermus
+33940	Geobacillus thermodenitrificans
+33943	Bacillus tusciae
+33958	Lactobacillaceae
+33959	Lactobacillus johnsonii
+33964	Leuconostoc citreum
+33973	Acidobacterium
+33981	Kineococcus
+33986	Exiguobacterium
+33990	Rickettsia bellii
+33993	Neorickettsia
+33996	Gluconacetobacter diazotrophicus
+34018	Rhodospirillum centenum
+34019	Candidatus Liberibacter
+34021	Candidatus Liberibacter asiaticus
+34029	Leptothrix cholodnii
+34064	Francisellaceae
+34072	Variovorax
+34073	Variovorax paradoxus
+34084	Riemerella
+34085	Riemerella anatipestifer
+34090	Pelodictyon phaeoclathratiforme
+34098	Blattabacterium
+34104	Streptobacillus
+34105	Streptobacillus moniliformis
+35554	Geobacter sulfurreducens
+35619	Streptomyces griseoflavus
+35701	Heliobacterium modesticaldum
+35758	Streptomyces ghanaensis
+35777	Clover phyllody phytoplasma
+35779	Aster yellows phytoplasma
+35786	Coprothermobacter proteolyticus
+35788	Rickettsia africae
+35791	Rickettsia massiliae
+35793	Rickettsia sibirica
+35796	Nitrococcus
+35797	Nitrococcus mobilis
+35798	Nitrosospira
+35818	Helicobacter pullorum
+35823	Arthrospira
+35829	Acetivibrio
+35830	Acetivibrio cellulolyticus
+35832	Bilophila
+35833	Bilophila wadsworthia
+36809	Mycobacterium abscessus
+36853	Desulfitobacterium
+36855	Brucella canis
+36861	Thiobacillus denitrificans
+36873	Burkholderia xenovorans
+37329	Nocardia farcinica
+37372	Helicobacter bilis
+37447	Octadecabacter antarcticus
+37636	Thermus scotoductus
+37692	Candidatus Phytoplasma mali
+37734	Enterococcus casseliflavus
+37752	Flavobacterium hibernum
+37919	Rhodococcus opacus
+38284	Corynebacterium accolens
+38289	Corynebacterium jeikeium
+38293	Photobacterium damselae
+38300	Streptomyces pristinaespiralis
+38303	Corynebacterium pseudogenitalium
+38304	Corynebacterium tuberculostearicum
+38323	Bartonella henselae
+39152	Methanococcus maripaludis
+39483	Eubacterium cylindroides
+39485	Eubacterium eligens
+39486	Dorea formicigenerans
+39488	Eubacterium hallii
+39491	Eubacterium rectale
+39492	Eubacterium siraeum
+39496	Eubacterium ventriosum
+39643	Sorangium
+39645	Mesorhizobium ciceri
+39647	Paulownia witches'-broom phytoplasma
+39765	Thiomicrospira crunogena
+39766	Sulfurimonas denitrificans
+39778	Veillonella dispar
+39782	Blattabacteriaceae
+39791	Corynebacterium glucuronolyticum
+39948	Dialister
+39960	Erythrobacter litoralis
+40117	Nitrospirae
+40136	Oligotropha
+40137	Oligotropha carboxidovorans
+40214	Acinetobacter johnsonii
+40215	Acinetobacter junii
+40216	Acinetobacter radioresistens
+40222	Methylophaga
+40269	Aliivibrio salmonicida
+40323	Stenotrophomonas
+40324	Stenotrophomonas maltophilia
+40518	Ruminococcus bromii
+40520	Ruminococcus obeum
+40542	Leptotrichia buccalis
+40544	Sutterella
+40545	Sutterella wadsworthensis
+40566	Actinosynnema
+40567	Actinosynnema mirum
+40576	Xenorhabdus bovienii
+40834	Borrelia duttonii
+41275	Brevundimonas
+41294	Bradyrhizobiaceae
+41295	Rhodospirillaceae
+41297	Sphingomonadaceae
+41431	Cyanothece sp. PCC 8801
+41707	Lawsonia
+41980	Metallosphaera
+42054	Chromohalobacter
+42255	Rubrobacter
+42443	Roseobacter litoralis
+42837	Ammonifex
+42838	Ammonifex degensii
+42862	Rickettsia felis
+42879	Methanococcus aeolicus
+43080	Sulfolobus islandicus
+43263	Pseudomonas alcaligenes
+43305	Clostridium proteoclasticum
+43661	Shewanella benthica
+43663	Arthrobacter aurescens
+43668	Brachybacterium
+43669	Brachybacterium faecium
+43673	Jonesia
+43674	Jonesia denitrificans
+43675	Rothia mucilaginosa
+43687	Metallosphaera sedula
+43765	Corynebacterium amycolatum
+43767	Rhodococcus equi
+43768	Corynebacterium matruchotii
+43770	Corynebacterium striatum
+43771	Corynebacterium urealyticum
+43773	Syntrophus
+43947	Tolumonas
+43948	Tolumonas auensis
+43988	Cyanothece
+43989	Cyanothece sp. ATCC 51142
+43996	Catonella
+43997	Catonella morbi
+44000	Caldicellulosiruptor
+44001	Caldicellulosiruptor saccharolyticus
+44011	Ferrimonas
+44012	Ferrimonas balearica
+44013	Polynucleobacter
+44249	Paenibacillus
+44259	Filifactor
+44260	Moorella
+44449	Borrelia recurrentis
+44471	Microcoleus
+45361	Mycoplasma conjunctivae
+45401	Hyphomicrobiaceae
+45404	Beijerinckiaceae
+45662	Desulfohalobium
+45663	Desulfohalobium retbaense
+45851	Butyrivibrio crossotus
+45989	Methanoculleus
+46123	Abiotrophia
+46124	Granulicatella adiacens
+46125	Abiotrophia defectiva
+46228	Ruminococcus lactaris
+46239	Mesoplasma
+46254	Oenococcus
+46255	Weissella
+46354	Thermoanaerobacter wiegelii
+46429	Sphingobium chlorophenolicum
+46503	Parabacteroides merdae
+46506	Bacteroides stercoris
+46541	Thermosipho melanesiensis
+46613	Anaerobaculum
+46630	Picrophilaceae
+46631	Picrophilus
+46659	Thermoplasmataceae
+46769	Cenarchaeum
+46770	Cenarchaeum symbiosum
+47054	Dethiosulfovibrio
+47055	Dethiosulfovibrio peptidovorans
+47566	Candidatus Phytoplasma pyri
+47589	Rickettsia peacockii
+47678	Bacteroides caccae
+47687	Mycoplasma alligatoris
+47715	Lactobacillus rhamnosus
+47770	Lactobacillus crispatus
+47834	Spiroplasma kunkelii
+47850	Micromonospora aurantiaca
+47877	Pseudomonas amygdali
+47878	Pseudomonas azotoformans
+47880	Pseudomonas fulva
+47882	Pseudomonas straminea
+47920	Acidovorax delafieldii
+48296	Acinetobacter genomosp. 3
+48461	Verrucomicrobiales
+48736	Ralstonia
+48935	Novosphingobium aromaticivorans
+49319	Rubrobacter xylanophilus
+49338	Desulfitobacterium hafniense
+49546	Flavobacteriaceae
+50052	Mycoplasma crocodyli
+50339	Thermoplasma volcanium
+50743	unidentified eubacterium SCB49
+51047	Actinobacillus minor
+51123	Eubacterium saphenum
+51228	Wigglesworthia
+51229	Wigglesworthia glossinidia
+51291	Chlamydiales
+51967	Korarchaeota
+52022	Meiothermus silvanus
+52225	Mitsuokella
+52226	Mitsuokella multacida
+52584	Brachyspira pilosicoli
+52598	Sulfitobacter sp. EE-36
+52603	Sagittula stellata
+52765	Caldicellulosiruptor kristjanssonii
+52766	Caldicellulosiruptor lactoaceticus
+52959	Polaribacter
+52972	Polaromonas
+53246	Pseudoalteromonas
+53335	Pantoea
+53357	Intrasporangium
+53358	Intrasporangium calvum
+53363	Brevibacterium mcbrellneri
+53399	Hyphomicrobium denitrificans
+53409	Pseudomonas coronafaciens
+53413	Xanthomonas axonopodis
+53433	Halanaerobiales
+53443	Blautia hydrogenotrophica
+53457	Janibacter
+53460	Nakamurella
+53461	Nakamurella multipartita
+53634	Acidimicrobium
+53635	Acidimicrobium ferrooxidans
+53945	Octadecabacter
+53953	Pyrococcus horikoshii
+54120	Methanoplanus petrolearius
+54247	Hyperthermus
+54248	Hyperthermus butylicus
+54253	Thermosphaera
+54254	Thermosphaera aggregans
+54258	Ignicoccus
+54260	Ferroglobus
+54261	Ferroglobus placidus
+55080	Brevibacillus
+55205	Caldicellulosiruptor owensensis
+55208	Pectobacterium wasabiae
+55218	Ruegeria lacuscaerulensis
+55802	Thermococcus barophilus
+56426	Bartonella clarridgeiae
+56635	Aeropyrum
+56636	Aeropyrum pernix
+56688	Halorubrum
+56812	Shewanella frigidimarina
+57029	Psychroflexus torquis
+57493	Kocuria
+57495	Dermacoccus
+57499	Kytococcus
+57665	Sulfurospirillum
+57705	Halomicrobium mukohataei
+57723	Acidobacteria
+57975	Burkholderia thailandensis
+58050	Moritella
+58051	Moritella sp. PE36
+58138	Desulfotomaculum acetoxidans
+58842	Sagittula
+59195	Rickettsiella
+59196	Rickettsiella grylli
+59600	Cellulophaga algicola
+59610	Desulfotomaculum reducens
+59732	Chryseobacterium
+59748	Candidatus Phytoplasma australiense
+59753	Alcanivorax
+59754	Alcanivorax borkumensis
+59840	Paenibacillus curdlanolyticus
+59931	Synechococcus sp. WH 7805
+60136	Sulfitobacter
+60217	Shewanella violacea
+60478	Shewanella amazonensis
+60480	Shewanella sp. MR-4
+60481	Shewanella sp. MR-7
+60548	Burkholderia graminis
+60552	Burkholderia vietnamiensis
+60846	Halogeometricum
+60847	Halogeometricum borinquense
+60890	Phaeobacter gallaeciensis
+60919	Sanguibacter
+60920	Sanguibacter keddieii
+60961	Shewanella woodyi
+61170	Holdemania
+61171	Holdemania filiformis
+61434	Dehalococcoides
+61435	Dehalococcoides ethenogenes
+62088	Borrelia valaisiana
+62153	Vibrio shilonii
+62320	Haloterrigena turkmenica
+62322	Shewanella baltica
+62928	Azoarcus sp. BH72
+62977	Acinetobacter sp. ADP1
+63363	Aquifex aeolicus
+63612	Sodalis glossinidius
+63742	Natrialba
+63743	Natronomonas
+63745	Sideroxydans lithotrophicus
+64104	Bacillus pseudomycoides
+64178	Microcoleus chthonoplastes
+64471	Synechococcus sp. CC9311
+64898	Aquificaceae
+65393	Cyanothece sp. PCC 7424
+65551	Meiothermus
+65553	Sulfurospirillum deleyianum
+65842	Fibrobacteres
+66084	Wolbachia sp. wRi
+66219	Clostridium phytofermentans
+67294	Streptomyces filamentosus
+67299	Streptomyces flavogriseus
+67572	Psychromonas
+67760	Methanocaldococcus infernus
+67780	Edwardsiella ictaluri
+67825	Citrobacter rodentium
+67854	Actinobacillus succinogenes
+68287	Mesorhizobium
+68295	Thermoanaerobacterales
+68297	Dictyoglomi
+68298	Syntrophomonadaceae
+68335	Coprothermobacter
+68909	Deinococcus geothermalis
+68933	Thermales
+68985	Methanopyrales
+69042	Synechococcus sp. WH 5701
+69218	Enterobacter cancerogenus
+69277	Phyllobacteriaceae
+69474	Orientia
+69499	Petrotoga mobilis
+69541	Desulfuromonadales
+69657	Hyphomonadaceae
+69710	Treponema vincentii
+69823	Selenomonas sputigena
+69965	Macrococcus
+69966	Macrococcus caseolyticus
+70771	Thermoproteus neutrophilus
+70799	Nodularia spumigena
+70863	Shewanella oneidensis
+70864	Shewanella pealeana
+71995	Paenibacillus vortex
+72000	Kocuria rhizophila
+72173	Citromicrobium
+72174	Citromicrobium bathyomarinum
+72273	Thiotrichales
+72274	Pseudomonadales
+72275	Alteromonadaceae
+72276	Ectothiorhodospiraceae
+72293	Helicobacteraceae
+72294	Campylobacteraceae
+72556	Achromobacter piechaudii
+73029	Dechloromonas
+73913	Methanocaldococcus vulcanius
+74030	Roseovarius
+74109	Photobacterium profundum
+74152	Elusimicrobia
+74201	Verrucomicrobia
+74313	Brevundimonas subvibrioides
+74317	Maricaulis
+74318	Maricaulis maris
+74426	Collinsella aerofaciens
+74712	Frankiaceae
+74968	Ferroplasma
+75682	Oxalobacteraceae
+75787	Rhodocyclaceae
+75905	Thermocrinis
+75984	Mannheimia
+75985	Mannheimia haemolytica
+76122	Prevotella tannerae
+76517	Campylobacter hominis
+76886	Caldivirga
+76887	Caldivirga maquilingensis
+76890	Asticcacaulis
+76892	Caulobacteraceae
+76981	Pseudomonas sp. 'TAC II 18'
+77021	Cylindrospermopsis
+77022	Cylindrospermopsis raciborskii
+77037	Wolbachia endosymbiont of Muscidifurax uniraptor
+77038	Wolbachia endosymbiont of Drosophila simulans
+77095	Prevotella bryantii
+77133	uncultured bacterium
+78258	Parascardovia denticolens
+78259	Scardovia inopinata
+78342	Bifidobacterium gallicum
+78587	Asticcacaulis excentricus
+79328	Chitinophaga
+79329	Chitinophaga pinensis
+79880	Bacillus clausii
+79885	Bacillus pseudofirmus
+79933	Nitrosospira sp. TYM9
+79967	Erwinia pyrifoliae
+80816	Haliangium ochraceum
+80840	Burkholderiales
+80849	Wolbachia endosymbiont of Brugia malayi
+80864	Comamonadaceae
+80865	Delftia
+80866	Delftia acidovorans
+80867	Acidovorax avenae
+80869	Acidovorax citrulli
+81032	Hyphomonas neptunium
+81411	Aminomonas
+81412	Aminomonas paucivorans
+81461	Thermanaerovibrio
+81462	Thermanaerovibrio acidaminovorans
+81682	Methylovorus
+81850	Leuconostocaceae
+81852	Enterococcaceae
+82076	Picrophilus torridus
+82115	Rhizobiaceae
+82135	Atopobium vaginae
+82543	Methylobacterium chloromethanicum
+83171	Methanocaldococcus fervens
+83406	gamma proteobacterium HdN1
+83553	Chlamydophila
+83554	Chlamydophila psittaci
+83555	Chlamydophila abortus
+83556	Chlamydophila felis
+83557	Chlamydophila caviae
+83558	Chlamydophila pneumoniae
+83560	Chlamydia muridarum
+83612	Psychroflexus
+83618	Pseudoxanthomonas
+83676	Nocardiopsaceae
+83677	Thermobifida
+83683	Lactobacillus amylolyticus
+83778	Kineosporiaceae
+83816	Methanobrevibacter ruminantium
+83984	Methanocorpusculum labreanum
+84026	Clostridium methylpentosum
+84030	Clostridium saccharolyticum
+84107	Coriobacteriaceae
+84108	Slackia
+84109	Slackia exigua
+84110	Slackia heliotrinireducens
+84111	Eggerthella
+84112	Eggerthella lenta
+84156	Archaeoglobus profundus
+84159	Magnetospirillum magneticum
+84162	Cryptobacterium
+84163	Cryptobacterium curtum
+84205	Chlorobium ferrooxidans
+84378	Brachyspira murdochii
+84565	Sodalis
+84566	Sphingobacteriaceae
+84567	Pedobacter
+84588	Synechococcus sp. WH 8102
+84599	Staphylothermus hellenicus
+84642	Aeromonadaceae
+84756	Beutenbergia
+84757	Beutenbergia cavernae
+84980	Desulfotalea psychrophila
+84993	Acidimicrobiales
+84994	Acidimicrobiaceae
+84996	Rubrobacterales
+84997	Rubrobacteraceae
+84999	Coriobacteriales
+85001	Sphaerobacterales
+85002	Sphaerobacteraceae
+85004	Bifidobacteriales
+85015	Nocardioidaceae
+85016	Cellulomonadaceae
+85017	Promicromonosporaceae
+85019	Brevibacteriaceae
+85020	Dermabacteraceae
+85021	Intrasporangiaceae
+85022	Jonesiaceae
+85023	Microbacteriaceae
+85025	Nocardiaceae
+85026	Gordoniaceae
+85028	Tsukamurellaceae
+85030	Geodermatophilaceae
+85031	Nakamurellaceae
+85032	Acidothermaceae
+85034	Glycomycetaceae
+85072	Allochromatium
+85085	Arthrobacter chlorophenolicus
+85108	Halorhodospira
+85561	EDTA-degrading bacterium BNC1
+85643	Thauera sp. MZ1T
+85683	Bacillus selenitireducens
+85698	Achromobacter xylosoxidans
+85701	Bartonella tribocorum
+86170	Syntrophothermus lipocalidus
+86304	Saccharophagus degradans
+86662	Bacillus weihenstephanensis
+86665	Bacillus halodurans
+87883	Burkholderia multivorans
+88404	Methanocorpusculaceae
+88431	Dorea longicatena
+88688	Caulobacter segnis
+88916	Borrelia spielmanii
+89152	Clostridium hiranonis
+89153	Clostridium hylemonae
+89184	Ruegeria pomeroyi
+89373	Cytophagaceae
+89404	Glaciecola
+89583	Gluconacetobacter
+90142	Ferroplasmaceae
+90627	Gallionellaceae
+90964	Staphylococcaceae
+91061	Bacilli
+91347	Enterobacteriales
+91464	Synechococcus sp. PCC 7335
+92713	Parachlamydiaceae
+92944	Ketogulonicigenium
+92945	Ketogulonicigenium vulgare
+93929	Thermotoga petrophila
+93930	Thermotoga naphthophila
+94122	Shewanella sp. ANA-3
+94254	Dyadobacter fermentans
+94624	Bordetella petrii
+94625	Ochrobactrum intermedium
+94695	Methanosarcinales
+95486	Burkholderia cenocepacia
+96345	Flavobacterium psychrophilum
+97050	Ruegeria
+97393	Ferroplasma acidarmanus
+100379	Onion yellows phytoplasma
+100715	Chloroherpeton
+100716	Chloroherpeton thalassium
+100883	Coprobacillus
+100886	Catenibacterium mitsuokai
+101534	Candidatus Blochmannia pennsylvanicus
+101571	Burkholderia ubonensis
+102106	Collinsella
+102148	Solobacterium moorei
+102684	Streptococcus infantarius
+102862	Proteus penneri
+102897	Frankia sp. EUN1f
+103618	Actinomyces coleocanis
+103621	Actinomyces urogenitalis
+103690	Nostoc sp. PCC 7120
+103957	Actinosynnemataceae
+104264	Cellulophaga
+105560	Methylibium petroleiphilum
+105841	Anaerostipes caccae
+106370	Frankia sp. CcI3
+106589	Cupriavidus
+106590	Cupriavidus necator
+106633	Thioalkalivibrio
+106654	Acinetobacter genomosp. 13TU
+107709	Opitutus terrae
+108150	Thermoanaerobacter italicus
+108981	Acinetobacter schindleri
+109168	Desulfotalea
+109262	Halothiobacillus
+109790	Lactobacillus jensenii
+110321	Sinorhizobium medicae
+110500	Pelotomaculum thermopropionicum
+110539	Mycobacterium vanbaalenii
+110662	Synechococcus sp. CC9605
+110932	Leifsonia
+111782	Tolypothrix
+111955	Sulfolobus tokodaii
+114378	Thermofilaceae
+114380	Desulfurococcales
+114615	Bradyrhizobium sp. ORS278
+114616	Methylobacterium nodulans
+114627	Alkaliphilus
+115778	Leuconostoc gasicomitatum
+116085	Coprococcus catus
+117207	Sphingopyxis alaskensis
+117563	Granulicatella
+117743	Flavobacteria
+117747	Sphingobacteria
+118562	Arthrospira platensis
+118747	Bulleidia
+118748	Bulleidia extructa
+118882	Brucellaceae
+118883	Sulfolobaceae
+118964	Deinococcales
+118968	Coxiellaceae
+118969	Legionellales
+119045	Methylobacteriaceae
+119060	Burkholderiaceae
+119069	Hydrogenophilales
+119219	Cupriavidus metallidurans
+119484	Syntrophobacter fumaroxidans
+119859	Microchaetaceae
+119977	Acidithiobacillus
+120576	Brucella pinnipedialis
+120577	Brucella ceti
+120652	Methylocella
+120831	Dyadobacter
+120961	Roseiflexus
+120962	Roseiflexus castenholzii
+121277	Pyrobaculum arsenaticum
+121723	Photobacterium sp. SKA34
+121871	Haloterrigena
+122277	Pectobacterium
+123375	Solobacterium
+123841	Helicobacter canadensis
+125216	Roseomonas
+125316	Beutenbergiaceae
+126385	Providencia alcalifaciens
+126740	Thermotoga sp. RQ2
+128827	Erysipelotrichaceae
+129001	Syntrophothermus
+129337	Geobacillus
+129910	Arthrospira maxima
+129957	Carboxydothermus
+129958	Carboxydothermus hydrogenoformans
+131079	Limnobacter
+131568	Kineococcus radiotolerans
+132919	Rhodococcus jostii
+133193	Alkalilimnicola
+133448	Citrobacter youngae
+133539	Nitrosococcus halophilus
+133925	Olsenella
+133926	Olsenella uli
+134549	Spartobacteria
+134623	Opitutaceae
+134821	Ureaplasma parvum
+135080	Selenomonas flueggei
+135083	Selenomonas noxia
+135575	Idiomarina
+135577	Idiomarina loihiensis
+135613	Chromatiales
+135614	Xanthomonadales
+135615	Cardiobacteriales
+135616	Piscirickettsiaceae
+135617	Thiotrichaceae
+135618	Methylococcales
+135619	Oceanospirillales
+135620	Oceanospirillaceae
+135621	Pseudomonadaceae
+135622	Alteromonadales
+135623	Vibrionales
+135624	Aeromonadales
+135625	Pasteurellales
+135858	Catenibacterium
+136094	Thermocrinis albus
+136609	Leuconostoc kimchii
+137722	Azospirillum sp. B510
+137732	Granulicatella elegans
+138072	Candidatus Hamiltonella defensa
+138073	Candidatus Regiella insecticola
+142182	Gemmatimonadetes
+143067	Methanosaetaceae
+143361	Filifactor alocis
+143786	Brachyspiraceae
+144193	Turicella
+145260	Methanothermobacter
+145262	Methanothermobacter thermautotrophicus
+145263	Methanothermobacter marburgensis
+145357	Dermacoccaceae
+145360	Sanguibacteraceae
+146785	Thermosynechococcus
+146786	Thermosynechococcus elongatus
+146825	Halorhabdus
+146826	Halorhabdus utahensis
+146918	Salinibacter
+146919	Salinibacter ruber
+147067	Thermobispora
+147206	Collinsella stercoris
+147207	Collinsella intestinalis
+147802	Lactobacillus iners
+148447	Burkholderia phymatum
+148813	Sulfuricurvum kujiense
+150022	Finegoldia
+150120	Shewanella livingstonensis
+150247	Anoxybacillus
+150340	Vibrio sp. Ex25
+150830	Roseibium
+152053	Starkeya
+152180	Ahrensia
+152260	Chloroflexus aggregans
+152480	Burkholderia ambifaria
+152500	Burkholderia dolosa
+152794	Corynebacterium efficiens
+153232	Oceanicaulis
+153948	Nitrosomonas sp. AL212
+154046	Clostridium hathewayi
+154288	Turicibacter sanguinis
+155077	Cellvibrio japonicus
+155862	Methanothermococcus
+155863	Methanothermococcus okinawensis
+155892	Caulobacter vibrioides
+155900	uncultured organism
+155921	Nitrosospira sp. PJA1
+155925	Nitrosospira sp. NRS527
+155977	Acaryochloris
+155978	Acaryochloris marina
+156578	Alteromonadales bacterium TW-7
+156586	Flavobacteria bacterium BBFL7
+156889	Magnetococcus sp. MC-1
+157268	Helicobacter winghamensis
+157673	Mannheimia succiniciproducens
+157688	Leptotrichia hofstadii
+157692	Leptotrichia goodfellowii
+158080	Chromohalobacter salexigens
+158327	Hahella chejuensis
+158481	Hahella
+158584	Nitrosovibrio sp. RY3C
+158585	Nitrosovibrio sp. RY6A
+158846	Megamonas
+158847	Megamonas hypermegale
+158850	Providencia rustigianii
+159191	Nodularia
+160233	Ignicoccus hospitalis
+160791	Sphingomonas wittichii
+160804	uncultured haloarchaeon
+161492	Anaeromyxobacter
+161493	Anaeromyxobacter dehalogenans
+161528	Erythrobacter sp. SD-21
+161544	Bacillus sp. SG-1
+161879	Corynebacterium kroppenstedtii
+161889	Corynebacterium lipophiloflavum
+162027	Haliangium
+162171	Magnetococcus
+162289	Peptoniphilus
+163164	Wolbachia endosymbiont of Drosophila melanogaster
+164546	Cupriavidus taiwanensis
+164756	Mycobacterium sp. MCS
+164757	Mycobacterium sp. JLS
+165179	Prevotella copri
+165694	Bartonella schoenbuchensis
+165695	Sphingobium
+165696	Novosphingobium
+165697	Sphingopyxis
+165779	Anaerococcus
+166314	Synechococcus sp. WH 8109
+166486	Roseburia intestinalis
+166501	Thermobaculum terrenum
+167375	Cyanobium
+167639	Ilyobacter
+167642	Ilyobacter polytropus
+168384	Marvinbryantia formatexigens
+168470	Laribacter
+168471	Laribacter hongkongensis
+168657	Hydrogenobaculum
+168694	Salinispora
+168695	Salinispora tropica
+168697	Salinispora arenicola
+168933	Legionella drancourtii
+169292	Corynebacterium aurimucosum
+169435	Anaerotruncus colihominis
+171549	Bacteroidales
+171550	Rikenellaceae
+171551	Porphyromonadaceae
+171552	Prevotellaceae
+172049	Thermococcus sibiricus
+173365	Methylobacter tundripaludum
+173479	Gemmatimonas
+173480	Gemmatimonas aurantiaca
+177758	Thermotoga lettingae
+177971	Shuttleworthia
+177972	Shuttleworthia satelles
+178440	Opitutus
+179636	Alicycliphilus denitrificans
+180281	Cyanobium sp. PCC 7001
+181486	Pyrobaculum calidifontis
+181663	Desulfococcus oleovorans
+181675	Lactobacillus coleohominis
+182210	Desulfovibrio aespoeensis
+182269	Aurantimonas
+182337	Erwinia billingiae
+182639	Kribbella
+182640	Kribbella flavida
+182709	Oceanobacillus
+182710	Oceanobacillus iheyensis
+182899	Persephonella
+183710	Deinococcaceae
+183713	Methanopyraceae
+183924	Thermoprotei
+183925	Methanobacteria
+183939	Methanococci
+183963	Halobacteria
+183967	Thermoplasmata
+183968	Thermococci
+183980	Archaeoglobi
+183988	Methanopyri
+184917	Desulfovibrio magneticus
+185300	Paludibacter propionicigenes
+186171	Mulberry dwarf phytoplasma
+186188	Xylanimonas
+186189	Xylanimonas cellulosilytica
+186328	Entomoplasmatales
+186329	Acholeplasmatales
+186490	Candidatus Baumannia cicadellinicola
+186801	Clostridia
+186802	Clostridiales
+186803	Lachnospiraceae
+186804	Peptostreptococcaceae
+186806	Eubacteriaceae
+186807	Peptococcaceae
+186814	Thermoanaerobacteraceae
+186817	Bacillaceae
+186820	Listeriaceae
+186822	Paenibacillaceae
+186823	Alicyclobacillaceae
+186826	Lactobacillales
+186827	Aerococcaceae
+186828	Carnobacteriaceae
+187137	Oceanithermus profundus
+187304	Labrenzia aggregata
+187326	Megasphaera micronuciformis
+187857	Aquificae (class)
+187878	Thermococcus gammatolerans
+188626	Dermacoccus sp. Ellin185
+188708	Thermotogae (class)
+188709	Thermotogaceae
+188786	Thermaceae
+188787	Deinococci
+188905	Jannaschia
+189330	Dorea
+189772	Herpetosiphonales
+189773	Herpetosiphonaceae
+189775	Thermomicrobia (class)
+189776	Thermomicrobiales
+189777	Thermomicrobiaceae
+189778	Nitrospirales
+189779	Nitrospiraceae
+189918	Mycobacterium sp. KMS
+190892	Idiomarina baltica
+190893	Vibrio coralliilyticus
+191291	Nautilia
+191301	Caminibacter
+191303	Turicibacter
+191373	Pelotomaculum
+191410	Chlorobia
+191411	Chlorobiales
+191412	Chlorobiaceae
+191767	Plesiocystis
+191768	Plesiocystis pacifica
+191863	Chthoniobacter flavus
+192073	Shewanella denitrificans
+192843	Albidiferax ferrireducens
+194924	Desulfovibrionaceae
+196081	Scardovia
+196082	Parascardovia
+196117	Methanocaldococcaceae
+196118	Methanocaldococcus
+196119	Methanotorris
+196137	Methanospirillaceae
+196162	Nocardioides sp. JS614
+198251	Candidatus Pelagibacter
+198252	Candidatus Pelagibacter ubique
+198467	Anoxybacillus gonensis
+199596	Methylocella silvestris
+200643	Bacteroidia
+200644	Flavobacteriales
+200666	Sphingobacteriales
+200667	Flammeovirgaceae
+200783	Aquificae
+200795	Chloroflexi
+200918	Thermotogae
+201089	uncultured Desulfobacterium sp.
+201096	Alicycliphilus
+201174	Actinobacteria
+202746	Sulfurimonas
+202747	Sulfurimonas autotrophica
+203135	Halomicrobium
+203486	Dictyoglomia
+203487	Dictyoglomales
+203488	Dictyoglomaceae
+203490	Fusobacteria (class)
+203491	Fusobacteriales
+203492	Fusobacteriaceae
+203494	Verrucomicrobiae
+203557	Verrucomicrobiaceae
+203682	Planctomycetes
+203683	Planctomycetacia
+203691	Spirochaetes
+203692	Spirochaetes (class)
+203693	Nitrospira (class)
+203804	Candidatus Blochmannia
+203907	Candidatus Blochmannia floridanus
+204037	Dickeya
+204038	Dickeya dadantii
+204042	Dickeya zeae
+204428	Chlamydiae
+204429	Chlamydiae (class)
+204430	Fibrobacteres (class)
+204431	Fibrobacteraceae
+204432	Acidobacteria (class)
+204433	Acidobacteriales
+204434	Acidobacteriaceae
+204441	Rhodospirillales
+204455	Rhodobacterales
+204457	Sphingomonadales
+204458	Caulobacterales
+204525	Roseomonas cervicalis
+204773	Herminiimonas arsenicoxydans
+205948	Cenarchaeales
+205957	Cenarchaeaceae
+206349	Hydrogenophilaceae
+206350	Methylophilales
+206351	Neisseriales
+206379	Nitrosomonadaceae
+206389	Rhodocyclales
+207244	Anaerostipes
+207949	Bermanella marisrubri
+207954	Neptuniibacter caesariensis
+208215	Parvularcula
+208216	Parvularcula bermudensis
+208226	Alkaliphilus metalliredigens
+208447	Oceanithermus
+208479	Clostridium bolteae
+208962	Escherichia albertii
+212790	Sulfurihydrogenibium
+212791	Enhydrobacter
+213115	Desulfovibrionales
+213116	Desulfomicrobiaceae
+213117	Desulfohalobiaceae
+213118	Desulfobacterales
+213119	Desulfobacteraceae
+213121	Desulfobulbaceae
+213421	Desulfuromonadaceae
+213422	Geobacteraceae
+213423	Pelobacteraceae
+213462	Syntrophobacterales
+213465	Syntrophobacteraceae
+213468	Syntrophaceae
+213481	Bdellovibrionales
+213483	Bdellovibrionaceae
+213810	Ruminococcus sp. 18P13
+213849	Campylobacterales
+214851	Subdoligranulum variabile
+214853	Anaerofustis stercorihominis
+214906	Histophilus
+215689	Erwinia sp. Ejp617
+215813	Dinoroseobacter shibae
+216389	Dehalococcoides sp. BAV1
+216431	Croceibacter
+216465	Polaromonas naphthalenivorans
+216816	Bifidobacterium longum
+216851	Faecalibacterium
+217159	Clostridium carboxidivorans
+217510	Fulvimarina
+217511	Fulvimarina pelagi
+218207	Desulfatibacillum
+218538	Dialister invisus
+218872	Fibrobacterales
+219305	Micromonospora sp. ATCC 39149
+219314	Aeromicrobium marinum
+219685	Gemmatimonadetes (class)
+219686	Gemmatimonadales
+219687	Gemmatimonadaceae
+221065	Kordia
+221066	Kordia algicida
+221359	Synechococcus sp. RS9916
+221360	Synechococcus sp. RS9917
+223967	Methylobacterium populi
+224027	Hydrogenothermaceae
+224372	Alcanivoracaceae
+224379	Hahellaceae
+224463	Nannocystaceae
+224464	Kofleriaceae
+224467	Nautiliaceae
+224756	Methanomicrobia
+225057	Acidithiobacillales
+225058	Acidithiobacillaceae
+225194	Geobacter bemidjiensis
+225324	Enhydrobacter aerosaccus
+225421	Oceanibulbus
+225422	Oceanibulbus indolifex
+227387	Thermodesulfobiaceae
+227943	Lactobacillus antri
+227945	Lactobacillus ultunensis
+229545	Aster yellows witches'-broom phytoplasma
+230494	Reinekea
+232348	Synechococcus sp. CB0101
+232363	Synechococcus sp. CB0205
+232721	Acidovorax sp. JS42
+234831	Pseudoalteromonas sp. SM9913
+235899	Nautiliales
+236097	Alcanivorax sp. DG881
+236100	Marinobacter algicola
+237576	Oribacterium sinus
+237727	Erythrobacter sp. NAP1
+239759	Alistipes
+239934	Akkermansia
+239935	Akkermansia muciniphila
+240125	Mycobacterium parascrofulaceum
+242750	Prevotella bergensis
+243261	Burkholderia sp. Ch1-1
+244127	Anaerotruncus
+244366	Klebsiella variicola
+244596	Hoeflea phototrophica
+244599	Raphidiopsis
+244787	Nautilia profundicola
+245186	Loktanella
+245188	Loktanella vestfoldensis
+246263	Hydrogenivirga
+246787	Bacteroides cellulosilyticus
+246875	Algoriphagus
+246969	Thermococcus sp. AM4
+247633	marine gamma proteobacterium HTCC2143
+247634	marine gamma proteobacterium HTCC2148
+247639	marine gamma proteobacterium HTCC2080
+248026	Cupriavidus pinatubonensis
+249529	Caldanaerobacter
+251535	Candidatus Blochmannia vafer
+251701	Pseudomonas syringae group genomosp. 3
+252301	Oceanicola
+252302	Oceanicola granulosus
+252306	Robiginitalea
+252307	Robiginitalea biformata
+252356	Maribacter
+253238	Ethanoligenens
+253239	Ethanoligenens harbinense
+253839	Streptomyces sp. C
+255470	Dehalococcoides sp. CBDB1
+255473	Parvularculales
+255474	Parvularculaceae
+255475	Aurantimonadaceae
+255526	Halothiobacillaceae
+256319	Chlorobaculum
+256616	Parvibaculum
+256618	Parvibaculum lavamentivorans
+256701	Arthrobacter arilaitensis
+258224	Corynebacterium resistens
+258255	Pseudovibrio
+259354	Desulfatibacillum alkenivorans
+259537	Dechloromonas aromatica
+261299	Clostridium bartlettii
+261302	Burkholderia phytofirmans
+261684	Thermosinus
+261685	Thermosinus carboxydivorans
+261963	Kangiella
+261964	Kangiella koreensis
+262406	Thermobaculum
+262489	delta proteobacterium MLMS-1
+263437	Wolbachia endosymbiont of Culex quinquefasciatus
+263510	Crocosphaera
+263511	Crocosphaera watsonii
+264688	Trichormus
+264995	Anaerofustis
+265487	Blastopirellula
+265488	Rhodopirellula
+265570	Sulfurovum
+265606	Rhodopirellula baltica
+265975	Oribacterium
+266009	Methylovorus glucosotrophus
+266779	Chelativorans sp. BNC1
+267888	Pseudoalteromonadaceae
+267889	Colwelliaceae
+267890	Shewanellaceae
+267891	Moritellaceae
+267892	Ferrimonadaceae
+267893	Idiomarinaceae
+267894	Psychromonadaceae
+269258	Nitratiruptor
+269260	Nitratifractor
+269261	Nitratifractor salsuginis
+269483	Burkholderia sp. 383
+270374	Marinobacter sp. ELB17
+271097	Shewanella sediminis
+271098	Shewanella halifaxensis
+272129	Oscillatoria sp. PCC 6506
+272131	Nostoc punctiforme
+274539	Chlorobaculum parvum
+274591	Hoeflea
+278137	Mycobacterium sp. Spyr1
+278957	Opitutaceae bacterium TAV2
+278993	Thermincola
+281119	Candidatus Amoebophilus
+281120	Candidatus Amoebophilus asiaticus
+281915	Curvibacter
+281920	Porphyromonas uenonis
+282132	Candidatus Protochlamydia
+282682	Citreicella
+283734	Staphylococcus pseudintermedius
+283735	Leeuwenhoekiella
+283810	Stackebrandtia
+283811	Stackebrandtia nassauensis
+284016	Phenylobacterium zucineum
+285530	Streptomyces sviceus
+286130	Sulfuricurvum
+286801	Segniliparus
+286802	Segniliparus rotundus
+286804	Segniliparus rugosus
+288000	Bradyrhizobium sp. BTAi1
+289297	Nitrosospira sp. GS832
+289539	Nitrosovibrio sp. FJI82
+289541	Nitrosospira sp. KAN8
+290053	Bacteroides helcogenes
+290399	Arthrobacter sp. FB24
+290400	Jannaschia sp. CCS1
+291048	Caminibacter mediatlanticus
+291112	Photorhabdus asymbiotica
+292414	Ruegeria sp. TM1040
+292632	Subdoligranulum
+292691	Gramella
+293091	Haloquadratum walsbyi
+293431	Haloquadratum
+295084	Wolbachia endosymbiont of Drosophila willistoni
+295577	Chthoniobacter
+296591	Polaromonas sp. JS666
+298653	Frankia sp. EAN1pec
+298654	Frankia sp. EuI1c
+301297	Dehalococcoidetes
+301375	Methanosaeta harundinacea
+302485	Phaeobacter
+303379	Herminiimonas
+304736	Sulfurihydrogenibium yellowstonense
+304895	Catenulispora acidiphila
+307502	Wolbachia endosymbiont of Drosophila ananassae
+307503	Wolbachia endosymbiont of Drosophila mojavensis
+307595	Gloeobacterales
+307596	Gloeobacteria
+308063	Nitrosospira sp. HBN8222A
+308064	Nitrosospira sp. PM2
+308065	Nitrosospira sp. TCH711
+308067	Nitrosomonas sp. CNS332
+308068	Nitrosomonas sp. OZK11
+309512	Dinoroseobacter
+309805	Persephonella marina
+309806	Sulfurihydrogenibium azorense
+309887	Deinococcus maricopensis
+310297	Bacteroides plebeius
+310298	Bacteroides coprocola
+310783	Deinococcus deserti
+311400	Thermococcus kodakarensis
+311424	Dehalococcoides sp. VS
+312284	marine actinobacterium PHSC20C1
+312306	Pseudomonas entomophila
+313588	Croceibacter atlanticus
+313589	Janibacter sp. HTCC2649
+313598	Polaribacter sp. MED152
+313603	Maribacter sp. HTCC2170
+313612	Lyngbya sp. PCC 8106
+313625	Synechococcus sp. BL107
+313627	Bacillus sp. NRRL B-14911
+313985	Geobacter lovleyi
+314253	Nitrobacter sp. Nb-311A
+314254	Oceanicaulis sp. HTCC2633
+314255	Oceanicola batsensis
+314262	Roseobacter sp. MED193
+314263	Roseovarius nubinhibens
+314264	Roseovarius sp. 217
+314266	Sphingomonas sp. SKA58
+314267	Sulfitobacter sp. NAS-14.1
+314270	Rhodobacteraceae bacterium HTCC2083
+314277	Marinomonas sp. MED121
+314281	Pseudoalteromonas tunicata
+314282	Psychromonas sp. CNPT3
+314287	gamma proteobacterium HTCC2207
+314289	Vibrio sp. AND4
+314290	Vibrio sp. MED222
+314343	Sideroxydans
+314344	Mariprofundus ferrooxydans
+314607	beta proteobacterium KB13
+314722	Pseudoxanthomonas suwonensis
+315405	Streptococcus gallolyticus
+316067	Geobacter sp. FRC-32
+316068	Leadbetterella byssophila
+316277	Syntrophus aciditrophicus
+316278	Synechococcus sp. RCC307
+316279	Synechococcus sp. CC9902
+316606	Segniliparaceae
+316612	Methylibium
+316625	Saccharophagus
+319458	Leadbetterella
+321327	Synechococcus sp. JA-3-3Ab
+321332	Synechococcus sp. JA-2-3B'a(2-13)
+321961	Wheat blue dwarf phytoplasma
+324057	Paenibacillus sp. JDR-2
+326319	Dokdonia
+326320	Dokdonia donghaensis
+327159	Candidatus Accumulibacter
+327160	Candidatus Accumulibacter phosphatis
+328814	Alistipes shahii
+329854	Bacteroides intestinalis
+330922	Psychrobacter cryohalolentis
+331869	alpha proteobacterium BAL199
+332056	Sphingobium japonicum
+332159	Solibacteres
+332160	Solibacterales
+332161	Solibacteraceae
+332162	Candidatus Solibacter
+332163	Candidatus Solibacter usitatus
+332246	Halalkalicoccus
+332247	Trueperaceae
+332248	Truepera
+332249	Truepera radiovictrix
+332410	Exiguobacterium sibiricum
+333367	Clostridium asparagiforme
+333990	Carnobacterium sp. AT7
+334543	Psychrobacter arcticus
+335928	Xanthobacteraceae
+335929	Erythrobacteraceae
+337090	Chlorobium chlorochromatii
+338188	Bacteroides finegoldii
+338189	Nitrosopumilales
+338190	Nitrosopumilaceae
+338191	Nitrosopumilus
+338192	Nitrosopumilus maritimus
+338565	Erwinia tasmaniensis
+341694	Peptostreptococcus stomatis
+342113	Burkholderia oklahomensis
+342948	Thermococcus onnurineus
+344736	Pelagibaca bermudensis
+346096	Paludibacter
+349106	Psychrobacter sp. PRwf-1
+351016	Roseobacter sp. AzwK-3b
+351052	Alkalilimnicola ehrlichii
+351160	uncultured methanogenic archaeon RC-I
+351604	Geobacter uraniireducens
+351745	Shewanella sp. W3-18-1
+354581	Nitrosospira sp. 9SS1
+354582	Nitrosospira sp. NIJS16
+354583	Nitrosospira sp. NIJS18
+357276	Bacteroides dorei
+357770	Porcelain vine witches'-broom phytoplasma
+357794	Psychromonas ingrahamii
+357808	Roseiflexus sp. RS-1
+358766	Methanoregula boonei
+359303	Shewanella loihica
+359407	Methylotenera
+359408	Methylotenera mobilis
+360293	Leeuwenhoekiella blandensis
+360528	Pelagibaca
+360807	Roseburia inulinivorans
+360911	Exiguobacterium sp. AT1b
+362787	Candidatus Protochlamydia amoebophila
+364316	Verminephrobacter
+364317	Verminephrobacter eiseniae
+364409	Granulibacter
+364410	Granulibacter bethesdensis
+366602	Caulobacter sp. K31
+366648	Xanthomonas fuscans
+367336	Rhodobacterales bacterium HTCC2255
+367488	Blattabacterium sp. (Periplaneta americana)
+370405	Gallionella capsiferriformans
+371601	Bacteroides xylanisolvens
+371731	Rhodobacter sp. SW2
+374838	Reinekea blandensis
+375286	Janthinobacterium sp. Marseille
+375288	Parabacteroides
+375928	Natranaerobius
+375929	Natranaerobius thermophilus
+377315	Mariprofundus
+379546	Aciduliprofundum
+379547	Aciduliprofundum boonei
+380749	Hydrogenobaculum sp. Y04AAS1
+382464	Verrucomicrobiae bacterium DG1235
+383631	Methylophilales bacterium HTCC2181
+384638	Bacteroides pectinophilus
+386414	Prevotella timonensis
+387090	Bacteroides coprophilus
+387092	Nitratiruptor sp. SB155-2
+387093	Sulfurovum sp. NBC37-1
+387661	Parabacteroides johnsonii
+388400	Bacillus sp. B14905
+388401	Rhodobacteraceae bacterium HTCC2150
+388408	Labrenzia alexandrii
+388413	Algoriphagus sp. PR1
+388739	Roseobacter sp. SK209-2-6
+388924	Agromyces sp. KY5R
+389343	Chinaberry witches'-broom phytoplasma
+391574	Vibrionales bacterium SWAT-3
+391589	Roseobacter sp. GAI101
+391593	Roseobacter sp. CCS2
+391596	Pedobacter sp. BAL39
+391597	Limnobacter sp. MED105
+391598	Flavobacteria bacterium BAL38
+391600	Brevundimonas sp. BAL3
+391601	Stenotrophomonas sp. SKA14
+391603	Flavobacteriales bacterium ALC-1
+391612	Cyanothece sp. CCY0110
+391613	Roseovarius sp. TM1035
+391615	gamma proteobacterium HTCC5015
+392423	Hydrogenivirga sp. 128-5-R1-1
+392484	Methylophaga thiooxydans
+392733	Terriglobus
+393661	Congregibacter
+393662	Congregibacter litoralis
+393764	Endoriftia
+393765	Endoriftia persephone
+395331	Methanoregula
+395923	Bartonella rochalimae
+395961	Cyanothece sp. PCC 7425
+395962	Cyanothece sp. PCC 8802
+396595	Thioalkalivibrio sp. K90mix
+398743	Zunongwangia profunda
+399726	Thermoanaerobacter sp. X514
+399742	Enterobacter sp. 638
+400634	Lysinibacillus
+400668	Marinomonas sp. MWYL1
+401618	Candidatus Riesia
+401619	Candidatus Riesia pediculicola
+404011	Shewanella piezotolerans
+404235	Maritimibacter
+404236	Maritimibacter alkaliphilus
+404589	Anaeromyxobacter sp. Fw109-5
+405212	Alicyclobacillus acidocaldarius
+406124	Bacillus sp. m3-13
+408580	Bacillus coahuilensis
+410072	Coprococcus comes
+411153	Gramella forsetii
+411484	Clostridium sp. SS2/1
+411486	Clostridium sp. M62/1
+411489	Clostridium sp. L2-50
+412449	Leptospirillum ferrodiazotrophum
+412963	Burkholderia rhizoxinica
+413496	Cronobacter
+413502	Cronobacter turicensis
+413810	Halalkalicoccus jeotgali
+413888	Caldicellulosiruptor hydrothermalis
+413889	Caldicellulosiruptor kronotskyensis
+414877	Catenulisporaceae
+414878	Catenulispora
+414999	Opitutae
+416916	Aggregatibacter
+417127	Zunongwangia
+419005	Prevotella amnii
+419541	Leptospirillum sp. Group II '5-way CG'
+419542	Leptospirillum rubarum
+420336	Epulopiscium sp. 'N.t. morphotype B'
+422288	Beggiatoa sp. SS
+422289	Beggiatoa sp. PS
+423349	Mucilaginibacter
+423351	Mucilaginibacter paludis
+423604	Elusimicrobium
+423605	Elusimicrobium minutum
+426114	Thiomonas sp. 3As
+426117	Methylobacterium sp. 4-46
+427922	Desulfurivibrio
+427923	Desulfurivibrio alkaliphilus
+427925	Dethiobacter
+427926	Dethiobacter alkaliphilus
+428711	Jonquetella
+428712	Jonquetella anthropi
+436114	Sulfurihydrogenibium sp. YO3AOP1
+436717	Acinetobacter sp. DR1
+439483	Campylobacterales bacterium GD 1
+439493	Candidatus Pelagibacter sp. HTCC7211
+439495	Pseudovibrio sp. JE062
+439496	Rhodobacterales bacterium Y4I
+439497	Ruegeria sp. R11
+443144	Geobacter sp. M21
+444163	Brucella microti
+444612	Rickettsia endosymbiont of Ixodes scapularis
+447217	Anaeromyxobacter sp. K
+447454	candidate division TM7 single-cell isolate TM7a
+447455	candidate division TM7 single-cell isolate TM7b
+449972	Chelativorans
+450749	Veillonella sp. 6_1_27
+455436	Glaciecola sp. HTCC2999
+456327	Xanthomonas euvesicatoria
+457388	Bacteroides sp. 2_1_7
+457390	Bacteroides sp. 3_1_23
+457391	Bacteroides sp. 3_1_33FAA
+457392	Bacteroides sp. 3_2_5
+457393	Bacteroides sp. 4_1_36
+457394	Bacteroides sp. 4_3_47FAA
+457395	Bacteroides sp. 9_1_42FAA
+457396	Clostridium sp. 7_2_43FAA
+457398	Desulfovibrio sp. 3_1_syn3
+457400	Escherichia sp. 1_1_43
+457401	Escherichia sp. 4_1_40B
+457405	Fusobacterium sp. 7_1
+457412	Ruminococcus sp. 5_1_39BFAA
+457416	Veillonella sp. 3_1_44
+457421	Clostridiales bacterium 1_7_47FAA
+459520	Neptuniibacter
+461876	Alkaliphilus oremlandii
+465541	Streptomyces sp. Mg1
+465543	Streptomyces sp. SPB74
+467661	Rhodobacteraceae bacterium KLH11
+469585	Bacteroides sp. 1_1_14
+469586	Bacteroides sp. 1_1_6
+469587	Bacteroides sp. 2_1_16
+469589	Bacteroides sp. 2_1_33B
+469590	Bacteroides sp. 2_2_4
+469591	Bacteroides sp. 20_3
+469592	Bacteroides sp. 3_1_19
+469594	Bifidobacterium sp. 12_1_47BFAA
+469595	Citrobacter sp. 30_2
+469596	Coprobacillus sp. 29_1
+469598	Escherichia sp. 3_2_53FAA
+469599	Fusobacterium sp. 2_1_31
+469602	Fusobacterium sp. 3_1_27
+469603	Fusobacterium sp. 3_1_33
+469604	Fusobacterium sp. 3_1_36A2
+469605	Fusobacterium sp. 3_1_5R
+469606	Fusobacterium sp. 4_1_13
+469609	Streptococcus sp. 2_1_36FAA
+469610	Burkholderiales bacterium 1_1_47
+469613	Enterobacteriaceae bacterium 9_2_54FAA
+469621	Fusobacterium sp. 1_1_41FAA
+470735	Brucella sp. BO1
+470934	Pantoea vagans
+471189	Gordonibacter pamelaeae
+471223	Geobacillus sp. WCH70
+471826	Candidatus Desulforudis
+471827	Candidatus Desulforudis audaxviator
+473531	Nitrosococcus watsoni
+475087	Methanosphaerula
+475088	Methanosphaerula palustris
+477693	Desulfurococcus kamchatkensis
+478070	Labrenzia
+480224	Chloroflexus sp. Y-400-fl
+481743	Paenibacillus sp. Y412MC10
+485255	Natranaerobiaceae
+485256	Natranaerobiales
+487796	Flavobacteria bacterium MS024-2A
+487797	Flavobacteria bacterium MS024-3C
+488937	Desulfonatronospira
+488939	Desulfonatronospira thiodismutans
+491739	Potato purple top phytoplasma YN-169
+495036	Geobacillus sp. G11MC16
+496866	Thermoanaerobacter pseudethanolicus
+497965	Cyanothece sp. PCC 7822
+498741	Borrelia sp. SV1
+498845	Candidatus Korarchaeum
+498846	Candidatus Korarchaeum cryptofilum
+501479	Citreicella sp. SE45
+504464	uncultured bacterium pTW2
+508458	Synergistetes
+511434	Candidatus Azobacteroides
+511435	Candidatus Azobacteroides pseudotrichonymphae
+511678	Aliivibrio
+511745	Methylacidiphilum
+511746	Methylacidiphilum infernorum
+513050	Dictyoglomus turgidum
+515256	Bartonella sp. 1-1C
+516466	Burkholderia sp. H160
+517433	Pantoea sp. aB
+520448	Brucella sp. NVSL 07-0026
+520449	Brucella sp. 83/13
+525244	Acinetobacter sp. ATCC 27244
+526524	Erysipelotrichi
+526525	Erysipelotrichales
+529731	Listeria marthii
+531844	Flavobacteriaceae bacterium 3519-10
+541000	Ruminococcaceae
+543310	Clostridiales Family XI. Incertae Sedis
+543349	Clostridiales Family XVIII. Incertae Sedis
+543371	Thermoanaerobacterales Family III. Incertae Sedis
+544448	Tenericutes
+544556	Geobacillus sp. Y412MC61
+545617	Bartonella sp. AR 15-3
+549168	Lutiella
+549169	Lutiella nitroferrum
+550542	Geobacillus sp. Y412MC52
+551759	Aromatoleum
+551760	Aromatoleum aromaticum
+552396	Erysipelotrichaceae bacterium 5_2_54FAA
+556258	Bacteroides sp. D1
+556259	Bacteroides sp. D2
+556263	Fusobacterium sp. D12
+556264	Fusobacterium sp. D11
+556270	Coprobacillus sp. D7
+556287	Candidatus Liberibacter solanacearum
+563037	Streptococcus sp. M143
+563191	Acidaminococcus sp. D21
+563193	Parabacteroides sp. D13
+563798	Cyclobacteriaceae
+563843	Rhodothermaceae
+565045	gamma proteobacterium NOR51-B
+566466	gamma proteobacterium NOR5-3
+568987	Candidatus Hamiltonella
+568988	Candidatus Regiella
+570264	Methanocellales
+570265	Methanocellaceae
+570266	Methanocella
+570267	Methanocella paludicola
+572511	Blautia
+576610	Polynucleobacter necessarius
+580165	Bacillus cytotoxicus
+580370	Zetaproteobacteria
+580371	Mariprofundales
+580372	Mariprofundaceae
+581103	Geobacillus sp. Y4.1MC1
+583357	Thermoanaerobacter mathranii
+585543	Bacteroides sp. D20
+585544	Bacteroides sp. D22
+591127	Chandigarh periwinkle phytoplasma
+591157	Streptomyces sp. SPB78
+591158	Streptomyces sp. AA4
+592316	Pantoea sp. At-9b
+593909	Mesorhizobium opportunistum
+596416	Citrobacter sp. JEK-2009
+599651	Bermanella
+624186	Blattabacterium sp. (Blattella germanica)
+633130	Thalassobium
+633131	Thalassiobium sp. R2A62
+633145	Dehalococcoides sp. GT
+638847	Pyramidobacter
+638849	Pyramidobacter piscolens
+640510	Burkholderia sp. CCGE1001
+640511	Burkholderia sp. CCGE1002
+640512	Burkholderia sp. CCGE1003
+641148	Neisseria sp. oral taxon 014
+641853	Elusimicrobia (class)
+641854	Elusimicrobiales
+641876	Elusimicrobiaceae
+644076	Silicibacter sp. TrichCH4B
+644281	Methanocaldococcus sp. FS406-22
+644652	Gordonibacter
+644968	Desulfovibrio sp. FW1012B
+645465	Streptomyces sp. e14
+648999	Micromonospora sp. L5
+649739	Actinomyces sp. oral taxon 848
+649746	Anaerobaculum hydrogeniformans
+649775	Synergistia
+649776	Synergistales
+649777	Synergistaceae
+651137	Thaumarchaeota
+651183	Aurantimonas manganoxydans
+651456	Kosmotoga
+651457	Kosmotoga olearia
+652706	Oribacterium sp. oral taxon 078
+652708	Bacteroidetes oral taxon 274
+652713	Peptoniphilus sp. oral taxon 386
+652715	Paenibacillus sp. oral taxon 786
+652716	Prevotella sp. oral taxon 299
+652721	Prevotella sp. oral taxon 317
+655809	Prevotella sp. oral taxon 472
+656024	Frankia symbiont of Datisca glomerata
+656519	Halanaerobium sp. 'sapolanicus'
+657310	Enterococcus sp. 7L76
+657323	Ruminococcus sp. SR1/5
+657445	Francisella noatunensis
+658061	Candidatus Koribacter
+658062	Candidatus Koribacter versatilis
+658089	Lachnospiraceae bacterium 5_1_63FAA
+658189	Mulberry yellow dwarf phytoplasma
+658659	Erysipelotrichaceae bacterium 3_1_53
+658664	Ralstonia sp. 5_7_47FAA
+664662	Borrelia bavariensis
+665937	Anaerostipes sp. 3_2_56FAA
+665943	Eggerthella sp. 1_3_56FAA
+665951	Lachnospiraceae bacterium 8_1_57FAA
+665958	Bacillus sp. BT1B_CT2
+665959	Bacillus sp. 2_A_57_CT2
+666684	Afipia sp. 1NLS2
+667019	Curvibacter putative symbiont of Hydra magnipapillata
+668331	Raphidiopsis brookii
+671224	Selenomonas artemidis
+675810	Vibrio sp. RC341
+675815	Vibrio sp. RC586
+691437	Geobacillus sp. C56-T3
+693750	Brucella sp. BO2
+697331	Basfia
+698776	Cellulosilyticum
+699192	Megasphaera genomosp. type_1
+699245	Clostridiales genomosp. BVAB3
+706438	Actinomyces sp. oral taxon 171
+713636	Gallionellales
+713887	cyanobacterium UCYN-A
+717609	Caldicellulosiruptor obsidiansis
+717963	Methylacidiphilales
+717964	Methylacidiphilaceae
+721785	Acidovorax ebreus
+744979	Ahrensia sp. R2A130
+744980	Roseibium sp. TrichSKD4
+751585	Coprococcus sp. ART55/1
+767891	Candidatus Puniceispirillum
+767892	Candidatus Puniceispirillum marinum
+768503	Cytophagia
+768507	Cytophagales
+862751	Streptomyces sp. SA3_actE
+863643	Thermincola potens
+869806	Marivirga
+870903	Terriglobus saanensis
+885497	Albidiferax
+887061	Methylovorus sp. MP688
+909929	Selenomonadales
+909930	Acidaminococcaceae
+909932	Negativicutes
+911092	Caldanaerobacter subterraneus
+1033846	Marinobacter adhaerens
+1033854	Thioalkalivibrio sulfidophilus
+1055487	Methylotenera versatilis
+1100069	Bacteroidetes Order II. Incertae sedis
+1129704	Kyrpidia
+1129771	Leptotrichiaceae
+995019	Sutterellaceae
