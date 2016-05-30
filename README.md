@@ -5,7 +5,7 @@ Last updated: Sept 30th, 2015
 
 # REQUIREMENTS:
 GNU C/C++; Perl; BLAST; Bowtie 2
-
+#todo:add software
 
 
 # INSTALLATION:
