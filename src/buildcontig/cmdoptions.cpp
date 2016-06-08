@@ -31,6 +31,7 @@ void buildcontighelp() {
   cerr << "                      breadth  - pick reference with highest breadth of coverage" << endl;
   cerr << "                      depth    - pick reference with highest depth of coverage" << endl;
 //  cerr << "                      random   - randomly pick one" << endl;
+  cerr << "        -a/--contigs     output(T) or not(F) .contig.fasta file (default: F)" << endl;
   cerr << "        -b/--prof     output(T) or not(F) .baseprof file (default: F)" << endl;
   cerr << "        -n/--newref   output(T) or not(F) .newref file (default: F)" << endl;
   cerr << "        -u/--usedmap  output(T) or not(F) .usedmap file (default: F)" << endl;
@@ -88,7 +89,14 @@ void parsecmdoptions(int argc, char *argv[], Cmdopt* cmdopt) {
 	tag = true;
       cmdopt->nump = atoi(argv[i+1]);
     }
-
+    else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--contigs") == 0) {   // print .contig file or not
+        if (argv[i+1][0] == 'T')
+    cmdopt->printcontig = true;
+        else if (argv[i+1][0] == 'F')
+    cmdopt->printcontig = false;
+        else
+    tag = true;
+      }
     else if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--prof") == 0) {   // print .baseprof file or not
       if (argv[i+1][0] == 'T') 
 	cmdopt->printbaseprof = true;

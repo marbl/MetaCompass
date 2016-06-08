@@ -52,34 +52,6 @@ int main (int argc, char *argv[]) {
   /**********************************************************************/
 
   
-
-  // create contigs
-  if (cmdopt.printcontig) {
-      nowtime = time(NULL);
-      cerr << "# Creating contigs ... ";
-      createContig(cmdopt, ref2prof, ref2ins, ref2cov, ref2pos2ins);
-      cerr << "success!" << " (" << time(NULL) - nowtime << " seconds)" << endl;
-  }
-  
-
-  // create new reference sequences
-  if (cmdopt.printnewref) {
-    nowtime = time(NULL);
-    cerr << "# Creating new references ... ";
-    createNewref(cmdopt, ref2seq, ref2prof, ref2ins, ref2cov, ref2pos2ins);
-    cerr << "success!" << " (" << time(NULL) - nowtime << " seconds)" << endl;
-  }
-
-
-  
-  // output mapping profile for each ref. seq.
-  if (cmdopt.printbaseprof) {
-    nowtime = time(NULL);
-    cerr << "# Outputing profiles of genomes ... ";
-    printbaseprof(cmdopt, ref2prof, ref2ins, ref2cov, ref2pos2ins);
-    cerr << "success!" << " (" << time(NULL) - nowtime << " seconds)" << endl;
-  }
-  
   return 0;
 }
 
