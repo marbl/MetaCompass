@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#converts fastq to fasta
+
 use strict;
 use warnings;
 use Getopt::Long;
