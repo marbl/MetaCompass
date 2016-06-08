@@ -6,7 +6,7 @@ using std::ios;
 
 #include <fstream>
 using std::ifstream;
-
+using std::ofstream;
 #include <sstream>
 using std::istringstream;
 
@@ -31,280 +31,7 @@ static void init(VC &b2n) {
 }
 /***************************************/
 
-
-// update prof and cov, for region [start, end) of seq
-static void updatebaseprof(const Uint start, const Uint end, const string &seq, VC &prof, VB &cov) {
-  for (Uint i = start; i < end && i < seq.size(); ++i) {
-    cov[i] = true;
-    Uint j = i*5+b2n[seq[i]];
-    if (prof[j] != UCHAR_MAX) ++prof[j];
-  }
-}
-
-
-// parse and store mummer-map record
-static void storemap(const Bestmap &bestmap, S2VB &ref2ins, S2VB &ref2cov, S2S &ref2seq, S2I2VC &ref2pos2ins, S2VC &ref2prof) {
-
-  string refid  = bestmap.refid,   // ref seq id
-         misstr = bestmap.misstr;  // alignment string
-  Uint   start  = bestmap.start;   // start in ref seq
-  VB     &ins   = ref2ins[refid];  // if insert after each position
-  VB     &cov   = ref2cov[refid];  // if covered of each pos
-  VC     &prof  = ref2prof[refid]; // baseprof of each pos
-  
-  if (refid.empty()) return;
-  
-  // perfect match
-  if (misstr.empty()) {
-    updatebaseprof(start, bestmap.len + start, ref2seq[refid], prof, ref2cov[refid]);
-    return;
-  }
-
-  
-  Uint gapnum    = 0;      // # consecutive gaps
-  Uint qgapnum   = 0;      // total # gaps in query seq
-  Uint rgapnum   = 0;      // total # gaps in ref seq
-  Uint premutloc = start;  // previous mutation locus in ref
-  Uint preloc    = 0;      // for parsing each mutation in alignment string
-  size_t loc       = misstr.find(';', preloc); // separator of mutation string
-
-  // process mutation string
-  while (loc != string::npos) {
-
-    Uint mutloc    = atoi(misstr.substr(preloc, loc - preloc - 2).c_str()) - 1; // mutation locus in query
-    Uint mutlocref = start+mutloc+qgapnum-rgapnum;                              // mutation locus in ref
-    char qbase     = misstr[loc-2]; // base in query
-    char rbase     = misstr[loc-1]; // base in ref
-
-    if ('-' == qbase) ++mutlocref;
-    cov[mutlocref] = true;
-
-    //cout << premutloc << "\t" << mutlocref << "\t" << misstr << endl;
-      
-    // update previous exact match region, between [premutloc, mutlocref)
-    updatebaseprof(premutloc, mutlocref, ref2seq[refid], prof, ref2cov[refid]);
-
-
-    // gap in reference
-    if ('-' == rbase) {
-
-      //cout << premutloc << "\t" << mutlocref-1 << "\t" << misstr << endl;
-	
-      // 1st time see gap at this locs
-      // assume it is a random error
-      S2I2VC::iterator iter = ref2pos2ins.find(refid);
-      if (ins[mutlocref-1] == false) {
-	//cout << "true" << endl;
-	ins[mutlocref-1] = true;
-      }
-	
-      // >1 times see gap at this locus
-      else {
-
-	I2VC::iterator insiter = iter->second.find(mutlocref-1);
-
-	if (gapnum == 0) // start of a new ins
-	  if (insiter == iter->second.end())
-	    insiter = iter->second.insert(I2VC::value_type(mutlocref-1, VC(12, 0))).first;
-
-	if (insiter != iter->second.end()) {
-	  VC &insprof = insiter->second;
-	  if (gapnum < 3) {
-	    if (insprof[gapnum*4+b2n[qbase]] != UCHAR_MAX) ++insprof[gapnum*4+b2n[qbase]];
-	    //cout << int(insprof[gapnum*4+b2n[qbase]]) << endl;
-	  }
-	}
-      }
-	
-      premutloc = mutlocref;
-      ++rgapnum;
-      ++gapnum;
-	
-    }
-
-    else {
-
-      if (prof[mutlocref*5+b2n[qbase]] != UCHAR_MAX) {
-	++prof[mutlocref*5+b2n[qbase]];
-      }
-	
-      if ('-' == qbase) ++qgapnum;
-
-      premutloc = mutlocref+1;
-      gapnum = 0;
-    }
-
-    preloc = loc + 1;
-    loc = misstr.find(';', preloc);
-  }
-
-  updatebaseprof(premutloc, start+bestmap.len+qgapnum-rgapnum, ref2seq[refid], ref2prof[refid], ref2cov[refid]);
-}
-
-
-static void compute_depth(ifstream &ifs, S2D &ref2dep, S2S &ref2seq) {
-
-  string eachline, refid;
-  size_t pos1, pos2, len;
-  while (getline(ifs, eachline)) {
-    
-    pos1 = eachline.find("\t")+1;
-    pos2 = eachline.find("\t", pos1);
-    refid = eachline.substr(pos1, pos2-pos1);
-
-    pos1 = eachline.rfind("\t");
-    pos2 = eachline.rfind("\t", pos1-1) + 1;
-    len = atoi(eachline.substr(pos2, pos1-pos2).c_str());
-
-    if (ref2dep.find(refid) == ref2dep.end())
-      ref2dep.insert(S2D::value_type(refid, len));
-    else 
-      ref2dep.find(refid)->second += len; // calculate the sum of reads mapped
-  }
-
-  for (S2D::iterator iter = ref2dep.begin(); iter != ref2dep.end(); ++iter) {
-
-    // could not find ref, set to 0
-    if (ref2seq.find(iter->first) == ref2seq.end()) 
-      iter->second = 0;
-    else
-      iter->second /= ref2seq.find(iter->first)->second.size(); // normalize by length
-  }
-  
-}
-
-static void compute_breadth(ifstream &ifs, S2D &ref2bre, S2S &ref2seq) {
-
-  S2VB ref2cov;   // stores if each locus is covered
-  init(ref2seq, ref2cov, 1); 
-
-  string eachline, refid;
-  size_t pos1, pos2, len, start;
-  while (getline(ifs, eachline)) {
-	
-    pos1 = eachline.find("\t")+1;
-    pos2 = eachline.find("\t", pos1);
-    refid = eachline.substr(pos1, pos2-pos1);
-    if (ref2cov.find(refid) == ref2cov.end()) continue;
-	
-    pos1 = eachline.find("\t", pos2+1) + 1;
-    pos2 = eachline.find("\t", pos1);
-    start = atoi(eachline.substr(pos1, pos2-pos1).c_str())-1;
-
-    pos1 = eachline.rfind("\t");
-    pos2 = eachline.rfind("\t", pos1-1) + 1;
-    len = atoi(eachline.substr(pos2, pos1-pos2).c_str());
-
-    fill(ref2cov[refid].begin()+start, ref2cov[refid].begin()+start+len, true);
-  }
-
-  for (S2VB::iterator iter = ref2cov.begin(); iter != ref2cov.end(); ++iter) {
-
-    double cov = 0;
-    for (size_t i = 0; i < iter->second.size(); ++i)
-      if (iter->second[i])
-	++cov;
-    ref2bre.insert(S2D::value_type(iter->first, cov));
-  }
-}
-
-
-void processmaps(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2ins, S2VB &ref2cov, S2I2VC &ref2pos2ins) {
-
-
-  init(b2n);
-  
-  ifstream ifs(cmdopt.mapfile.c_str());
-  if (!ifs) {
-    cerr << "Could not open file " << cmdopt.mapfile << endl;
-    exit(1);
-  }
-
-  // use all map records
-  if (cmdopt.pickref == "all") {
-
-    // stores each map record
-    Bestmap bestmap;
-    size_t  pos1 = 0, pos2 = 0;
-    string eachline;
-    while (getline(ifs, eachline)) {
-      
-      pos1 = eachline.find("\t") + 1;
-      pos2 = eachline.find("\t", pos1);
-      bestmap.refid = eachline.substr(pos1, pos2-pos1);
-    
-      pos1 = eachline.find("\t", pos2+1) + 1;
-      pos2 = eachline.find("\t", pos1);
-      bestmap.start = atoi(eachline.substr(pos1, pos2-pos1).c_str())-1;
-
-      pos1 = eachline.rfind("\t");
-      bestmap.misstr = eachline.substr(pos1+1, eachline.size()-pos1-1);
-    
-      pos2 = eachline.rfind("\t", pos1-1) + 1;
-      bestmap.len = atoi(eachline.substr(pos2, pos1-pos2).c_str());
-
-      storemap(bestmap, ref2ins, ref2cov, ref2seq, ref2pos2ins, ref2prof);
-    }
-  }
-
-  else {
-
-    S2D ref2val;
-
-    if (cmdopt.pickref == "depth")
-      compute_depth(ifs, ref2val, ref2seq);
-
-    else if (cmdopt.pickref == "breadth") 
-      compute_breadth(ifs, ref2val, ref2seq);
-    
-    // rewind input file stream
-    ifs.clear();
-    ifs.seekg(0, ios::beg);
-
-
-    string eachline, qid, preqid, refid;
-    size_t pos1, pos2;
-    double maxval = 0;
-    Bestmap bestmap;
-    while (getline(ifs, eachline)) {
-
-      pos1 = eachline.find("\t") + 1;
-      qid = eachline.substr(0, pos1);
-
-      pos2 = eachline.find("\t", pos1);
-      refid = eachline.substr(pos1, pos2-pos1);
-
-      S2D::iterator iter = ref2val.find(refid);
-
-      if (qid != preqid) {   // process previous record
-	storemap(bestmap, ref2ins, ref2cov, ref2seq, ref2pos2ins, ref2prof);
-	preqid = qid;
-      }
-      else {                // check if this ref is better
-	if (iter == ref2val.end() || iter->second <= maxval)
-	  continue;
-      }
-      maxval = iter->second;
-
-      pos1 = eachline.find("\t", pos2+1) + 1;
-      pos2 = eachline.find("\t", pos1);
-      bestmap.start = atoi(eachline.substr(pos1, pos2-pos1).c_str())-1;
-
-      pos1 = eachline.rfind("\t");
-      bestmap.misstr = eachline.substr(pos1+1, eachline.size()-pos1-1);
-
-      pos2 = eachline.rfind("\t", pos1-1) + 1;
-      bestmap.len = atoi(eachline.substr(pos2, pos1-pos2).c_str());
-
-      bestmap.refid = refid;
-      
-    }
-
-    storemap(bestmap, ref2ins, ref2cov, ref2seq, ref2pos2ins, ref2prof);
-  }
-}
-
-
+//Read reference to file
 void readrefseqfile(const string refseqfile, S2S &ref2seq) {
 
 
@@ -353,13 +80,24 @@ void readrefseqfile(const string refseqfile, S2S &ref2seq) {
   refseq.resize( refseq.size() );
   ref2seq.insert(S2S::value_type(refid, refseq) );
 }
-
+//deleted comments to stdout, march 15 2016
+//mutstr = eachline.substr(pos1+1, pos2-pos1-1);//CIGAR string representation of alignment
+//this is a char, only analyze M: match, I: insertion, D: deletion
+//VC &prof, 
+//VB &ins, 
+//VB &cov, 
+//I2VC &pos2ins
+//string mutstr
+//string &seq, 
+//Uint start
 static void storesam(VC &prof, VB &ins, VB &cov, I2VC &pos2ins, string mutstr, string &seq, Uint start) {
 
   Uint n    = 0;      // tracks length of each region
   Uint locr = start;  // locus in ref
   Uint locq = 0;      // locus in query
-
+  //ofstream ofs("newmap.sam");
+      //ofs << ">" << refid << "_" << ctgn++ << " " << ctgstart << " " << ctgend << endl;
+      //ofs << contig << endl;
   for (size_t i = 0; i < mutstr.size(); ++i) {
 
     char achar = mutstr[i];
@@ -373,7 +111,7 @@ static void storesam(VC &prof, VB &ins, VB &cov, I2VC &pos2ins, string mutstr, s
   
 
       if (achar == 'M') {
-	//cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
+	/////////////cout << "Match" <<start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
 	for (Uint i = 0; i < n; ++i) {
 	  cov[locr] = true;
 	  if (prof[locr*5+b2n[seq[locq]]] != UCHAR_MAX) ++prof[locr*5+b2n[seq[locq]]];
@@ -386,10 +124,10 @@ static void storesam(VC &prof, VB &ins, VB &cov, I2VC &pos2ins, string mutstr, s
       // insertion in query sequence
       else if (achar == 'I') {
 
-	//cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
+	////////////cout << "Inser" << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
 	if (ins[locr]) { // > 1 times see this insertion
 
-	  //cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
+	  /////////cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
 
 	  if (pos2ins.find(locr) == pos2ins.end())
 	    pos2ins.insert(I2VC::value_type(locr, VC(12, 0)));
@@ -397,11 +135,11 @@ static void storesam(VC &prof, VB &ins, VB &cov, I2VC &pos2ins, string mutstr, s
 	  VC &insprof = pos2ins[locr];
 	  
 	  for (Uint i = 0; i < n; ++i) { // store max 3 insertions
-	    //cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
+	    /////////cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
 	    if (i < 3) {
-	      //cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << i*4+b2n[seq[locq]] << "\t" << mutstr << endl;
+	  //////////    cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << i*4+b2n[seq[locq]] << "\t" << mutstr << endl;
 	      if (insprof[i*4+b2n[seq[locq]]] != UCHAR_MAX) ++insprof[i*4+b2n[seq[locq]]];
-	      //cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << int(insprof[i*4+b2n[seq[locq]]]) << "\t" << mutstr << endl;
+	     //////////// cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << int(insprof[i*4+b2n[seq[locq]]]) << "\t" << mutstr << endl;
 	    }
 	    ++locq;
 	  }
@@ -417,7 +155,7 @@ static void storesam(VC &prof, VB &ins, VB &cov, I2VC &pos2ins, string mutstr, s
       // deletion in query sequence
       else if (achar == 'D') {
 	locr++;
-	//cout << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
+	/////////////////cout << "Delet" << start << "\t" << locq << "\t" << locr << "\t" << n << "\t" << mutstr << endl;
 	for (Uint i = 0; i < n; ++i) {
 	  cov[locr] = true;
 	  prof[locr*5+4] != UCHAR_MAX ? ++prof[locr*5+4] : 1;
@@ -444,7 +182,7 @@ static void compute_breadth_sam(ifstream &ifs, S2D &ref2bre, S2S &ref2seq) {
   size_t pos1, pos2, len;
   Uint start, end;
   while (getline(ifs, eachline)) {
-    
+    if ( eachline[0] == '@') continue;
     pos1 = eachline.find("\t");           // 1
     pos1 = eachline.find("\t", pos1+1);   // 2
     if (eachline[pos1-1] == '4') continue;// unmapped
@@ -482,7 +220,9 @@ static void compute_depth_sam(ifstream &ifs, S2D &ref2dep, S2S &ref2seq) {
   string eachline, refid;
   size_t pos1, pos2, len;
   while (getline(ifs, eachline)) {
-    
+      
+    if ( eachline[0] == '@') continue;
+
     pos1 = eachline.find("\t");     // 1
     pos1 = eachline.find("\t", pos1+1); // 2
     if (eachline[pos1-1] == '4') continue; // unmapped
@@ -519,6 +259,13 @@ static void compute_depth_sam(ifstream &ifs, S2D &ref2dep, S2S &ref2seq) {
 void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2ins, S2VB &ref2cov, S2I2VC &ref2pos2ins) {
 
   init(b2n);
+  ofstream ofs(string(cmdopt.outprefix + "/selected_maps.sam").c_str());
+  if (!ofs) {
+    cerr << "Could not open sam file " << string(cmdopt.outprefix + "/selected_maps.sam").c_str() << endl;
+    exit(1);
+  }
+     // ofs << ">" << refid << "_" << ctgn++ << " " << ctgstart << " " << ctgend << endl;
+     //ofs << contig << endl;
   
   ifstream ifs(cmdopt.mapfile.c_str());
   if (!ifs) {
@@ -534,6 +281,10 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
     string eachline, refid, mutstr, seq;
     Uint start = 0;
     while (getline(ifs, eachline)) {
+        if (eachline[0] == '@') {
+            ofs << eachline << endl;
+            continue;
+        }
 
       pos1 = eachline.find("\t");           // 1
       pos1 = eachline.find("\t", pos1+1);   // 2
@@ -555,8 +306,10 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
       pos1 = eachline.find("\t", pos1+1);   // 9
       pos2 = eachline.find("\t", pos1+1);   // 10
       seq = eachline.substr(pos1+1, pos2-pos1-1);
-
+      //////////////cout << "Ref "<< refid << "\t" <<endl;
       storesam(ref2prof[refid], ref2ins[refid], ref2cov[refid], ref2pos2ins[refid], mutstr, seq, start);
+      ofs << eachline << endl;
+//ofs << eachline;
     }
   }
 
@@ -569,17 +322,25 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
 
     else if (cmdopt.pickref == "breadth") 
       compute_breadth_sam(ifs, ref2val, ref2seq);
+      
 
     // rewind input file stream
     ifs.clear();
     ifs.seekg(0, ios::beg);
 
     size_t  pos1 = 0, pos2 = 0;
-    string eachline(""), refid(""), mutstr(""), seq(""), preqid(""), qid(""), prerefid("");
+    std::string eachline(""), refid(""), mutstr(""), seq(""), preqid(""), qid(""), prerefid("");
     Uint start = 0;
     double maxval = 0.0;
+
     while (getline(ifs, eachline)) {
-      
+
+        if (eachline[0] == '@') {
+            //cout << eachline << endl;
+            ofs << eachline << endl;
+            continue;
+        }
+
       pos1 = eachline.find("\t");           // 1
       qid = eachline.substr(0, pos1);
 
@@ -593,14 +354,16 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
       S2D::iterator iter = ref2val.find(refid);
 
       if (qid != preqid && !mutstr.empty()) // store previous record
-	storesam(ref2prof[prerefid], ref2ins[prerefid], ref2cov[prerefid], ref2pos2ins[prerefid], mutstr, seq, start);
+       {///////////////cout << "Ref "<< prerefid << "\t" << iter->second << endl;
+           storesam(ref2prof[prerefid], ref2ins[prerefid], ref2cov[prerefid], ref2pos2ins[prerefid], mutstr, seq, start);
+           ofs << eachline << endl;
+       }
       else if (iter->second <= maxval)      // not as good as previous one
-	continue;
+        continue;
 
       maxval = iter->second;
       preqid = qid;
       prerefid = refid;
-      
       
       pos1 = eachline.find("\t", pos2+1);   // 4
       start = atoi(eachline.substr(pos2+1, pos1-pos2-1).c_str())-1;
@@ -616,6 +379,9 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
       pos2 = eachline.find("\t", pos1+1);   // 10
       seq = eachline.substr(pos1+1, pos2-pos1-1);
     }
+
+//////////    cout << "Ref "<< refid << "\t" <<endl;
     storesam(ref2prof[refid], ref2ins[refid], ref2cov[refid], ref2pos2ins[refid], mutstr, seq, start);
+    ofs << eachline;
   }
 }

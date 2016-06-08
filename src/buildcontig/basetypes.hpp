@@ -34,12 +34,13 @@ public:
          minlen,          // mininum contig length
          nump;
   
-  bool   printbaseprof,   // print .baseprof or not
+  bool   printcontig,   // print contigs.fasta or not
+         printbaseprof,   // print .baseprof or not
          printnewref,     // print .newref or not
          printusedmap;    // print .usedmap or not
   
-  Cmdopt() : pickref("breadth"), mindepcov(2), minlen(100), nump(1), printbaseprof(false),
-	     printnewref(false), printusedmap(false) {};
+  Cmdopt() : pickref("breadth"), mindepcov(2), minlen(100), nump(1), printcontig(true),
+	     printbaseprof(false), printnewref(false), printusedmap(false) {};
 };
   
 #endif

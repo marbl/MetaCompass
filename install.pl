@@ -16,7 +16,11 @@ print "$cmd\n";
 system($cmd);
 
 
-$cmd = "g++ -Wall -W -O2 -o ./bin/buildcontig ./src/buildcontig/buildcontig.cpp src/buildcontig/cmdoptions.cpp src/buildcontig/memory.cpp src/buildcontig/procmaps.cpp src/buildcontig/outputfiles.cpp";
+#$cmd = "g++ -Wall -W -O2 -o ./bin/buildcontig ./src/buildcontig/buildcontig.cpp src/buildcontig/cmdoptions.cpp src/buildcontig/memory.cpp perl src/buildcontig/procmaps.cpp src/buildcontig/outputfiles.cpp";
+print "$cmd\n\n";
+system($cmd);
+
+$cmd = "g++ -Wall -W -O2 -o ./bin/buildcontig src/buildcontig/buildcontig.cpp src/buildcontig/cmdoptions.cpp src/buildcontig/memory.cpp src/buildcontig/procmaps.cpp src/buildcontig/outputfiles.cpp";
 print "$cmd\n\n";
 system($cmd);
 
