@@ -1,0 +1,41 @@
+"""
+DESCRIPTION
+"""
+#__author__ = "Victoria Cepeda
+
+configfile: "config.json"
+
+#iinclude_prefix="https://bitbucket.org/johanneskoester/snakemake-workflows/raw/master"
+
+include: 
+     "metacompass.py"
+ 
+include:
+    "build.py"
+
+include:
+    "correct.py"
+#    include_prefix + "/bio/ngs/rules/mapping/peanut.rules"
+#include:
+#    include_prefix + "/bio/ngs/rules/mapping/samfiles.rules"
+#include:
+#    include_prefix + "/bio/ngs/rules/snv_calling/alpaca_calling.rules"
+
+rule all:
+    input:expand('{sample}.assembly.out/mc.refseq.fna',sample=config["reads"]["S1"]), 
+    	  expand('{sample}.assembly.out/Sample1.sam',sample=config["reads"]["S1"]),
+          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"])
+#='{sample}.contigs.fasta', sample=config["reads"]["S1"])
+        #contigs= expand('{sample}.contigs.fasta', sample=config["reads"]["S1"]),
+        #bam= expand('{sample}.sorted.bam', sample=config["reads"]["S1"])
+        #bai= expand('{sample}.sorted.bam.bai', sample=config["reads"]["S1"]),
+
+
+
+
+#       log = expand('{sample}.piloncorr.log',sample=config["reads"]["S1"]),
+#        nc= expand('{sample}.genomes/NC_000915_0.fasta',sample=config["reads"]["S1"])#output:'{sample}.genomes/NC_000915_0.fasta'
+#       rule clean:
+#           shell:
+#                   "rm -rf Sample1.assembly.out Sample1.fasta Sample1.step1.log Sample.fasta Sample1.contigs.fasta Sample1.step2.log"
+	#expand("snv_calling/genome/{alpaca_queries}.vcf", alpaca_queries=config["alpaca_queries"])
