@@ -8,13 +8,15 @@ configfile: "config.json"
 #iinclude_prefix="https://bitbucket.org/johanneskoester/snakemake-workflows/raw/master"
 
 include: 
-     "metacompass.py"
+     "metaphyler.py"
  
 include:
     "build.py"
 
 include:
     "correct.py"
+include:
+    "pilon.py"
 #    include_prefix + "/bio/ngs/rules/mapping/peanut.rules"
 #include:
 #    include_prefix + "/bio/ngs/rules/mapping/samfiles.rules"
@@ -24,7 +26,8 @@ include:
 rule all:
     input:expand('{sample}.assembly.out/mc.refseq.fna',sample=config["reads"]["S1"]), 
     	  expand('{sample}.assembly.out/Sample1.sam',sample=config["reads"]["S1"]),
-          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"])
+          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"]),
+	  expand('{sample}.sorted.bam.bai',sample=config["reads"]["S1"])
 #='{sample}.contigs.fasta', sample=config["reads"]["S1"])
         #contigs= expand('{sample}.contigs.fasta', sample=config["reads"]["S1"]),
         #bam= expand('{sample}.sorted.bam', sample=config["reads"]["S1"])
