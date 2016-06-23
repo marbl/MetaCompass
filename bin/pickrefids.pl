@@ -36,7 +36,7 @@ my %seq2tid = ();    # sequence id to taxonomy id
 my %tid2seqs = ();   # taxonomy id to sequences
 my %tid2name = ();   # tax id to name
 my %tid2sp = ();     # tax id to species id
-open(FH, "$Bin/../refseq/tid2par.tab") or die("Could not open $Bin/tid2par.tab\n");
+open(FH, "$Bin/../refseq/tid2par.tab") or die("Could not open $Bin/../refseq/tid2par.tab\n");
 foreach my $line (<FH>) {
     chomp $line;
     my ($seq, $tid, $sp, $ge, $name) = split("\t", $line);
