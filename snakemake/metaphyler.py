@@ -1,7 +1,6 @@
 configfile: "config.json"
-#sample= expand('{sample}.fastq', sample=config["reads"]["S1"]),#newref.fasta  selected_maps.sam
 rule fastq2fasta:
-    input: '{sample}.fastq'#[wildcards.unit]
+    input: '{sample}.fastq'
     output:'{sample}.fasta'
     message: """---Converting fastq to fasta."""
     shell : "perl ./MetaCompass-beta/bin/fq2fa.pl -i {input} -o {output}"
