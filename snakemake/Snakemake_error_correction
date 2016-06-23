@@ -8,9 +8,9 @@ configfile: "config.json"
 #iinclude_prefix="https://bitbucket.org/johanneskoester/snakemake-workflows/raw/master"
 
 #parse fasta/fastq files, run methaphyler and create fasta reference file #
-include: 
+include:
     "metaphyler_selection.py"
-#map reads against reference genomes 
+#map reads against reference genomes
 include:
     "mapping.py"
 
@@ -18,6 +18,13 @@ include:
 include:
     "build.py"
 
+#map reads against contigs
+include:
+    "prepare_correction.py"
+
+#correct references with pilon
+include:
+    "pilon.py"
 
 #include:
 #    include_prefix + "/bio/ngs/rules/mapping/samfiles.rules"
@@ -25,5 +32,10 @@ include:
 rule all:
     input:expand('{sample}.assembly.out/mc.refseq.fna',sample=config["reads"]["S1"]), 
     	  expand('{sample}.assembly.out/Sample1.sam',sample=config["reads"]["S1"]),
-          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"])
+          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"]),
+	  expand('{sample}.pilon/{sample}.sorted.bam.bai',sample=config["reads"]["S1"]),
+          expand('{sample}.genomes',sample=config["reads"]["S1"]),  
+	  expand('{sample}.pilon/{sample}.output.log',sample=config["reads"]["S1"])
 
+
+#expand('{sample}.genomes/NC_000915.1_0.fasta',sample=config["reads"]["S1"])

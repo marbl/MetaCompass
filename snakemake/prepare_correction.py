@@ -15,7 +15,7 @@ rule samtools_sort:
         log='{sample}.pilon/{sample}.samtoolssort.log',
 	bam='{sample}.pilon/{sample}.sorted.bam'
     message: """---Samtools sort ."""
-    shell:"samtools view -bS {input}| samtools sort - Sample1.sorted 1>> {output.log} 2>&1 ; touch {output.bam}"
+    shell:"samtools view -bS {input}| samtools sort - Sample1.pilon/Sample1.sorted 1>> {output.log} 2>&1"# ; touch {output.bam}"
 
 rule samtools_index:
     input:'{sample}.pilon/{sample}.sorted.bam'
