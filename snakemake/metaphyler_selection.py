@@ -8,11 +8,12 @@ rule fastq2fasta:
 
 rule reference_recruitment:
     input:
-        fasta = '{sample}.fasta'
+        rules.fastq2fasta.output#'{sample}.fasta'
     output:
         out = '{sample}.assembly.out',
-	log='{sample}.step1.log',
 	reffile = '{sample}.assembly.out/mc.refseq.fna'
+    log:
+	'{sample}.step1.log'
     message: """---reference recruitment."""
-    shell:"mkdir -p {output.out}; ./MetaCompass-beta/bin/pickrefseqs.pl {input.fasta} {output.out} 1   1> {output.log} 2>&1"
+    shell:"mkdir -p {output.out}; ./MetaCompass-beta/bin/pickrefseqs.pl {input} {output.out} 1   1> {log} 2>&1"
 
