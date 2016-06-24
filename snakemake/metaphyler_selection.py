@@ -3,7 +3,7 @@ rule fastq2fasta:
     input: '{sample}.fastq'
     output:'{sample}.fasta'
     message: """---Converting fastq to fasta."""
-    shell : "perl ./MetaCompass-beta/bin/fq2fa.pl -i {input} -o {output}"
+    shell : "perl ./MetaCompass/bin/fq2fa.pl -i {input} -o {output}"
 
 
 rule reference_recruitment:
@@ -12,8 +12,6 @@ rule reference_recruitment:
     output:
         out = '{sample}.assembly.out',
 	reffile = '{sample}.assembly.out/mc.refseq.fna'
-    log:
-	'{sample}.step1.log'
+    log:'{sample}.step1.log'
     message: """---reference recruitment."""
-    shell:"mkdir -p {output.out}; ./MetaCompass-beta/bin/pickrefseqs.pl {input} {output.out} 1   1> {log} 2>&1"
-
+    shell:"mkdir -p {output.out}; ./MetaCompass/bin/pickrefseqs.pl {input} {output.out} 1  1> {log} 2>&1"

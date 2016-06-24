@@ -1,5 +1,5 @@
 configfile: "config.json"
-rule build_index:
+rule bowtie2_map:
     input:
        '{sample}.assembly.out/mc.refseq.fna'
     output:
@@ -9,4 +9,4 @@ rule build_index:
     log: '{sample}.step2.log'
     threads:1
     message: """---Build index ."""
-    shell:"bowtie2-build -q {input} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -k 30 -p 1 -x {output.pref} -f reads.fasta -S {output.sam} > {log} 2>&1"
+    shell:"bowtie2-build -q {input} {output.pref} 1>> {output.index} 2>&1;bowtie2 -L 31 -p {threads} -x {output.pref} -f Sample1.fasta -S {output.sam} > {log} 2>&1"

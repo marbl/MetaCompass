@@ -10,6 +10,6 @@ rule build_contigs:
     log:'{sample}.assembly.out/{sample}.assembly.log'
     threads:1
     message: """---Build contigs ."""
-    shell:'./buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b T -u T -k breadth  1>> {log} 2>&1'
+    shell:'./MetaCompass/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b T -u T -k breadth  1>> {log} 2>&1'
 
 
