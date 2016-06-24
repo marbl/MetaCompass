@@ -4,9 +4,7 @@ DESCRIPTION
 #__author__ = "Victoria Cepeda
 
 configfile: "config.json"
-
 #iinclude_prefix="https://bitbucket.org/johanneskoester/snakemake-workflows/raw/master"
-
 #parse fasta/fastq files, run methaphyler and create fasta reference file #
 include:
     "metaphyler_selection.py"
@@ -29,13 +27,19 @@ include:
 #include:
 #    include_prefix + "/bio/ngs/rules/mapping/samfiles.rules"
 
+#log='Snakemake.log'
+onsuccess:
+    print("Workflow finished, no error")
+onerror:
+    print("An error occurred")
+    #shell("mail -s an error occurred vcepeda@cs.umd.edu < log")
+
 rule all:
     input:expand('{sample}.assembly.out/mc.refseq.fna',sample=config["reads"]["S1"]), 
     	  expand('{sample}.assembly.out/Sample1.sam',sample=config["reads"]["S1"]),
           expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"]),
 	  expand('{sample}.pilon/{sample}.sorted.bam.bai',sample=config["reads"]["S1"]),
-          expand('{sample}.genomes',sample=config["reads"]["S1"]),  
-	  expand('{sample}.pilon/{sample}.output.log',sample=config["reads"]["S1"])
-
-
-#expand('{sample}.genomes/NC_000915.1_0.fasta',sample=config["reads"]["S1"])
+          expand('{sample}.genomes/NC_000915.1_0.fasta',sample=config["reads"]["S1"])
+          #expand('{sample}.genomes',sample=config["reads"]["S1"])
+	  #expand('{sample}.pilon/{sample}.output.log',sample=config["reads"]["S1"])
+    params:"-q workstation -l mem=8gb,walltime=12:00:00"
