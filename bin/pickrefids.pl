@@ -36,7 +36,11 @@ my %seq2tid = ();    # sequence id to taxonomy id
 my %tid2seqs = ();   # taxonomy id to sequences
 my %tid2name = ();   # tax id to name
 my %tid2sp = ();     # tax id to species id
+<<<<<<< HEAD
 open(FH, "$Bin/../refseq/tid2par.tab") or die("Could not open $Bin/tid2par.tab\n");
+=======
+open(FH, "$Bin/../refseq/tid2par.tab") or die("Could not open $Bin/../refseq/tid2par.tab\n");
+>>>>>>> c3e0b58d0fbb423c53fd9ec8ec39f7b468aa9a6c
 foreach my $line (<FH>) {
     chomp $line;
     my ($seq, $tid, $sp, $ge, $name) = split("\t", $line);
@@ -61,9 +65,13 @@ foreach my $line (<FH>) {
     my ($qid, $rid, $pct, $hspl) = split("\t", $line);
 #    if ($pct < 90 || $hspl < 35) { next;}
     if ($pct < 90 || $hspl < 60) { next;}
+<<<<<<< HEAD
     #$rid =~ /^(\S+)\_\d+\_\d+$/;
     $rid =~ /^(\S+)\_\S+\_\S+$/;
     
+=======
+    $rid =~ /^(\S+)\_\d+\_\d+$/;
+>>>>>>> c3e0b58d0fbb423c53fd9ec8ec39f7b468aa9a6c
     $rid = $1;
     my $tid = $seq2tid{$rid};
     $tid2num{$tid}++;
