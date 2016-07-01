@@ -36,11 +36,7 @@ my %seq2tid = ();    # sequence id to taxonomy id
 my %tid2seqs = ();   # taxonomy id to sequences
 my %tid2name = ();   # tax id to name
 my %tid2sp = ();     # tax id to species id
-<<<<<<< HEAD
 open(FH, "$Bin/../refseq/tid2par.tab") or die("Could not open $Bin/tid2par.tab\n");
-=======
-open(FH, "$Bin/../refseq/tid2par.tab") or die("Could not open $Bin/../refseq/tid2par.tab\n");
->>>>>>> c3e0b58d0fbb423c53fd9ec8ec39f7b468aa9a6c
 foreach my $line (<FH>) {
     chomp $line;
     my ($seq, $tid, $sp, $ge, $name) = split("\t", $line);
@@ -58,23 +54,21 @@ close FH;
 # abundance for each reference genome
 #----------------------------------------#
 my %tid2num = ();   # # of reads classified within each tax id
+my $totalcount = 0;
 # read tab delimited file
 open(FH, "$blast") or die("Could not open $blast.\n");
 foreach my $line (<FH>) {
     chomp $line;
     my ($qid, $rid, $pct, $hspl) = split("\t", $line);
 #    if ($pct < 90 || $hspl < 35) { next;}
-    if ($pct < 90 || $hspl < 60) { next;}
-<<<<<<< HEAD
+    if ($pct < 95 || $hspl < 50) { next;}
     #$rid =~ /^(\S+)\_\d+\_\d+$/;
     $rid =~ /^(\S+)\_\S+\_\S+$/;
     
-=======
-    $rid =~ /^(\S+)\_\d+\_\d+$/;
->>>>>>> c3e0b58d0fbb423c53fd9ec8ec39f7b468aa9a6c
     $rid = $1;
     my $tid = $seq2tid{$rid};
     $tid2num{$tid}++;
+    $totalcount++;
 }
 close FH;
 #----------------------------------------#
@@ -89,7 +83,7 @@ foreach my $tid (sort {$tid2num{$b} <=> $tid2num{$a}} keys %tid2num) {
 
     my $num = $tid2num{$tid}*$part;
     
-    if ($num < 60) { last;}    # if abundance < 60 then ignore
+    if ($num < 50) { last;}    # if abundance < 50 then ignore
     if ($total > 120) { last;} # if more than 120 genomes have been used then stop
     
     my $sp = $tid2sp{$tid};
@@ -99,8 +93,12 @@ foreach my $tid (sort {$tid2num{$b} <=> $tid2num{$a}} keys %tid2num) {
     
     $sps{$sp}++;
     $total++;
-    foreach my $seq (keys %{$tid2seqs{$tid}}) {
-	print "$seq\t$tid\t$num\t$tid2name{$tid}\n";
+
+    #put the same counts for each molecule (like plasmids) of each species
+    if ((($num/$totalcount)*100) >=1.0 ){
+       foreach my $seq (keys %{$tid2seqs{$tid}}) {
+   	  print "$seq\t$tid\t$num\t$tid2name{$tid}\n";
+       }
     }
 }
 

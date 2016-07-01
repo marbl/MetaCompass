@@ -3,7 +3,7 @@
         "genome": "5.fasta"
     },
     "reads": {
-	"S1": "Sample1"
+	"S1": ["Sample1", "Sample2"]
     },
     "units": {
         "A":
@@ -11,7 +11,7 @@
         "B":
             ["path/to/B.fastq.gz"]
     },
-    "ploidy": 2,
-    "heterozygosity": 0.001
+    "memory": 47,
+    "nthreads": 2
 }
 
