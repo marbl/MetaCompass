@@ -1,5 +1,5 @@
 # MetaCompassv1.0
-Last updated: March 30th, 2016
+Last updated: July 12th, 2016
 
 
 
@@ -11,6 +11,7 @@ GNU C/C++; Perl; BLAST; Bowtie 2
 # INSTALLATION:
     git clone https://github.com/marbl/MetaCompass.git
     cd MetaCompass
+    wget url-to-refseq
     ./install.pl
 
 
