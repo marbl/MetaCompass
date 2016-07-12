@@ -11,7 +11,8 @@ GNU C/C++; Perl; BLAST; Bowtie 2
 # INSTALLATION:
     git clone https://github.com/marbl/MetaCompass.git
     cd MetaCompass
-    wget url-to-refseq
+    wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz
+    tar -xzvf refseq.tar.gz
     ./install.pl
 
 
