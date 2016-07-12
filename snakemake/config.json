@@ -1,17 +1,12 @@
 {
     "references": {
-        "genome": "5.fasta"
+        "genome": ""
     },
     "reads": {
 	"S1": ["Sample1", "Sample2"]
     },
-    "units": {
-        "A":
-            ["path/to/A_R1.fastq.gz", "path/to/A_R2.fastq.gz"],
-        "B":
-            ["path/to/B.fastq.gz"]
     },
-    "memory": 47,
-    "nthreads": 2
+    "memory": 120,
+    "nthreads": 12
 }
 
