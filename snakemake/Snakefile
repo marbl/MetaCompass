@@ -1,0 +1,26 @@
+"""
+DESCRIPTION
+"""
+#__author__ = "Victoria Cepeda
+
+configfile: "config.json"
+
+#iinclude_prefix="https://bitbucket.org/johanneskoester/snakemake-workflows/raw/master"
+
+#parse fasta/fastq files, run methaphyler and create fasta reference file #
+include: 
+    "reference_selection.py"
+#map reads against reference genomes 
+include:
+    "mapping.py"
+
+#build contigs using sam file
+include:
+    "build.py"
+#    include_prefix + "/bio/ngs/rules/mapping/samfiles.rules"
+
+#ruleorder: rule1 > rule2 > rule3
+rule all:
+    input:expand('{sample}.assembly.out/mc.refseq.fna',sample=config["reads"]["S1"]), 
+    	  expand('{sample}.assembly.out/{sample}.sam',sample=config["reads"]["S1"]),
+          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"])
