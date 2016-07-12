@@ -1,10 +1,6 @@
 {
-    "references": {
-        "genome": ""
-    },
     "reads": {
 	"S1": ["Sample1", "Sample2"]
-    },
     },
     "memory": 120,
     "nthreads": 12
