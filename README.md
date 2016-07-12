@@ -16,7 +16,7 @@ GNU C/C++; Perl 3; BLAST 2.2.31; Bowtie 2.2.9; BWA; kmer-mask
     ./install.pl
 
 
-# USAGE <under construction>
+# USAGE (under construction)
 
 -- I have a set of metagenomic reads, and want to perform comparative assembly.
 
