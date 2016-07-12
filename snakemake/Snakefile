@@ -5,8 +5,8 @@ DESCRIPTION
 
 configfile: "config.json"
 
-#iinclude_prefix="https://bitbucket.org/johanneskoester/snakemake-workflows/raw/master"
-
+#include_prefix="https://"
+#include_prefix + "rules"
 #parse fasta/fastq files, run methaphyler and create fasta reference file #
 include: 
     "reference_selection.py"
@@ -17,7 +17,6 @@ include:
 #build contigs using sam file
 include:
     "build.py"
-#    include_prefix + "/bio/ngs/rules/mapping/samfiles.rules"
 
 #ruleorder: rule1 > rule2 > rule3
 rule all:
