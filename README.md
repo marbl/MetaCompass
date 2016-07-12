@@ -16,30 +16,27 @@ GNU C/C++; Perl; BLAST; Bowtie 2
     ./install.pl
 
 
-# USAGE
+# USAGE <under construction>
 
 -- I have a set of metagenomic reads, and want to perform comparative assembly.
 
-    ./metacompass.pl -f/-q <input FASTA/FASTQ reads> [options] 
+    snakemake <input FASTA/FASTQ reads> [options] 
 
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
-    ./metacompass.pl -f/-q [input FASTA/FASTQ reads] -r [reference genomes in FASTA] [options]
+    snakemake -s 
 
 
--- You can try MetaCompass on two test data sets.
-For a small data set assuming reference genomes are known:
-
-    ./metacompass.pl -f test/small.reads.fna -r test/small.refgeno.fna -o test1_out
+-- You can try MetaCompass on a test data set.
 
 For a big data set assuming reference genomes are known:
 
-    ./metacompass.pl -f test/big.reads.fna -r test/big.refgeno.fna -o test2_out
+    snakemake -s
 
 For a big data set assuming reference genomes are NOT known:
 
-    ./metacompass.pl -f test/big.reads.fna -o test3_out
+    snakemake -s
 
 # Output:
       Assembled contigs:
