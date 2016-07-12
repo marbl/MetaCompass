@@ -4,7 +4,7 @@ Last updated: July 12th, 2016
 
 
 # REQUIREMENTS:
-GNU C/C++; Perl; BLAST; Bowtie 2
+GNU C/C++; Perl 3; BLAST 2.2.31; Bowtie 2.2.9; BWA; kmer-mask
 #todo:add software
 
 
