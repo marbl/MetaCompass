@@ -11,9 +11,7 @@ GNU C/C++; Perl 3; BLAST 2.2.31; Bowtie 2.2.9; BWA; kmer-mask
 # INSTALLATION:
     git clone https://github.com/marbl/MetaCompass.git
     cd MetaCompass
-    wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz
-    tar -xzvf refseq.tar.gz
-    ./install.pl
+    ./install.sh
 
 
 # USAGE (under construction)
