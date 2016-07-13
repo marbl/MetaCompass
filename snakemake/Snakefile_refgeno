@@ -1,0 +1,22 @@
+"""
+DESCRIPTION
+"""
+#__author__ = "Victoria Cepeda
+
+configfile: "config.json"
+
+#include_prefix="https://"
+#include_prefix + "rules"
+
+#map reads against reference genomes 
+include:
+    "map_reads.py"
+
+#build contigs using sam file
+include:
+    "build2.py"
+
+#ruleorder: rule1 > rule2 > rule3
+rule all:
+    input:expand('{sample}.assembly.out/{sample}.sam',sample=config["reads"]["S1"]),
+          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"])
