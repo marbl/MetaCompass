@@ -4,7 +4,7 @@ Last updated: July 12th, 2016
 
 
 # REQUIREMENTS:
-GNU C/C++; Perl 3; BLAST 2.2.31; Bowtie 2.2.9; BWA; kmer-mask
+GNU C/C++; Perl 3; BLAST 2.4.0; Bowtie 2.2.9; BWA 0.7; kmer-mask
 #todo:add software
 
 
@@ -14,27 +14,43 @@ GNU C/C++; Perl 3; BLAST 2.2.31; Bowtie 2.2.9; BWA; kmer-mask
     ./install.sh
 
 
-# USAGE (under construction)
+# USAGE
+-- Go to the snakemake folder.
+
+    cd snakemake
+    
+--Customize the configuration files (config.json and config2.json) as necessary. In the following example, we want to assembly 2 datasets, 'Sample1.fastq' and 'Sample2.fastq', and the data is located in the folder 'test' in the parent directory:
+
+    {
+        "reads": {
+        "S1": ["Sample1", "Sample2"]
+        },
+        "reference":["../test/refseq.fna"],
+        "prefix":"../test",
+        "memory": 50,
+        "nthreads": 12
+    }
+
+    
 
 -- I have a set of metagenomic reads, and want to perform comparative assembly.
 
-    snakemake <input FASTA/FASTQ reads> [options] 
-
+    snakemake
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
-    snakemake -s 
+    snakemake -s Snakefile_refgeno
 
 
 -- You can try MetaCompass on a test data set.
 
-For a big data set assuming reference genomes are known:
+For a mock data set assuming reference genomes are known:
 
-    snakemake -s
+    snakemake -s Snakefile_refgeno
 
-For a big data set assuming reference genomes are NOT known:
+For a mock data set assuming reference genomes are NOT known:
 
-    snakemake -s
+    snakemake
 
 # Output:
       Assembled contigs:
