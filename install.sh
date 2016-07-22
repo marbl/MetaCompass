@@ -13,6 +13,20 @@ cmd="g++ -Wall -W -O2 -o ./bin/buildcontig ./src/buildcontig/buildcontig.cpp ./s
 echo $cmd
 $cmd
 
+#wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz
+#cd wgs-8.3rc2
+#cd kmer && make install && cd ..
+#cd src && make && cd ..
+#cd ..
+
+cmd="wget https://gembox.cbcb.umd.edu/metacompass/markers.blastn.classifier -P ./src/metaphyler/markers"
+echo $cmd
+$cmd
+
+cmd="tar -xzvf mc.tar.gz"
+echo $cmd
+$cmd
+
 cmd="wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz"
 echo $cmd
 $cmd
@@ -20,3 +34,12 @@ $cmd
 cmd="tar -xzvf refseq.tar.gz"
 echo $cmd
 $cmd
+
+cmd="wget https://gembox.cbcb.umd.edu/metacompass/test.tar.gz"
+echo $cmd
+$cmd
+
+cmd="tar -xzvf test.tar.gz"
+echo $cmd
+$cmd
+
