@@ -2,7 +2,9 @@
     "reads": {
 	"S1": ["Sample1", "Sample2"]
     },
-    "memory": 120,
+    "reference":["../test/refseq.fna"],
+    "prefix":"../test",
+    "memory": 50,
     "nthreads": 12
 }
 

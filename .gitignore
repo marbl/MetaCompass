@@ -1,4 +1,15 @@
 src/metaphyler/markers/markers.blastn.classifier
 workflows
 refseq
+test
+test2
+refseq.tar.gz
+test.tar.gz
+kmermask.tar.gz
+kmer-code-2013-trunk
+wgs-asm.zip
+wgs-assembler-master
+all_readme
+install.pl
 .dir_bash_history
+.snakemake

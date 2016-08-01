@@ -3,7 +3,7 @@ DESCRIPTION
 """
 #__author__ = "Victoria Cepeda
 
-configfile: "config.json"
+configfile: "config2.json"
 
 #include_prefix="https://"
 #include_prefix + "rules"
@@ -18,5 +18,5 @@ include:
 
 #ruleorder: rule1 > rule2 > rule3
 rule all:
-    input:expand('{sample}.assembly.out/{sample}.sam',sample=config["reads"]["S1"]),
-          expand('{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"])
+    input:expand('{prefix}/{sample}.assembly.out/{sample}.sam',sample=config["reads"]["S1"],prefix=config["prefix"]),
+          expand('{prefix}/{sample}.assembly.out/contigs.fasta',sample=config["reads"]["S1"],prefix=config["prefix"])
