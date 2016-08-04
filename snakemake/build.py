@@ -2,11 +2,12 @@ configfile: "config.json"
 
 rule build_contigs:
     input:
-        genome = '{prefix}/{sample}.assembly.out/mc.refseq.fna',
-        sam=  '{prefix}/{sample}.assembly.out/{sample}.sam'
+        genome = '{prefix}/{sample}.assembly.out/{reference}',#mc.refseq.fna',
+        sam=  '{prefix}/{sample}.assembly.out/{sample}.{iter}.sam'
     output:
-        out='{prefix}/{sample}.assembly.out',
-	contigs='{prefix}/{sample}.assembly.out/contigs.fasta'#'{sample}.contigs.fasta'
+        out='{prefix}/{sample}.{iter}.assembly.out',
+	#contigs='{prefix}/{sample}.assembly.out/contigs.fasta'#'{sample}.contigs.fasta'
+        contigs='{prefix}/{sample}.{iter}.assembly.out/contigs.fasta'
     log:'{prefix}/{sample}.assembly.out/{sample}.assembly.log'
     threads:1
     message: """---Build contigs ."""
