@@ -8,24 +8,34 @@ parser.add_argument("-u",'--unlock', type=bool, help='unlock',default=False, nar
 parser.add_argument("-r",'--ref', help='reference genome',default="",nargs='?')
 parser.add_argument("-s",'--snakefile', help='snakemake file',default="",nargs='?',required=1)
 #parser.add_argument("-I",'--SampleIds', help='sample ids',default="", nargs='*',required=1)
-parser.add_argument("-S",'--Samples', help='',default="", nargs='?',required=1)
+parser.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file per line)',default="", nargs='?',required=1)
+parser.add_argument("-q",'--qsub', help='',default="", nargs='?',required=1)
 parser.add_argument("-c",'--config', help='config (json) file',default="",nargs='?',required=1)
-
-#parser.add_argument("-F",'--force', help='force snakemake to rerun',type=bool, default="",nargs='?',required=1)
+parser.add_argument("-F",'--force', help='force snakemake to rerun',type=bool, default="False",nargs='?',required=1)
+parser.add_argument("-v",'--verbose', help='verbose',type=bool, default="False",nargs='?',required=1)
 
 
 
 args = parser.parse_args()
 unlock = args.unlock
-threads = args.threads
+threads = int(args.threads)
 iterations = args.iterations
 ref = args.ref
 snakefile = args.snakefile
 config = args.config
 samples = args.Samples.replace(" ","")
+qsub = args.qsub
+force = args.force
+verbose = args.verbose
 
-
-print(threads,iterations,ref,unlock)
+if force:
+   if os.path.exists("Sample1.fasta"):
+      os.system("rm Sample1.fasta")
+   if os.path.exists("Sample1.marker.match.1.fastq"):
+      os.system("rm Sample1.marker.match.1.fastq")
+   os.system("rm -rf ./Sample1.*.assembly.out/")
+#print(qsub)
+#print(threads,iterations,ref,unlock)
 
 
 #1. ensure required files are present
@@ -50,17 +60,29 @@ else:
 #2. check for snakemake, bowtie2
 print("checking for dependencies (Bowtie2, Snakemake)")
 
+if len(qsub) > 0:
+
+    print("qsub--->",end="")
+    ret = subprocess.call("which qsub",shell=True)
+    if ret == 0:
+        print("[OK]")
+        qsub += " --jobs 4000"
+    else:
+        print("[FAIL]")
+        qsub=""
+
+
 print("Bowtie2--->",end="")
-ret = subprocess.run("which bowtie2",stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True)
-if ret.returncode == 0:
+ret = subprocess.call("which bowtie2",shell=True)
+if ret == 0:
     print("[OK]")
 else:
     print("[FAIL]")
     sys.exit()
 
 print("Snakemake--->",end="")
-ret = subprocess.run("which snakemake",stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True)
-if ret.returncode == 0:
+ret = subprocess.call("which snakemake",shell=True)
+if ret == 0:
     print("[OK]")
 else:
     print("[FAIL]")
@@ -87,15 +109,31 @@ while i < iterations:
     for s1 in allsamples:
         s1id = s1.split(".")[0]
         if unlock:
-            ret = subprocess.run("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
+            ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
         if i == 0:
-            #%s.%s.assembly.out
-            ret = subprocess.run("snakemake -r --verbose --snakefile %s --configfile %s --config sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d"%(snakefile,config,s1id,s1,s1id,i,i),shell=True)
+            cmd = "snakemake --cores %d --snakefile %s --configfile %s --config sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d"%(threads,snakefile,config,s1id,s1,s1id,i,i)
+            
+            if len(qsub) > 0:
+                cmd += " --cluster %s"%(qsub)
+            if verbose:
+                cmd += " --verbose"
+            #if force:
+            #    cmd += " -F"
+            ret = subprocess.call(cmd,shell=True)
+
         else:
-            ret = subprocess.run("snakemake -r --verbose --snakefile %s --configfile %s --config sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d"%(snakefile,config,s1id,s1,s1id,i-i,i),shell=True)
-        #this was working, just broke it to handle iterations etc. 
-        #ret = subprocess.run("snakemake --snakefile %s --configfile --C final_asm contig.iter%d.fasta"%(snakefile,config),shell=True)
-        if ret.returncode != 0:
+            cmd = "snakemake --cores %d --snakefile %s --configfile %s --config sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d"%(threads,snakefile,config,s1id,s1,s1id,i-i,i)
+
+            if len(qsub) > 0:
+                cmd += " --cluster %s"%(qsub)
+            if verbose:
+                cmd += " --verbose"
+            #if force:
+            #    cmd += " -F"
+
+            ret = subprocess.call(cmd,shell=True)
+
+        if ret != 0:
             print("snakemake command failed; exiting..")
             sys.exit(1)
         i+=1
