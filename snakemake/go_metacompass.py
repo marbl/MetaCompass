@@ -11,8 +11,8 @@ parser.add_argument("-s",'--snakefile', help='snakemake file',default="",nargs='
 parser.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file per line)',default="", nargs='?',required=1)
 parser.add_argument("-q",'--qsub', help='',default="", nargs='?',required=0)
 parser.add_argument("-c",'--config', help='config (json) file',default="",nargs='?',required=1)
-parser.add_argument("-F",'--force', help='force snakemake to rerun',type=bool, default="False",nargs='?',required=1)
-parser.add_argument("-v",'--verbose', help='verbose',type=bool, default="False",nargs='?',required=1)
+parser.add_argument("-F",'--force', help='force snakemake to rerun',type=bool, default="False",nargs='?',required=0)
+parser.add_argument("-v",'--verbose', help='verbose',type=bool, default="False",nargs='?',required=0)
 
 
 
