@@ -58,7 +58,7 @@ if not os.path.exists(samples):
 else:
     print("[OK]")
 #2. check for snakemake, bowtie2
-print("checking for dependencies (Bowtie2, Snakemake)")
+print("checking for dependencies (Bowtie2, Blast, kmer-mask, Snakemake)")
 
 if len(qsub) > 0:
 
@@ -74,6 +74,22 @@ if len(qsub) > 0:
 
 print("Bowtie2--->",end="")
 ret = subprocess.call("which bowtie2",shell=True)
+if ret == 0:
+    print("[OK]")
+else:
+    print("[FAIL]")
+    sys.exit()
+
+print("Blast+--->",end="")
+ret = subprocess.call("which blastn",shell=True)
+if ret == 0:
+    print("[OK]")
+else:
+    print("[FAIL]")
+    sys.exit()
+
+print("kmer-mask--->",end="")
+ret = subprocess.call("which kmer-mask",shell=True)
 if ret == 0:
     print("[OK]")
 else:
