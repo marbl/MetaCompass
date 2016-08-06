@@ -13,11 +13,11 @@ rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
 
 rule kmer_mask:
-    input: '%s/%s.fq'%(config['prefix'],config['sample'])
+    input:expand('{reads}',reads=config['reads'])
     output:
-        fastq='%s/%s.marker.match.1.fastq'%(config['prefix'],config['sample'])
+        fastq=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])
     message: """---kmer-mask fastq"""
-    params:'%s/%s.marker'%(config['prefix'],config['sample'])
+    params:expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])
     threads:config["nthreads"]
 
     shell : "kmer-mask -ms 28 -mdb ../refseq/kmer-mask_db/markers.mdb -1 {input} -clean 0.0 -match 0.01 -nomasking -t {threads} -l 103 -o {params}"
@@ -25,7 +25,7 @@ rule kmer_mask:
 
 rule fastq2fasta:
     input: rules.kmer_mask.output
-    output:'%s/%s.fasta'%(config['prefix'],config['sample'])
+    output:expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])
     message: """---Converting fastq to fasta."""
     shell : "perl ../bin/fq2fa.pl -i {input} -o {output}"
 
@@ -34,18 +34,20 @@ rule reference_recruitment:
     input:
         rules.fastq2fasta.output
     output:
-        out ='%s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']),
-	reffile ='%s/%s.0.assembly.out/mc.refseq.fna'%(config['prefix'],config['sample'])
+        out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
+	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample']),
+	fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
     #'{prefix}/{sample}.{iter}.assembly.out/mc.refseq.fna'
     log:'%s/%s.%s.step1.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---reference recruitment."""
     threads:config["nthreads"]
-    shell:"mkdir -p {output.out}; ../bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"
+
+    shell:"mkdir -p {output.out}; cp %s {output.fqfile}; touch {output.fqfile}; ../bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"%(config['reads'])
 
 rule bowtie2_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
-       reads=rules.fastq2fasta.output
+       reads=rules.reference_recruitment.output.fqfile
     output:
        index= '%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
        pref='%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
@@ -53,7 +55,7 @@ rule bowtie2_map:
     log: '%s.%s.step2.log'%(config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -q -U {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
 
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
