@@ -10,7 +10,7 @@ group1.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file p
 
 group5 = parser.add_argument_group("metacompass")
 group5.add_argument("-i",'--iterations', type=int, help='num iterations',default=1, nargs='?')
-group5.add_argument("-r",'--ref', help='reference genome',default="",nargs='?')
+group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?')
 
 group2 = parser.add_argument_group('output')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default=".", nargs='?',type=str,required=0)
@@ -62,10 +62,17 @@ if not os.path.exists(config):
     sys.exit(1)
 
 
+if ref != "NA":
+    print("confirming file containing reference genomes exists..")
+    if not os.path.exists(samples):
+        print("reference genome file %s not found!"%(ref))
+        sys.exit(1)
+    else:
+        print("[OK]")
+    
 #for reads in samples, check!
 #if not os.path.exists
 print("confirming sample file exists..")
-print(samples)
 if not os.path.exists(samples):
     print("sample file (-S) %s not found!"%(samples))
     sys.exit(1)
@@ -142,8 +149,10 @@ while i < iterations:
         if unlock:
             ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
         if i == 0:
-            cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
-            
+            if ref != "NA":
+                cmd = "snakemake --cores %d --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
+            else:        
+                cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
 
             if verbose:
                 cmd += " --verbose"
@@ -155,7 +164,10 @@ while i < iterations:
                 ret = subprocess.call(cmd,shell=True)
 
         else:
-            cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,snakefile,config,prefix,s1id,s1,s1id,i-i,i,snakefile)
+            if ref != "NA":
+                cmd = "snakemake --cores %d --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,snakefile,config,prefix,s1id,s1,ref,i-i,i,snakefile)
+            else:
+                cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,snakefile,config,prefix,s1id,s1,s1id,i-i,i,snakefile)
 
 
             if verbose:
