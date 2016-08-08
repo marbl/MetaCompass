@@ -3,11 +3,11 @@ DESCRIPTION
 """
 #__author__ = "Victoria Cepeda
 
-configfile: "config.json"
+#configfile: expand("config.json",
 
 #include_prefix="https://"
 #include_prefix + "rules"
-
+os.system("touch %s"%config['reads'][0])
 #ruleorder: rule1 > rule2 > rule3
 rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
