@@ -1,0 +1,11 @@
+{
+    "sample" : "Sample1",
+    "reads" : ["Sample1.fq"],
+    "reference":[""],
+    "prefix":".",
+    "memory": 50,
+    "nthreads": 12,
+    "iter": 1
+
+}
+
