@@ -17,10 +17,12 @@ rule kmer_mask:
     output:
         fastq=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])
     message: """---kmer-mask fastq"""
-    params:expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])
+    params:
+        out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample']),
+        len=str(config["length"]+3)
     threads:config["nthreads"]
 
-    shell : "kmer-mask -ms 28 -mdb ../refseq/kmer-mask_db/markers.mdb -1 {input} -clean 0.0 -match 0.01 -nomasking -t {threads} -l 103 -o {params}"
+    shell : "kmer-mask -ms 28 -mdb ../refseq/kmer-mask_db/markers.mdb -1 {input} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"
 
 
 rule fastq2fasta:

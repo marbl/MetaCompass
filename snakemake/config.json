@@ -2,6 +2,7 @@
     "sample" : "Sample1",
     "reads" : ["Sample1.fq"],
     "reference":[""],
+    "lenght":100,
     "prefix":".",
     "memory": 50,
     "nthreads": 12,
