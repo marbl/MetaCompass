@@ -9,6 +9,10 @@ DESCRIPTION
 #include_prefix + "rules"
 os.system("touch %s"%config['reads'][0])
 #ruleorder: rule1 > rule2 > rule3
+if config['ref'] != "NA":
+     os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
+     os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
+
 rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
 
