@@ -142,7 +142,7 @@ while i < iterations:
         if unlock:
             ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
         if i == 0:
-            cmd = "snakemake --cores %d --snakefile %s --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d"%(threads,snakefile,config,prefix,s1id,s1,s1id,i,i)
+            cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
             
 
             if verbose:
@@ -155,7 +155,7 @@ while i < iterations:
                 ret = subprocess.call(cmd,shell=True)
 
         else:
-            cmd = "snakemake --cores %d --snakefile %s --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d"%(threads,snakefile,config,prefix,s1id,s1,s1id,i-i,i)
+            cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,snakefile,config,prefix,s1id,s1,s1id,i-i,i,snakefile)
 
 
             if verbose:
