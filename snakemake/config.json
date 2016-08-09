@@ -6,6 +6,7 @@
     "prefix":".",
     "memory": 50,
     "nthreads": 12,
+    "pickref": "breadth",
     "iter": 1
 
 }
