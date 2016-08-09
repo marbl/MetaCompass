@@ -16,15 +16,16 @@ group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?
 group2 = parser.add_argument_group('output')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default=".", nargs='?',type=str,required=0)
 group2.add_argument("-d",'--sampleid', help='sample id (fq prefix is default)',default="NA", nargs='?',type=str,required=0)
-group2.add_argument("-v",'--verbose', help='verbose',type=bool, default=False,nargs='?',required=0)
+group2.add_argument("-v",'--verbose', help='verbose',default=False,required=0,action='store_true')
 
 group3 = parser.add_argument_group('performance')
 group3.add_argument("-t",'--threads', type=int,help='num threads',default=1, nargs='?')
 group3.add_argument("-q",'--qsub', help='',default="", nargs='?',required=0)
 
 group4 = parser.add_argument_group('snakemake')
-group4.add_argument("-F",'--force', help='force snakemake to rerun',type=bool, default=False,nargs='?',required=0)
-group4.add_argument("-u",'--unlock', type=bool, help='unlock',default=False, nargs='?')
+group4.add_argument("-F",'--force', help='force snakemake to rerun',default=False,required=0,action='store_true')
+group4.add_argument("-m",'--retry', help='retry/resume a failed run',default=False,required=0,action='store_true')
+group4.add_argument("-u",'--unlock',help='unlock snakemake locks',default=False, required=0,action='store_true')
 
 args = parser.parse_args()
 unlock = args.unlock
@@ -39,6 +40,8 @@ qsub = args.qsub
 force = args.force
 verbose = args.verbose
 outdir = args.outdir
+retry = args.retry
+print(retry)
 if not os.path.exists(outdir):
     prefix = os.getcwd
 else:
@@ -154,13 +157,14 @@ while i < iterations:
             os.system("rm -rf ./%s.*.assembly.out/"%(s1id))
         elif os.path.exists("%s/%s.0.assembly.out/run.ok"%(prefix,s1id)):
             #run finished ok, don't allow to clobber
-            print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, successful run. Please specify alternate output directory or force run with --force=1"%(prefix,s1id))
+            print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, successful run. Please specify alternate output directory or force run with --force"%(prefix,s1id))
             sys.exit(1)
-        elif os.path.exists("%s/%s.0.assembly.out/run.fail"%(prefix,s1id)):
+        elif retry and os.path.exists("%s/%s.0.assembly.out/run.fail"%(prefix,s1id)):
             #run finished ok, don't allow to clobber
             print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. Attempting to resume failed run.."%(prefix,s1id))
-
-
+        elif not retry and os.path.exists("%s/%s.0.assembly.out/run.fail"%(prefix,s1id)):
+            print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. If you'd like to retry/resume this run, specify: --retry"%(prefix,s1id))
+            sys.exit(1)
         if unlock:
             ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
         if i == 0:
@@ -219,4 +223,8 @@ while i < iterations:
 
 if os.path.exists("%s/%s.%d.assembly.out/contigs.fasta"%(prefix,s1id,i-1)):
     os.system("touch %s/%s.0.assembly.out/run.ok"%(prefix,s1id))
+    print("MetaCompass finished succesfully!")
+else:
+    os.system("touch %s/%s.0.assembly.out/run.fail"%(prefix,s1id))
+    print("MetaCompass run failed. See Log files for more info")
 
