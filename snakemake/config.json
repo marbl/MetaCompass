@@ -1,6 +1,6 @@
 {
     "sample" : "Sample1",
-    "reads" : ["Sample1.fq"],
+    "reads" : [""],
     "reference":[""],
     "length":100,
     "prefix":".",

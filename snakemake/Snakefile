@@ -8,7 +8,7 @@ DESCRIPTION
 #include_prefix="https://"
 #include_prefix + "rules"
 
-os.system("touch %s"%config['reads'][0])
+#os.system("touch %s"%config['reads'][0])
 ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs
 
 
@@ -17,7 +17,9 @@ ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build
 
 #print(expand('{reads}',reads=config['reads']))
 
-if config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0]:
+#print(config['ref'] )
+#print("%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0])
+if config['reads'][0] != "" and config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0]:
 
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
