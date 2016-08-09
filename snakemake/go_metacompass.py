@@ -43,13 +43,7 @@ if not os.path.exists(outdir):
     prefix = os.getcwd
 else:
     prefix = outdir
-print(force)
-if force:
-   if os.path.exists("Sample1.fasta"):
-      os.system("rm Sample1.fasta")
-   if os.path.exists("Sample1.marker.match.1.fastq"):
-      os.system("rm Sample1.marker.match.1.fastq")
-   os.system("rm -rf ./Sample1.*.assembly.out/")
+
 #print(qsub)
 #print(threads,iterations,ref,unlock)
 
@@ -144,14 +138,29 @@ for line in samplesf.readlines():
 
 
 i = 0
+isok = False
 while i < iterations:
     for s1 in allsamples:
         s1id = s1.split(os.sep)[-1].split(".")[0]
         if sampleid != "NA":
             s1id = sampleid
 
-        #print(s1id)
-            
+        
+        if force:
+            if os.path.exists("%s.fasta"%(s1id)):
+                os.system("rm %s.fasta"%(s1id))
+            if os.path.exists("%s.marker.match.1.fastq"%(s1id)):
+                os.system("rm %s.marker.match.1.fastq"%(s1id))
+            os.system("rm -rf ./%s.*.assembly.out/"%(s1id))
+        elif os.path.exists("%s/%s.0.assembly.out/run.ok"%(prefix,s1id)):
+            #run finished ok, don't allow to clobber
+            print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, successful run. Please specify alternate output directory or force run with --force=1"%(prefix,s1id))
+            sys.exit(1)
+        elif os.path.exists("%s/%s.0.assembly.out/run.fail"%(prefix,s1id)):
+            #run finished ok, don't allow to clobber
+            print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. Attempting to resume failed run.."%(prefix,s1id))
+
+
         if unlock:
             ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
         if i == 0:
@@ -203,11 +212,11 @@ while i < iterations:
 
         if ret.returncode != 0:
             print("snakemake command failed; exiting..")
+            os.system("touch %s/%s.0.assembly.out/run.fail"%(prefix,s1id))
             sys.exit(1)
         i+=1
 
 
-
-
-
+if os.path.exists("%s/%s.%d.assembly.out/contigs.fasta"%(prefix,s1id,i-1)):
+    os.system("touch %s/%s.0.assembly.out/run.ok"%(prefix,s1id))
 
