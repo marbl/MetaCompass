@@ -41,14 +41,11 @@ force = args.force
 verbose = args.verbose
 outdir = args.outdir
 retry = args.retry
-print(retry)
+
 if not os.path.exists(outdir):
     prefix = os.getcwd
 else:
     prefix = outdir
-
-#print(qsub)
-#print(threads,iterations,ref,unlock)
 
 
 #1. ensure required files are present
@@ -170,9 +167,9 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
             else:        
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
 
             if verbose:
                 cmd += " --verbose"

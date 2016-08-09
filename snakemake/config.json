@@ -2,6 +2,7 @@
     "sample" : "Sample1",
     "reads" : [""],
     "reference":[""],
+    "pickref":"all",
     "length":100,
     "prefix":".",
     "memory": 50,

@@ -13,12 +13,6 @@ ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build
 
 
 #code to skip initial steps if reference genomes provided 
-#print(config['ref'])
-
-#print(expand('{reads}',reads=config['reads']))
-
-#print(config['ref'] )
-#print("%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0])
 if config['reads'][0] != "" and config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0]:
 
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
@@ -86,18 +80,19 @@ rule bowtie2_map:
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
 
+
 rule build_contigs:
     input:
-        #mc.refseq.fna',
         genome = '%s/%s'%(config['prefix'],config['ref']),
         sam=  rules.bowtie2_map.output.sam
-        #'%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    params:
+        pickref="%s"%(config['pickref'])
     output:
         out='%s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']),
         contigs='%s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
-    shell:'../bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k breadth  1>> {log} 2>&1'
+    shell:"../bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"
 
 
