@@ -1,30 +1,30 @@
-# MetaCompassv1.0
-Last updated: July 13th, 2016
+# MetaCompass v1.0
+Last updated: August 9th, 2016
 
+# Required software:
 
-
-# REQUIREMENTS:
-GNU C/C++; Perl 3; BLAST 2.4.0; Bowtie 2.2.9; BWA 0.7; kmer-mask
-#todo:add software
-
+* BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
+* Bowtie 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9/ 
+* kmer-mask (May 13th, 2015): https://sourceforge.net/p/kmer/code/HEAD/tree/trunk/
+* Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
+* Snakemake 3.7.1: https://bitbucket.org/snakemake/snakemake/src
 
 # INSTALLATION:
+
     git clone https://github.com/marbl/MetaCompass.git
     cd MetaCompass
     ./install.sh
-
 
 # USAGE
 -- Go to the snakemake folder.
 
     cd snakemake
     
---Customize the configuration files (config.json and config2.json) as necessary. In the following example, we want to assembly 2 datasets, 'Sample1.fastq' and 'Sample2.fastq', and the data is located in the folder 'test' in the parent directory:
+--Customize the configuration files (config.json and config2.json) as necessary. In the following example, we want to assemble one dataset, 'Sample1.fastq', with sample prefix of 'Sample1'
 
     {
-        "reads": {
-        "S1": ["Sample1", "Sample2"]
-        },
+        "reads": ["/path/to/reads/Sample1.fq"],
+        "sample": Sample1,
         "reference":["../test/refseq.fna"],
         "prefix":"../test",
         "memory": 50,
