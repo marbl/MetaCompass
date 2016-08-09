@@ -7,11 +7,23 @@ DESCRIPTION
 
 #include_prefix="https://"
 #include_prefix + "rules"
-os.system("touch %s"%config['reads'][0])
+
+os.system("touch %s"%config['reads'])
 #ruleorder: rule1 > rule2 > rule3
-if config['ref'] != "NA":
+
+
+#code to skip initial steps if reference genomes provided 
+if config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0]:
+
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
+     #print("%s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
+     os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
+     os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
+     #print(expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
+     os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
+     if not os.path.exists("%s"%expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]):
+         os.system("cp %s %s"%(config['reads'],expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]))
 
 rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])

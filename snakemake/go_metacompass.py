@@ -1,4 +1,5 @@
-import os,sys,string,subprocess
+import os,sys,string,subprocess,signal
+#psutil
 import argparse
 
 parser = argparse.ArgumentParser(description='snakemake and metacompass params')
@@ -14,7 +15,8 @@ group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?
 
 group2 = parser.add_argument_group('output')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default=".", nargs='?',type=str,required=0)
-group2.add_argument("-v",'--verbose', help='verbose',type=bool, default="False",nargs='?',required=0)
+group2.add_argument("-d",'--sampleid', help='sample id (fq prefix is default)',default="NA", nargs='?',type=str,required=0)
+group2.add_argument("-v",'--verbose', help='verbose',type=bool, default=False,nargs='?',required=0)
 
 group3 = parser.add_argument_group('performance')
 group3.add_argument("-t",'--threads', type=int,help='num threads',default=1, nargs='?')
@@ -32,6 +34,7 @@ ref = args.ref
 snakefile = args.snakefile
 config = args.config
 samples = args.Samples.replace(" ","")
+sampleid = args.sampleid
 qsub = args.qsub
 force = args.force
 verbose = args.verbose
@@ -41,7 +44,6 @@ if not os.path.exists(outdir):
 else:
     prefix = outdir
 
-print(prefix)
 if force:
    if os.path.exists("Sample1.fasta"):
       os.system("rm Sample1.fasta")
@@ -145,10 +147,15 @@ i = 0
 while i < iterations:
     for s1 in allsamples:
         s1id = s1.split(os.sep)[-1].split(".")[0]
+        if sampleid != "NA":
+            s1id = sampleid
+
         #print(s1id)
+            
         if unlock:
             ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
         if i == 0:
+            ret = 0
             if ref != "NA":
                 cmd = "snakemake --cores %d --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
             else:        
@@ -161,13 +168,21 @@ while i < iterations:
             if len(qsub) > 0:
                 cmd += " --cluster %s"%(qsub)
             else:
-                ret = subprocess.call(cmd,shell=True)
+                try:
+                    ret = subprocess.Popen(cmd,shell=True)
+                    ret.communicate()
+                except KeyboardInterrupt:
+                    os.killpg(ret.pid,signal.SIGKILL)  
+                except :
+                    os.killpg(ret.pid,signal.SIGKILL)  
+                    
 
         else:
+            ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,snakefile,config,prefix,s1id,s1,ref,i-i,i,snakefile)
+                cmd = "snakemake --cores %d --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
             else:
-                cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,snakefile,config,prefix,s1id,s1,s1id,i-i,i,snakefile)
+                cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
 
 
             if verbose:
@@ -178,9 +193,15 @@ while i < iterations:
                 cmd += " --cluster %s"%(qsub)
                 
             else:
-                ret = subprocess.call(cmd,shell=True)
+                try:
+                    ret = subprocess.Popen(cmd,shell=True)
+                    ret.communicate()
+                except KeyboardInterrupt:
+                    os.killpg(ret.pid,signal.SIGKILL)  
+                except:
+                    os.killpg(ret.pid,signal.SIGKILL)  
 
-        if ret != 0:
+        if ret.returncode != 0:
             print("snakemake command failed; exiting..")
             sys.exit(1)
         i+=1
