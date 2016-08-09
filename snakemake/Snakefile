@@ -27,6 +27,8 @@ if config['reads'][0] != "" and config['ref'] != "%s"%expand('{sample}.0.assembl
 
 rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
+    benchmark:
+       "%s/benchmarks/all/%s.txt"%(config['prefix'],config['sample'])
 
 
 rule kmer_mask:
@@ -34,6 +36,8 @@ rule kmer_mask:
     output:
         fastq=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0]
     message: """---kmer-mask fastq"""
+    benchmark:
+       "%s/benchmarks/kmermask/%s.txt"%(config['prefix'],config['sample'])
     params:
         out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample']),
         len=str(config["length"]+3)
@@ -52,6 +56,8 @@ rule fastq2fasta:
 rule reference_recruitment:
     input:
         rules.fastq2fasta.output
+    benchmark:
+       "%s/benchmarks/reference_recruitment/%s.txt"%(config['prefix'],config['sample'])
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
 	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
@@ -63,11 +69,14 @@ rule reference_recruitment:
 
     shell:"mkdir -p {output.out}; ../bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"
 
+
 rule bowtie2_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
        reads=expand('{reads}',reads=config['reads'])[0]
        #reads=rules.reference_recruitment.output.fqfile
+    benchmark:
+       "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
     output:
        index= '%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
        pref='%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
@@ -85,6 +94,8 @@ rule build_contigs:
     input:
         genome = '%s/%s'%(config['prefix'],config['ref']),
         sam=  rules.bowtie2_map.output.sam
+    benchmark:
+       "%s/benchmarks/build_contigs/%s.txt"%(config['prefix'],config['sample'])
     params:
         pickref="%s"%(config['pickref'])
     output:

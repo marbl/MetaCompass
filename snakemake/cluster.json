@@ -1,0 +1,13 @@
+{
+    "__default__" :
+    {
+        "account" : "my account",
+        "time" : "00:15:00",
+        "n" : 1,
+        "partition" : "core"
+    },
+    "compute1" :
+    {
+        "time" : "00:20:00"
+    }
+}
