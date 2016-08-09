@@ -199,9 +199,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,pickref,snakefile)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,pickref,snakefile)
 
 
             if verbose:
