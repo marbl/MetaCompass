@@ -170,12 +170,16 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
             else:        
-                cmd = "snakemake --cores %d -a --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
 
             if verbose:
                 cmd += " --verbose"
+            if retry:
+                cmd += " --rerun-incomplete"
+            else:
+                cmd += " --ignore-incomplete"
             #if force:
             #    cmd += " -F"
             if len(qsub) > 0:
@@ -193,13 +197,17 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
             else:
                 cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
 
 
             if verbose:
                 cmd += " --verbose"
+            if retry:
+                cmd += " --rerun-incomplete"
+            else:
+                cmd += " --ignore-incomplete"
             #if force:
             #    cmd += " -F"
             if len(qsub) > 0:
