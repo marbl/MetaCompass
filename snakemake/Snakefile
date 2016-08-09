@@ -8,11 +8,15 @@ DESCRIPTION
 #include_prefix="https://"
 #include_prefix + "rules"
 
-os.system("touch %s"%config['reads'])
-#ruleorder: rule1 > rule2 > rule3
+os.system("touch %s"%config['reads'][0])
+ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs
 
 
 #code to skip initial steps if reference genomes provided 
+#print(config['ref'])
+
+#print(expand('{reads}',reads=config['reads']))
+
 if config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0]:
 
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
@@ -22,16 +26,17 @@ if config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=c
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
      #print(expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
-     if not os.path.exists("%s"%expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]):
-         os.system("cp %s %s"%(config['reads'],expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]))
+     #if not os.path.exists("%s"%expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]):
+     #    os.system("cp %s %s"%(config['reads'],expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]))
 
 rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
 
+
 rule kmer_mask:
-    input:expand('{reads}',reads=config['reads'])
+    input:expand('{reads}',reads=config['reads'])[0]
     output:
-        fastq=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])
+        fastq=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0]
     message: """---kmer-mask fastq"""
     params:
         out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample']),
@@ -53,19 +58,20 @@ rule reference_recruitment:
         rules.fastq2fasta.output
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
-	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample']),
-	fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
+	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
+    #fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
     #'{prefix}/{sample}.{iter}.assembly.out/mc.refseq.fna'
     log:'%s/%s.%s.step1.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---reference recruitment."""
     threads:config["nthreads"]
 
-    shell:"mkdir -p {output.out}; cp %s {output.fqfile}; touch {output.fqfile}; ../bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"%(config['reads'])
+    shell:"mkdir -p {output.out}; ../bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"
 
 rule bowtie2_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
-       reads=rules.reference_recruitment.output.fqfile
+       reads=expand('{reads}',reads=config['reads'])[0]
+       #reads=rules.reference_recruitment.output.fqfile
     output:
        index= '%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
        pref='%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
@@ -73,7 +79,7 @@ rule bowtie2_map:
     log: '%s.%s.step2.log'%(config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -q -U {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive -p {threads} -x {output.pref} -q -U {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
 
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"

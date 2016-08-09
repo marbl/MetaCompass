@@ -23,7 +23,7 @@ group3.add_argument("-t",'--threads', type=int,help='num threads',default=1, nar
 group3.add_argument("-q",'--qsub', help='',default="", nargs='?',required=0)
 
 group4 = parser.add_argument_group('snakemake')
-group4.add_argument("-F",'--force', help='force snakemake to rerun',type=bool, default="False",nargs='?',required=0)
+group4.add_argument("-F",'--force', help='force snakemake to rerun',type=bool, default=False,nargs='?',required=0)
 group4.add_argument("-u",'--unlock', type=bool, help='unlock',default=False, nargs='?')
 
 args = parser.parse_args()
@@ -43,7 +43,7 @@ if not os.path.exists(outdir):
     prefix = os.getcwd
 else:
     prefix = outdir
-
+print(force)
 if force:
    if os.path.exists("Sample1.fasta"):
       os.system("rm Sample1.fasta")
@@ -157,9 +157,9 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
             else:        
-                cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
 
             if verbose:
                 cmd += " --verbose"
@@ -180,9 +180,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --ignore-incomplete --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
             else:
-                cmd = "snakemake --cores %d --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
 
 
             if verbose:

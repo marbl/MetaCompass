@@ -1,5 +1,5 @@
 {
-    "sample" : "Sample2",
+    "sample" : "Sample1",
     "reads" : ["Sample1.fq"],
     "reference":[""],
     "length":100,
