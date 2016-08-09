@@ -92,7 +92,10 @@ rule build_contigs:
         contigs='%s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
+    params:'%s'%(config['pickref'])
     message: """---Build contigs ."""
     shell:"../bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"
+
+
 
 

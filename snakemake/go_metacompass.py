@@ -12,6 +12,7 @@ group1.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file p
 group5 = parser.add_argument_group("metacompass")
 group5.add_argument("-i",'--iterations', type=int, help='num iterations',default=1, nargs='?')
 group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?')
+group5.add_argument("-p",'--pickref', help='coverage',default="breadth",nargs='?')
 
 group2 = parser.add_argument_group('output')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default=".", nargs='?',type=str,required=0)
@@ -41,6 +42,8 @@ force = args.force
 verbose = args.verbose
 outdir = args.outdir
 retry = args.retry
+pickref = args.pickref
+
 
 if not os.path.exists(outdir):
     prefix = os.getcwd
@@ -194,9 +197,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,pickref,snakefile)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,pickref,snakefile)
 
 
             if verbose:
