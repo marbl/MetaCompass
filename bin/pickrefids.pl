@@ -60,8 +60,7 @@ open(FH, "$blast") or die("Could not open $blast.\n");
 foreach my $line (<FH>) {
     chomp $line;
     my ($qid, $rid, $pct, $hspl) = split("\t", $line);
-#    if ($pct < 90 || $hspl < 35) { next;}
-    if ($pct < 90 || $hspl < 35) { next;}
+    if ($pct < 95 || $hspl < 45) { next;}
     #$rid =~ /^(\S+)\_\d+\_\d+$/;
     $rid =~ /^(\S+)\_\S+\_\S+$/;
     
@@ -83,12 +82,12 @@ foreach my $tid (sort {$tid2num{$b} <=> $tid2num{$a}} keys %tid2num) {
 
     my $num = $tid2num{$tid}*$part;
     
-    if ($num < 50) { last;}    # if abundance < 50 then ignore
+    if ($num < 200) { last;}    # if abundance < 50 then ignore
     if ($total > 1000) { last;} # if more than 120 genomes have been used then stop
     
     my $sp = $tid2sp{$tid};
     if (exists $sps{$sp}) {
-	if ($sps{$sp} >= 10) { next;}  # for a single species, allow max 5 reference genomes
+	if ($sps{$sp} >= 10) { next;}  # for a single species, allow max 10 reference genomes
     }
     
     $sps{$sp}++;
