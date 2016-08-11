@@ -43,7 +43,7 @@ verbose = args.verbose
 outdir = args.outdir
 retry = args.retry
 pickref = args.pickref
-
+prefix = ""
 
 if not os.path.exists(outdir):
     prefix = os.getcwd
