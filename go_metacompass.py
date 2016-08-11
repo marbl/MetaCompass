@@ -75,6 +75,7 @@ if ref != "NA":
         print("ERROR: reference genome file %s not found!"%(ref))
         sys.exit(1)
     else:
+        os.system("cp %s %s/%s"%(ref,prefix,ref))
         print("[OK]")
     
 #for reads in samples, check!
@@ -183,7 +184,7 @@ while i < iterations:
             if ref != "NA":
                 cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,mcdir,i,snakefile)
             else:        
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,mcdir,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i,mcdir,i,snakefile)
 
             if verbose:
                 cmd += " --verbose"
@@ -210,9 +211,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,mcdir,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,mcdir,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
 
 
             if verbose:

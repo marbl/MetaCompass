@@ -13,7 +13,7 @@ ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build
 
 
 #code to skip initial steps if reference genomes provided 
-if config['reads'][0] != "" and config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0]:
+if config['reads'][0] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
 
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
@@ -92,7 +92,7 @@ rule bowtie2_map:
 
 rule build_contigs:
     input:
-        genome = '%s/%s'%(config['prefix'],config['ref']),
+        genome = '%s'%(config['ref']),
         sam=  rules.bowtie2_map.output.sam
     benchmark:
        "%s/benchmarks/build_contigs/%s.txt"%(config['prefix'],config['sample'])
