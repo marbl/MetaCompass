@@ -84,7 +84,7 @@ rule bowtie2_map:
     log: '%s/%s.%s.step2.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive -p {threads} -x {output.pref} -q -U {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build -threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
 
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
