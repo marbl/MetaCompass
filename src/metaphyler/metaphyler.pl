@@ -31,11 +31,10 @@ if (scalar @ARGV == 3) {
 
 
 my $ref = "$Bin/markers/markers.refseq.dna";
-#my $param = "-W20";
 my $param = "-word_size 28";
 
 # run blast
-my $cmd = "$blast $param -num_threads $nump -evalue 1e-10 -outfmt 6 -max_target_seqs 1 -query $query -db $ref > $outdir/$prefix.$blast";
+my $cmd = "$blast $param -num_threads $nump -evalue 1e-10 -perc_identity 95 -outfmt 6 -max_target_seqs 1 -query $query -db $ref > $outdir/$prefix.$blast";
 print STDERR "$cmd\n";
 system("$cmd");
 
