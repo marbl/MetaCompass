@@ -102,8 +102,11 @@ if len(qsub) > 0:
 
 
 print("Bowtie2--->",end="")
-ret = subprocess.call("which bowtie2",shell=True)
-if ret == 0:
+sout = open("out.txt",'w')
+ret = subprocess.call("bowtie2 --version",stdout=sout,shell=True)
+if ret == 0 and "2.2.9" in stdout:
+    #print(stdout)
+    #sys.exit(1)
     print("[OK]")
 else:
     print("[FAIL]")
