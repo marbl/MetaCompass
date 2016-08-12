@@ -1,7 +1,11 @@
+#!/usr/bin/env python3
+
 import os,sys,string,subprocess,signal
 #psutil
 import argparse
 
+mcdir = sys.path[0]
+print(mcdir)
 parser = argparse.ArgumentParser(description='snakemake and metacompass params')
 
 group1 = parser.add_argument_group('required')
@@ -15,7 +19,7 @@ group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?
 group5.add_argument("-p",'--pickref', help='coverage',default="breadth",nargs='?')
 
 group2 = parser.add_argument_group('output')
-group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default=".", nargs='?',type=str,required=0)
+group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default="./", nargs='?',type=str,required=1)
 group2.add_argument("-d",'--sampleid', help='sample id (fq prefix is default)',default="NA", nargs='?',type=str,required=0)
 group2.add_argument("-v",'--verbose', help='verbose',default=False,required=0,action='store_true')
 
@@ -46,34 +50,39 @@ pickref = args.pickref
 prefix = ""
 
 if not os.path.exists(outdir):
-    prefix = os.getcwd
-else:
+    os.makedirs(outdir)
     prefix = outdir
-
+else:
+    if os.path.exists(outdir) and not force:
+        print("ERROR: specified output directory %s exists! please remove first, or run with --force"%(outdir))
+        sys.exit(1)
+    elif os.path.exists(outdir) and force:
+        prefix = outdir
 
 #1. ensure required files are present
 if not os.path.exists(snakefile):
-    print("snakefile %s not found!"%(snakefile))
+    print("ERROR: snakefile %s not found!"%(snakefile))
     sys.exit(1)
 
 if not os.path.exists(config):
-    print("configfile %s not found!"%(config))
+    print("ERROR: configfile %s not found!"%(config))
     sys.exit(1)
 
 
 if ref != "NA":
     print("confirming file containing reference genomes exists..")
-    if not os.path.exists(samples):
-        print("reference genome file %s not found!"%(ref))
+    if not os.path.exists(ref):
+        print("ERROR: reference genome file %s not found!"%(ref))
         sys.exit(1)
     else:
+        os.system("cp %s %s/%s"%(ref,prefix,ref))
         print("[OK]")
     
 #for reads in samples, check!
 #if not os.path.exists
 print("confirming sample file exists..")
 if not os.path.exists(samples):
-    print("sample file (-S) %s not found!"%(samples))
+    print("ERROR: sample file (-S) %s not found!"%(samples))
     sys.exit(1)
 else:
     print("[OK]")
@@ -144,6 +153,9 @@ i = 0
 isok = False
 while i < iterations:
     for s1 in allsamples:
+        if not os.path.exists("%s"%(s1)):
+            print("ERROR: Cannot locate file %s within input file %s. Please verify and restart"%(s1,args.Samples))
+            sys.exit(1)
         s1id = s1.split(os.sep)[-1].split(".")[0]
         if sampleid != "NA":
             s1id = sampleid
@@ -157,22 +169,22 @@ while i < iterations:
             os.system("rm -rf ./%s.*.assembly.out/"%(s1id))
         elif os.path.exists("%s/%s.0.assembly.out/run.ok"%(prefix,s1id)):
             #run finished ok, don't allow to clobber
-            print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, successful run. Please specify alternate output directory or force run with --force"%(prefix,s1id))
+            print("ERROR: Output dir (%s/%s.0.assembly.out) exists and contains a previous, successful run. Please specify alternate output directory or force run with --force"%(prefix,s1id))
             sys.exit(1)
         elif retry and os.path.exists("%s/%s.0.assembly.out/run.fail"%(prefix,s1id)):
             #run finished ok, don't allow to clobber
             print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. Attempting to resume failed run.."%(prefix,s1id))
         elif not retry and os.path.exists("%s/%s.0.assembly.out/run.fail"%(prefix,s1id)):
-            print("Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. If you'd like to retry/resume this run, specify: --retry"%(prefix,s1id))
+            print("ERROR: Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. If you'd like to retry/resume this run, specify: --retry"%(prefix,s1id))
             sys.exit(1)
         if unlock:
             ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,mcdir,i,snakefile)
             else:        
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s.%d.assembly.out/mc.refseq.fna iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i,mcdir,i,snakefile)
 
             if verbose:
                 cmd += " --verbose"
@@ -180,6 +192,8 @@ while i < iterations:
                 cmd += " --rerun-incomplete"
             else:
                 cmd += " --ignore-incomplete"
+            #cmd += " --mcdir %s"%(mcdir)
+
             #if force:
             #    cmd += " -F"
             if len(qsub) > 0:
@@ -197,9 +211,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s.%d.assembly.out/contigs.fasta iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,s1id,i-1,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
 
 
             if verbose:
@@ -210,6 +224,7 @@ while i < iterations:
                 cmd += " --ignore-incomplete"
             #if force:
             #    cmd += " -F"
+            #cmd += " --mcdir %s"%(mcdir)
             if len(qsub) > 0:
                 cmd += " --cluster %s"%(qsub)
                 
@@ -223,7 +238,7 @@ while i < iterations:
                     os.killpg(ret.pid,signal.SIGKILL)  
 
         if ret.returncode != 0:
-            print("snakemake command failed; exiting..")
+            print("ERROR: snakemake command failed; exiting..")
             os.system("touch %s/%s.0.assembly.out/run.fail"%(prefix,s1id))
             sys.exit(1)
         i+=1

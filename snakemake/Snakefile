@@ -13,7 +13,7 @@ ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build
 
 
 #code to skip initial steps if reference genomes provided 
-if config['reads'][0] != "" and config['ref'] != "%s"%expand('{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'])[0]:
+if config['reads'][0] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
 
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
@@ -43,14 +43,14 @@ rule kmer_mask:
         len=str(config["length"]+3)
     threads:config["nthreads"]
 
-    shell : "kmer-mask -ms 28 -mdb ../refseq/kmer-mask_db/markers.mdb -1 {input} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"
+    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"%(config["mcdir"])
 
 
 rule fastq2fasta:
     input: rules.kmer_mask.output
     output:expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])
     message: """---Converting fastq to fasta."""
-    shell : "perl ../bin/fq2fa.pl -i {input} -o {output}"
+    shell : "perl %s/bin/fq2fa.pl -i {input} -o {output}"%(config["mcdir"])
 
 
 rule reference_recruitment:
@@ -67,7 +67,7 @@ rule reference_recruitment:
     message: """---reference recruitment."""
     threads:config["nthreads"]
 
-    shell:"mkdir -p {output.out}; ../bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"
+    shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"%(config["mcdir"])
 
 
 rule bowtie2_map:
@@ -78,10 +78,10 @@ rule bowtie2_map:
     benchmark:
        "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
     output:
-       index= '%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
-       pref='%s.%s.assembly.out/%s.index'%(config['sample'],config['iter'],config['sample']),
-       sam='%s.%s.assembly.out/%s.sam'%(config['sample'],config['iter'],config['sample'])
-    log: '%s.%s.step2.log'%(config['sample'],config['iter'])
+       index= '%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       pref='%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log: '%s/%s.%s.step2.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
     shell:"bowtie2-build -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive -p {threads} -x {output.pref} -q -U {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
@@ -92,7 +92,7 @@ rule bowtie2_map:
 
 rule build_contigs:
     input:
-        genome = '%s/%s'%(config['prefix'],config['ref']),
+        genome = '%s'%(config['ref']),
         sam=  rules.bowtie2_map.output.sam
     benchmark:
        "%s/benchmarks/build_contigs/%s.txt"%(config['prefix'],config['sample'])
@@ -104,8 +104,17 @@ rule build_contigs:
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
-    shell:"../bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"
+    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
 
-
-
+rule pilon_contigs:
+    input:
+        contigs=rules.build_contigs.output.contigs
+    benchmark:
+       "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
+    output:
+        pilonctg='%s/%s.%s.assembly.out/contigs.pilon.fasta'%(config['prefix'],config['sample'],config['iter'])
+    log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    threads:1
+    message: """---Pilon contigs ."""
+    shell:"pilon -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"
 
