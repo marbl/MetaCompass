@@ -75,7 +75,7 @@ if ref != "NA":
         print("ERROR: reference genome file %s not found!"%(ref))
         sys.exit(1)
     else:
-        os.system("cp %s %s/%s"%(ref,prefix,ref))
+        os.system("cp %s %s/%s"%(ref,prefix,ref.split(os.sep)[-1]))
         print("[OK]")
     
 #for reads in samples, check!
@@ -104,7 +104,7 @@ if len(qsub) > 0:
 print("Bowtie2--->",end="")
 sout = open("out.txt",'w')
 ret = subprocess.call("bowtie2 --version",stdout=sout,shell=True)
-if ret == 0 and "2.2.9" in stdout:
+if ret == 0:# and "2.2.9" in sout:
     #print(stdout)
     #sys.exit(1)
     print("[OK]")
