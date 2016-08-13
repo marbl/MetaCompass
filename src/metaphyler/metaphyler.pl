@@ -34,7 +34,12 @@ my $ref = "$Bin/markers/markers.refseq.dna";
 my $param = "-word_size 28";
 
 # run blast
-my $cmd = "$blast $param -num_threads $nump -evalue 1e-10 -perc_identity 95 -outfmt 6 -max_target_seqs 1 -query $query -db $ref > $outdir/$prefix.$blast";
+my $cmd = "$blast $param -num_threads $nump -evalue 1e-10 -perc_identity 95 -outfmt 6 -max_target_seqs 100 -query $query -db $ref > $outdir/$prefix.$blast.all";
+print STDERR "$cmd\n";
+system("$cmd");
+
+# filter blast
+my $cmd = "$Bin/bin/best-hits.py $outdir/$prefix.$blast.all $outdir/$prefix.$blast";
 print STDERR "$cmd\n";
 system("$cmd");
 
