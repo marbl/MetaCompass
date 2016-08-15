@@ -1,9 +1,10 @@
 {
     "sample" : "Sample1",
-    "reads" : [""],
+    "r1" : [""],
+    "r2" : [""],
     "reference":[""],
     "pickref":"all",
-    "length":100,
+    "length":150,
     "prefix":".",
     "memory": 50,
     "nthreads": 12,

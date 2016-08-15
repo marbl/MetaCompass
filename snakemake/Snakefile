@@ -14,7 +14,7 @@ DESCRIPTION
 ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > sam_to_bam > bam_sort > pilon_contigs
 
 #code to skip initial steps if reference genomes provided 
-if config['reads'][0] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
+if config['r1'][0] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
 
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
@@ -27,11 +27,14 @@ rule all:
     benchmark:
        "%s/benchmarks/all/%s.txt"%(config['prefix'],config['sample'])
 
-
+#expand('{reads}',reads=config['r1'])[0]
 rule kmer_mask:
-    input:expand('{reads}',reads=config['reads'])[0]
+    input:
+        r1=config['r1'],
+        r2=config['r2']
     output:
-        fastq=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0]
+        fastq1=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0],
+        fastq2=expand('{prefix}/{sample}.marker.match.2.fastq',prefix=config['prefix'],sample=config['sample'])[0]
     message: """---kmer-mask fastq"""
     benchmark:
        "%s/benchmarks/kmermask/%s.txt"%(config['prefix'],config['sample'])
@@ -40,11 +43,11 @@ rule kmer_mask:
         len=str(config["length"]+3)
     threads:config["nthreads"]
 
-    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"%(config["mcdir"])
+    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -2 {input.r2} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"%(config["mcdir"])
 
 
 rule fastq2fasta:
-    input: rules.kmer_mask.output
+    input: rules.kmer_mask.output.fastq1
     output:expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])
     message: """---Converting fastq to fasta."""
     shell : "perl %s/bin/fq2fa.pl -i {input} -o {output}"%(config["mcdir"])
@@ -67,11 +70,12 @@ rule reference_recruitment:
     shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"%(config["mcdir"])
 
 
+#reads=rules.reference_recruitment.output.fqfile
 rule bowtie2_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
-       reads=expand('{reads}',reads=config['reads'])[0]
-       #reads=rules.reference_recruitment.output.fqfile
+       r1=config['r1'],
+       r2=config['r2']
     benchmark:
        "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
     output:
@@ -81,7 +85,7 @@ rule bowtie2_map:
     log: '%s/%s.%s.step2.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.reads} -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} > {log} 2>&1"%(config['ref'])
 
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
@@ -123,8 +127,6 @@ rule bam_sort:
     message: """---Sort bam ."""
     shell: "samtools sort {input.bam} %s/%s.%s.assembly.out/sorted 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
 
-print({rules.bam_sort.output.bam_sorted})
-
 
 #samtools view -bS $samfile | samtools sort - $pilon_dir/$ref.sorted"
 #$cmd = "samtools index $pilon_dir/$ref.sorted.bam";
@@ -135,10 +137,12 @@ rule pilon_contigs:
         sam = rules.bam_sort.output.bam_sorted
     benchmark:
        "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
+    params:
+        threads="%s"%(config['nthreads'])
     output:
         pilonctg='%s/%s.%s.assembly.out/contigs.pilon.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Pilon contigs ."""
-    shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases --tracks --vcf --changes 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 10 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,breaks --vcf --changes 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 

@@ -9,9 +9,9 @@ print(mcdir)
 parser = argparse.ArgumentParser(description='snakemake and metacompass params')
 
 group1 = parser.add_argument_group('required')
-group1.add_argument("-s",'--snakefile', help='snakemake file',default="",nargs='?',required=1,type=str)
-group1.add_argument("-c",'--config', help='config (json) file',default="",nargs='?',required=1,type=str)
-group1.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file per line)',default="", nargs='?',required=1,type=str)
+group1.add_argument("-s",'--snakefile', help='metacompass rules file',default="",nargs='?',required=1,type=str)
+group1.add_argument("-c",'--config', help='config (json) file, set read length etc',default="",nargs='?',required=1,type=str)
+group1.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file per line) or comma separated read pair (r1.1.fq,r1.2.fq)',default="", nargs='?',required=1,type=str)
 
 group5 = parser.add_argument_group("metacompass")
 group5.add_argument("-i",'--iterations', type=int, help='num iterations',default=1, nargs='?')
@@ -81,7 +81,7 @@ if ref != "NA":
 #for reads in samples, check!
 #if not os.path.exists
 print("confirming sample file exists..")
-if not os.path.exists(samples):
+if "," not in samples and not os.path.exists(samples):
     print("ERROR: sample file (-S) %s not found!"%(samples))
     sys.exit(1)
 else:
@@ -140,9 +140,13 @@ else:
 #read through sample file and get sample paths & ids
 #SE or PE,interleaved or non-interleaved
 allsamples = []
-samplesf = open(samples,'r')
-for line in samplesf.readlines():
-    allsamples.append(line.replace("\n",""))
+if "," not in samples:
+    samplesf = open(samples,'r')
+    for line in samplesf.readlines():
+        allsamples.append(line.replace("\n",""))
+else:
+    allsamples = [samples]
+ 
 
 #CURRENTLY only single fastq file is supported
 #s1.fq
@@ -156,10 +160,16 @@ i = 0
 isok = False
 while i < iterations:
     for s1 in allsamples:
-        if not os.path.exists("%s"%(s1)):
-            print("ERROR: Cannot locate file %s within input file %s. Please verify and restart"%(s1,args.Samples))
+        s1a = ""
+        s1b = ""
+        if "," in s1: 
+            s1a,s1b = s1.split(",")
+        else:
+            s1a = s1
+        if not os.path.exists("%s"%(s1a)):# or not os.path.exists("%s"%(s1b)):
+            print("ERROR: Cannot locate file %s within input file %s. Please verify and restart"%(s1a,args.Samples))
             sys.exit(1)
-        s1id = s1.split(os.sep)[-1].split(".")[0]
+        s1id = s1a.split(os.sep)[-1].split(".")[0]
         if sampleid != "NA":
             s1id = sampleid
 
@@ -169,6 +179,8 @@ while i < iterations:
                 os.system("rm %s.fasta"%(s1id))
             if os.path.exists("%s.marker.match.1.fastq"%(s1id)):
                 os.system("rm %s.marker.match.1.fastq"%(s1id))
+            if os.path.exists("%s.marker.match.2.fastq"%(s1id)):
+                os.system("rm %s.marker.match.2.fastq"%(s1id))
             os.system("rm -rf ./%s.*.assembly.out/"%(s1id))
         elif os.path.exists("%s/%s.0.assembly.out/run.ok"%(prefix,s1id)):
             #run finished ok, don't allow to clobber
@@ -185,9 +197,9 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,ref,mcdir,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s r1=%s r2=%s pickref=breadth ref=%s mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1a,s1b,ref,mcdir,i,snakefile)
             else:        
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s pickref=breadth ref=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i,mcdir,i,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s r1=%s r2=%s pickref=breadth ref=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d --snakefile %s"%(threads,config,prefix,s1id,s1a, s1b,prefix,s1id,i,mcdir,i,snakefile)
 
             if verbose:
                 cmd += " --verbose"
@@ -214,9 +226,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s r1=%s r2=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1a,s1b,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s r1=%s r2=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1a,s1b,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
 
 
             if verbose:
