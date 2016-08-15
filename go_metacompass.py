@@ -214,9 +214,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reads=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s --snakefile %s"%(threads,config,prefix,s1id,s1,prefix,s1id,i-1,mcdir,i,pickref,snakefile)
 
 
             if verbose:

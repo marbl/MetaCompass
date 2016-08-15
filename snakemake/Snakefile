@@ -9,24 +9,21 @@ DESCRIPTION
 #include_prefix + "rules"
 
 #os.system("touch %s"%config['reads'][0])
-ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs
 
+
+ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > sam_to_bam > bam_sort > pilon_contigs
 
 #code to skip initial steps if reference genomes provided 
 if config['reads'][0] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
 
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
-     #print("%s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
-     #print(expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
-     #if not os.path.exists("%s"%expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]):
-     #    os.system("cp %s %s"%(config['reads'],expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])[0]))
 
 rule all:
-    input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
+    input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.pilon.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
     benchmark:
        "%s/benchmarks/all/%s.txt"%(config['prefix'],config['sample'])
 
@@ -106,9 +103,36 @@ rule build_contigs:
     message: """---Build contigs ."""
     shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
 
+rule sam_to_bam:
+    input:
+        sam=  rules.bowtie2_map.output.sam
+    output:
+        bam = "%s.bam"%(rules.bowtie2_map.output.sam)
+    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    threads:1
+    message: """---Convert sam to bam ."""
+    shell:"samtools view -bS {input.sam} -s {input.sam} -o {output.bam} 1>> {log} 2>&1"
+
+rule bam_sort:
+    input:
+        bam = rules.sam_to_bam.output.bam 
+    output:
+        bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
+    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    threads:1
+    message: """---Sort bam ."""
+    shell: "samtools sort {input.bam} %s/%s.%s.assembly.out/sorted 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
+
+print({rules.bam_sort.output.bam_sorted})
+
+
+#samtools view -bS $samfile | samtools sort - $pilon_dir/$ref.sorted"
+#$cmd = "samtools index $pilon_dir/$ref.sorted.bam";
+
 rule pilon_contigs:
     input:
-        contigs=rules.build_contigs.output.contigs
+        contigs=rules.build_contigs.output.contigs,
+        sam = rules.bam_sort.output.bam_sorted
     benchmark:
        "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
     output:
@@ -116,5 +140,5 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Pilon contigs ."""
-    shell:"pilon -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"
+    shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases --tracks --vcf --changes 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
