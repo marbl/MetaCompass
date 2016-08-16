@@ -11,6 +11,7 @@ DESCRIPTION
 #os.system("touch %s"%config['reads'][0])
 
 
+#ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > sam_to_bam > bam_sort 
 ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > sam_to_bam > bam_sort > pilon_contigs
 
 #code to skip initial steps if reference genomes provided 
@@ -85,7 +86,7 @@ rule bowtie2_map:
     log: '%s/%s.%s.step2.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} > {log} 2>&1"%(config['ref'])
 
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
@@ -144,5 +145,5 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Pilon contigs ."""
-    shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 10 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,breaks --vcf --changes 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 5 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix breaks 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 

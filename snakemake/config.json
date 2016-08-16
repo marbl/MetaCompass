@@ -4,7 +4,7 @@
     "r2" : [""],
     "reference":[""],
     "pickref":"all",
-    "length":150,
+    "length":300,
     "prefix":".",
     "memory": 50,
     "nthreads": 12,
