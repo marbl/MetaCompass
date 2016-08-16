@@ -12,7 +12,7 @@ DESCRIPTION
 
 
 #ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > sam_to_bam > bam_sort 
-ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > sam_to_bam > bam_sort > pilon_contigs
+ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
 
 #code to skip initial steps if reference genomes provided 
 if config['r1'][0] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
@@ -43,6 +43,7 @@ rule kmer_mask:
         out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample']),
         len=str(config["length"]+3)
     threads:config["nthreads"]
+    log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
 
     shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -2 {input.r2} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"%(config["mcdir"])
 
@@ -52,7 +53,7 @@ rule fastq2fasta:
     output:expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])
     message: """---Converting fastq to fasta."""
     shell : "perl %s/bin/fq2fa.pl -i {input} -o {output}"%(config["mcdir"])
-
+    log:'%s/%s.%s.fastq2fasta.log'%(config['prefix'],config['sample'],config['iter'])
 
 rule reference_recruitment:
     input:
@@ -64,7 +65,7 @@ rule reference_recruitment:
 	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
     #fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
     #'{prefix}/{sample}.{iter}.assembly.out/mc.refseq.fna'
-    log:'%s/%s.%s.step1.log'%(config['prefix'],config['sample'],config['iter'])
+    log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---reference recruitment."""
     threads:config["nthreads"]
 
@@ -83,10 +84,10 @@ rule bowtie2_map:
        index= '%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        pref='%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    log: '%s/%s.%s.step2.log'%(config['prefix'],config['sample'],config['iter'])
+    log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1},{input.r2} -S {output.sam} > {log} 2>&1"%(config['ref'])
 
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
@@ -103,20 +104,38 @@ rule build_contigs:
     output:
         out='%s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']),
         contigs='%s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],config['iter'])
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.buildcontigs.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
     shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
 
+
+rule pilon_map:
+    input:
+       ref=rules.build_contigs.output.contigs,
+       r1=config['r1'],
+       r2=config['r2']
+    benchmark:
+       "%s/benchmarks/pilon_map/%s.txt"%(config['prefix'],config['sample'])
+    output:
+       index= '%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
+    threads:config["nthreads"]
+    message: """---Build index ."""
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1},{input.r2} -S {output.sam} > {log} 2>&1"
+
+
 rule sam_to_bam:
     input:
-        sam=  rules.bowtie2_map.output.sam
+        sam=  rules.pilon_map.output.sam
     output:
         bam = "%s.bam"%(rules.bowtie2_map.output.sam)
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
-    shell:"samtools view -bS {input.sam} -s {input.sam} -o {output.bam} 1>> {log} 2>&1"
+    shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
 
 rule bam_sort:
     input:
@@ -145,5 +164,7 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Pilon contigs ."""
-    shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 5 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix breaks 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 5 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+   
+#shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
