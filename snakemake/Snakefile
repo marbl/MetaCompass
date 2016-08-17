@@ -22,6 +22,14 @@ if config['reads'] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.a
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
 
+     os.system("touch %s/%s.%s.assembly.out/%s.sam"%(config['prefix'],config['sample'],config['iter'],config['sample']))
+     os.system('touch %s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']))
+     os.system("touch %s/%s.%s.assembly.out/%s.index"%(config['prefix'],config['sample'],config['iter'],config['sample']))
+
+     if int(config['iter']) >= 1:
+         os.system('cp %s/%s.%d.assembly.out/contigs.pilon.fasta %s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1, config['prefix'],config['sample'],int(config['iter'])))
+
+
 rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.pilon.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
     benchmark:
@@ -37,7 +45,6 @@ rule merge_reads:
         merged='%s/%s.merged.fq'%(config['prefix'],config['sample'])
     run:
         for read in config['reads'].split(','):
-            print(read)
             if read != "" and len(read) != 0:
                 os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
 
@@ -55,7 +62,7 @@ rule kmer_mask:
     threads:config["nthreads"]
     log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
 
-    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"%(config["mcdir"])
+    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1"%(config["mcdir"])
 
 
 rule fastq2fasta:
@@ -83,12 +90,13 @@ rule reference_recruitment:
 
 
 #reads=rules.reference_recruitment.output.fqfile
+#    benchmark:
+#       "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
+
 rule bowtie2_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
        r1=rules.merge_reads.output.merged
-    benchmark:
-       "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
     output:
        index= '%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        pref='%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
@@ -101,13 +109,13 @@ rule bowtie2_map:
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
 
-
+#    benchmark:
+#       "%s/benchmarks/build_contigs/%s.txt"%(config['prefix'],config['sample'])
+#
 rule build_contigs:
     input:
         genome = '%s'%(config['ref']),
         sam=  rules.bowtie2_map.output.sam
-    benchmark:
-       "%s/benchmarks/build_contigs/%s.txt"%(config['prefix'],config['sample'])
     params:
         pickref="%s"%(config['pickref'])
     output:
@@ -116,7 +124,7 @@ rule build_contigs:
     log:'%s/%s.%s.assembly.out/%s.buildcontigs.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
-    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 2 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 5 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
 
 
 rule pilon_map:
@@ -173,7 +181,7 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Pilon contigs ."""
-    shell:"java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 5 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx16G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth 4 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 

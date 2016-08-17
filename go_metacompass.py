@@ -5,7 +5,6 @@ import os,sys,string,subprocess,signal
 import argparse
 
 mcdir = sys.path[0]
-print(mcdir)
 parser = argparse.ArgumentParser(description='snakemake and metacompass params')
 
 group1 = parser.add_argument_group('required')
@@ -301,9 +300,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --reason --verbose --cores %d -a --configfile %s --config prefix=%s sample=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
             else:
-                cmd = "snakemake --reason --verbose --cores %d -a --configfile %s --config prefix=%s sample=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
 
             cmd += " reads="
             for fqfile in allsamples:
