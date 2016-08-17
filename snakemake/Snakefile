@@ -15,8 +15,7 @@ DESCRIPTION
 ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
 
 #code to skip initial steps if reference genomes provided 
-if config['r1'][0] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
-
+if config['reads'] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
@@ -29,23 +28,34 @@ rule all:
        "%s/benchmarks/all/%s.txt"%(config['prefix'],config['sample'])
 
 #expand('{reads}',reads=config['r1'])[0]
+
+rule merge_reads:
+    input:
+        reads=config['reads'].split(",")[0]
+    message: """---merge fastq reads"""
+    output:
+        merged='%s/%s.merged.fq'%(config['prefix'],config['sample'])
+    run:
+        for read in config['reads'].split(','):
+            print(read)
+            if read != "" and len(read) != 0:
+                os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
+
 rule kmer_mask:
     input:
-        r1=config['r1'],
-        r2=config['r2']
+        r1=rules.merge_reads.output.merged
     output:
         fastq1=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0],
-        fastq2=expand('{prefix}/{sample}.marker.match.2.fastq',prefix=config['prefix'],sample=config['sample'])[0]
     message: """---kmer-mask fastq"""
     benchmark:
        "%s/benchmarks/kmermask/%s.txt"%(config['prefix'],config['sample'])
     params:
-        out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample']),
+        out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])[0],
         len=str(config["length"]+3)
     threads:config["nthreads"]
     log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
 
-    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -2 {input.r2} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"%(config["mcdir"])
+    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out}"%(config["mcdir"])
 
 
 rule fastq2fasta:
@@ -55,29 +65,28 @@ rule fastq2fasta:
     shell : "perl %s/bin/fq2fa.pl -i {input} -o {output}"%(config["mcdir"])
     log:'%s/%s.%s.fastq2fasta.log'%(config['prefix'],config['sample'],config['iter'])
 
+#    benchmark:
+#       "%s/benchmarks/reference_recruitment/%s.txt"%(config['prefix'],config['sample'])
+
+#fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
+#'{prefix}/{sample}.{iter}.assembly.out/mc.refseq.fna'
 rule reference_recruitment:
     input:
         rules.fastq2fasta.output
-    benchmark:
-       "%s/benchmarks/reference_recruitment/%s.txt"%(config['prefix'],config['sample'])
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
 	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
-    #fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
-    #'{prefix}/{sample}.{iter}.assembly.out/mc.refseq.fna'
-    log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---reference recruitment."""
     threads:config["nthreads"]
-
-    shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads}  1> {log} 2>&1"%(config["mcdir"])
+    log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
+    shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads}  1>> {log} 2>&1"%(config["mcdir"])
 
 
 #reads=rules.reference_recruitment.output.fqfile
 rule bowtie2_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
-       r1=config['r1'],
-       r2=config['r2']
+       r1=rules.merge_reads.output.merged
     benchmark:
        "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
     output:
@@ -87,7 +96,7 @@ rule bowtie2_map:
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1},{input.r2} -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} > {log} 2>&1"%(config['ref'])
 
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
@@ -113,8 +122,8 @@ rule build_contigs:
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
-       r1=config['r1'],
-       r2=config['r2']
+       r1=rules.merge_reads.output.merged
+
     benchmark:
        "%s/benchmarks/pilon_map/%s.txt"%(config['prefix'],config['sample'])
     output:
@@ -124,7 +133,7 @@ rule pilon_map:
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1},{input.r2} -S {output.sam} > {log} 2>&1"
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} > {log} 2>&1"
 
 
 rule sam_to_bam:

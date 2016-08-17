@@ -2,6 +2,7 @@
     "sample" : "Sample1",
     "r1" : [""],
     "r2" : [""],
+    "reads" : [""],
     "reference":[""],
     "pickref":"all",
     "length":300,
