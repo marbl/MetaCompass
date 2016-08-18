@@ -4,10 +4,12 @@ Last updated: August 9th, 2016
 # Required software:
 
 * BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
-* Bowtie  (>=) 2.2.4: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.4/ 
+* bowtie2  (>=) 2.2.4: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.4/ 
 * kmer-mask (May 13th, 2015): https://sourceforge.net/p/kmer/code/HEAD/tree/trunk/
 * Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
-* Snakemake 3.7.1: https://bitbucket.org/snakemake/snakemake/src
+* MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
+* samtools (>=) 1.x: http://samtools.sourceforge.net/ 
+* snakemake 3.7.1: https://bitbucket.org/snakemake/snakemake/src
 
 # INSTALLATION:
 
