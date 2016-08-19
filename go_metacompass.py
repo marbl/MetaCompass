@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description='snakemake and metacompass params')
 
 group1 = parser.add_argument_group('required')
 #group1.add_argument("-s",'--snakefile', help='metacompass rules file',default="",nargs='?',required=1,type=str)
-group1.add_argument("-c",'--config', help='config (json) file, set read length etc',default="",nargs='?',required=1,type=str)
+group1.add_argument("-c",'--config', help='config (json) file, set read length etc',default="",nargs='?',required=0,type=str)
 group1.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file per line)',default="", nargs='?',required=0,type=str)
 group1.add_argument("-P",'--paired', help='Provide comma separated list of paired reads (r1.1.fq,r1.2.fq)',default="", nargs='?',required=0,type=str)
 group1.add_argument("-U",'--unpaired', help='Provide comma separated list of unpaired reads (r1.fq,r2.fq,r3.fq)',default="", nargs='?',required=0,type=str)
@@ -71,7 +71,9 @@ else:
 #    print("ERROR: snakefile %s not found!"%(snakefile))
 #    sys.exit(1)
 
-if not os.path.exists(config):
+if config == "":
+    config = "%s/snakemake/config.json"%(mcdir)    
+elif not os.path.exists(config):
     print("ERROR: configfile %s not found!"%(config))
     sys.exit(1)
 
