@@ -11,9 +11,9 @@ DESCRIPTION
 #os.system("touch %s"%config['reads'][0])
 
 
-#ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > sam_to_bam > bam_sort 
-ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
-
+#ruleorder: kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > assemble_unmapped > build_contigs > sam_to_bam > bam_sort 
+ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > assemble_unmapped > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
+#ruleorder: bowtie2_map > assemble_unmapped > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
 #code to skip initial steps if reference genomes provided 
 if config['reads'] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
@@ -22,9 +22,11 @@ if config['reads'] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.a
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
 
-     os.system("touch %s/%s.%s.assembly.out/%s.sam"%(config['prefix'],config['sample'],config['iter'],config['sample']))
-     os.system('touch %s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']))
-     os.system("touch %s/%s.%s.assembly.out/%s.index"%(config['prefix'],config['sample'],config['iter'],config['sample']))
+     #os.system("touch %s/%s.%s.assembly.out/%s.sam"%(config['prefix'],config['sample'],config['iter'],config['sample']))
+     #os.system("touch %s/%s.%s.assembly.out/%s.sam.unmapped.fq"%(config['prefix'],config['sample'],config['iter'],config['sample']))
+     #os.system('touch %s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']))
+     #os.system("touch %s/%s.%s.assembly.out/%s.index"%(config['prefix'],config['sample'],config['iter'],config['sample']))
+     #os.system("touch %s/%s.0.assembly.out/%s.megahit"%(config['prefix'],config['sample'],config['sample']))
 
      if int(config['iter']) >= 1:
          os.system('cp %s/%s.%d.assembly.out/contigs.pilon.fasta %s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1, config['prefix'],config['sample'],int(config['iter'])))
@@ -32,8 +34,7 @@ if config['reads'] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.a
 
 rule all:
     input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.pilon.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
-    benchmark:
-       "%s/benchmarks/all/%s.txt"%(config['prefix'],config['sample'])
+
 
 #expand('{reads}',reads=config['r1'])[0]
 
@@ -44,9 +45,18 @@ rule merge_reads:
     output:
         merged='%s/%s.merged.fq'%(config['prefix'],config['sample'])
     run:
+
         for read in config['reads'].split(','):
             if read != "" and len(read) != 0:
                 os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
+        if config['reads'] != "" and config['ref'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
+             os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
+             os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
+             os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
+             os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
+             os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
+
+
 
 rule kmer_mask:
     input:
@@ -54,14 +64,11 @@ rule kmer_mask:
     output:
         fastq1=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0],
     message: """---kmer-mask fastq"""
-    benchmark:
-       "%s/benchmarks/kmermask/%s.txt"%(config['prefix'],config['sample'])
     params:
         out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])[0],
         len=str(config["length"]+3)
     threads:config["nthreads"]
     log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
-
     shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1"%(config["mcdir"])
 
 
@@ -100,12 +107,24 @@ rule bowtie2_map:
     output:
        index= '%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        pref='%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
-       sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+       sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       unmapped='%s/%s.%s.assembly.out/%s.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} --un {output.sam}.unmapped -S {output.sam} > {log} 2>&1"%(config['ref'])
+    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} --un {output.sam}.unmapped.fq -S {output.sam} > {log} 2>&1"%(config['ref'])
 
+
+#concatenate this output with buildcontigs for pilon improvement
+rule assemble_unmapped:
+    input:
+        reads=rules.bowtie2_map.output.unmapped
+    output:
+        dir='%s/%s.0.assembly.out/%s.megahit'%(config['prefix'],config['sample'],config['sample'])
+    threads:config["nthreads"]
+    log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
+    message: """---Assemble unmapped reads ."""
+    shell:"megahit -o {output.dir} -t {threads} -r {input.reads}  1>> {log} 2>&1"
 
 #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
 
@@ -124,23 +143,21 @@ rule build_contigs:
     log:'%s/%s.%s.assembly.out/%s.buildcontigs.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
-    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 5 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 5 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1; cat  %s/%s.0.assembly.out/%s.megahit/final.contigs.fa >> {output.contigs} "%(config["mcdir"],config['prefix'],config['sample'],config['sample'])
 
+#/cbcb/project2-scratch/treangen/test78/c_rudii.0.assembly.out/c_rudii.megahit/final.contigs.fa 
 
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
        r1=rules.merge_reads.output.merged
-
-    benchmark:
-       "%s/benchmarks/pilon_map/%s.txt"%(config['prefix'],config['sample'])
     output:
        index= '%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
-    message: """---Build index ."""
+    message: """---Map reads for pilon polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} > {log} 2>&1"
 
 
@@ -180,7 +197,7 @@ rule pilon_contigs:
         pilonctg='%s/%s.%s.assembly.out/contigs.pilon.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
-    message: """---Pilon contigs ."""
+    message: """---Pilon polish contigs ."""
     shell:"java -Xmx16G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth 4 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])

@@ -169,6 +169,8 @@ elif samples == "" and paired == "" and unpaired != "":
     allfiles = []
     if "," in unpaired:
         allfiles = unpaired.split(",")
+    else:
+        allfiles = [unpaired]
     for ufile in allfiles:
         if not os.path.exists(ufile):
             print("ERROR: could not locate --unpaired file %s"%(ufile))
@@ -199,7 +201,8 @@ elif samples == "" and paired != "" and unpaired != "":
             print("ERROR: could not locate --unpaired file %s"%(ufile))
             sys.exit()
 
-    allsamples.extend(allfiles)
+    if len(allfiles) != 0:
+        allsamples = allsamples.extend(allfiles)
 
 
 #allsamples = []
@@ -260,9 +263,10 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth ref=%s mcdir=%s iter=%d "%(threads,config,prefix,s1id,ref,mcdir,i)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth ref=%s mcdir=%s iter=%d "%(threads,config,prefix,s1id,ref,mcdir,i)
+
             else:        
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth ref=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d "%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth ref=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d "%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i)
 
             cmd += " reads="
             for fqfile in allsamples:
@@ -279,6 +283,13 @@ while i < iterations:
                 cmd += " --rerun-incomplete"
             else:
                 cmd += " --ignore-incomplete"
+
+
+            cmd += " --prioritize assemble_unmapped"
+            #if ref != "NA":
+            #    cmd += " --allowed-rules all,kmer_mask,bam_sort,bowtie2_map,build_contigs,merge_reads,pilon_contigs,pilon_map,sam_to_bam,assemble_unmapped"
+
+            #bowtie2_map
             #cmd += " --mcdir %s"%(mcdir)
 
             #if force:
@@ -319,6 +330,7 @@ while i < iterations:
                 cmd += " --rerun-incomplete"
             else:
                 cmd += " --ignore-incomplete"
+            cmd += " --prioritize assemble_unmapped"
             #if force:
             #    cmd += " -F"
             #cmd += " --mcdir %s"%(mcdir)
