@@ -8,7 +8,7 @@ mcdir = sys.path[0]
 parser = argparse.ArgumentParser(description='snakemake and metacompass params')
 
 group1 = parser.add_argument_group('required')
-group1.add_argument("-s",'--snakefile', help='metacompass rules file',default="",nargs='?',required=1,type=str)
+#group1.add_argument("-s",'--snakefile', help='metacompass rules file',default="",nargs='?',required=1,type=str)
 group1.add_argument("-c",'--config', help='config (json) file, set read length etc',default="",nargs='?',required=1,type=str)
 group1.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file per line)',default="", nargs='?',required=0,type=str)
 group1.add_argument("-P",'--paired', help='Provide comma separated list of paired reads (r1.1.fq,r1.2.fq)',default="", nargs='?',required=0,type=str)
@@ -20,6 +20,7 @@ group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?
 group5.add_argument("-p",'--pickref', help='coverage',default="breadth",nargs='?')
 
 group2 = parser.add_argument_group('output')
+group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default="./", nargs='?',type=str,required=1)
 group2.add_argument("-d",'--sampleid', help='sample id (fq prefix is default)',default="NA", nargs='?',type=str,required=0)
 group2.add_argument("-v",'--verbose', help='verbose',default=False,required=0,action='store_true')
@@ -34,11 +35,12 @@ group4.add_argument("-m",'--retry', help='retry/resume a failed run',default=Fal
 group4.add_argument("-u",'--unlock',help='unlock snakemake locks',default=False, required=0,action='store_true')
 
 args = parser.parse_args()
+clobber = args.clobber
 unlock = args.unlock
 threads = int(args.threads)
 iterations = args.iterations
 ref = args.ref
-snakefile = args.snakefile
+#snakefile = args.snakefile
 config = args.config
 samples = args.Samples.replace(" ","")
 unpaired = args.unpaired
@@ -56,16 +58,18 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
     prefix = outdir
 else:
-    if os.path.exists(outdir) and not force:
-        print("ERROR: specified output directory %s exists! please remove first, or run with --force"%(outdir))
+    if os.path.exists(outdir) and not clobber:
+        print("ERROR: specified output directory %s exists! please remove first, or run with --clobber"%(outdir))
         sys.exit(1)
     elif os.path.exists(outdir) and force:
+        os.system("rm -rf %s/*"%(outdir))
+        os.system("mkdir %s"%(outdir))
         prefix = outdir
 
 #1. ensure required files are present
-if not os.path.exists(snakefile):
-    print("ERROR: snakefile %s not found!"%(snakefile))
-    sys.exit(1)
+#if not os.path.exists(snakefile):
+#    print("ERROR: snakefile %s not found!"%(snakefile))
+#    sys.exit(1)
 
 if not os.path.exists(config):
     print("ERROR: configfile %s not found!"%(config))
@@ -259,14 +263,14 @@ while i < iterations:
             print("ERROR: Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. If you'd like to retry/resume this run, specify: --retry"%(prefix,s1id))
             sys.exit(1)
         if unlock:
-            ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s --configfile %s --unlock"%(s1id,snakefile,config),shell=True)
+            ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s/snakemake/metacompass.iter0.py --configfile %s --unlock"%(s1id,mcdir,config),shell=True)
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth ref=%s mcdir=%s iter=%d "%(threads,config,prefix,s1id,ref,mcdir,i)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d "%(threads,config,prefix,s1id,ref,mcdir,i)
 
             else:        
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth ref=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d "%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d "%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i)
 
             cmd += " reads="
             for fqfile in allsamples:
@@ -274,8 +278,11 @@ while i < iterations:
              
             if paired != "":
                 cmd += " r1=%s r2=%s"%(paired.split(",")[0],paired.split(",")[1])
- 
-            cmd += " --snakefile %s"%(snakefile)
+  
+            if ref != "NA":
+                cmd += " --snakefile %s/snakemake/metacompass.iter0.ref.py"%(mcdir)
+            else:
+                cmd += " --snakefile %s/snakemake/metacompass.iter0.py"%(mcdir)
 
             if verbose:
                 cmd += " --verbose"
@@ -285,7 +292,7 @@ while i < iterations:
                 cmd += " --ignore-incomplete"
 
 
-            cmd += " --prioritize assemble_unmapped"
+            cmd += " --prioritize join_contigs"
             #if ref != "NA":
             #    cmd += " --allowed-rules all,kmer_mask,bam_sort,bowtie2_map,build_contigs,merge_reads,pilon_contigs,pilon_map,sam_to_bam,assemble_unmapped"
 
@@ -311,9 +318,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s ref=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
 
             cmd += " reads="
             for fqfile in allsamples:
@@ -322,7 +329,8 @@ while i < iterations:
             if paired != "":
                 cmd += " r1=%s r2=%s"%(paired.split(",")[0],paired.split(",")[1])
  
-            cmd += " --snakefile %s"%(snakefile)
+            
+            cmd += " --snakefile %s/snakemake/metacompass.py"%(mcdir)
             
             if verbose:
                 cmd += " --verbose"
@@ -330,7 +338,7 @@ while i < iterations:
                 cmd += " --rerun-incomplete"
             else:
                 cmd += " --ignore-incomplete"
-            cmd += " --prioritize assemble_unmapped"
+            cmd += " --prioritize pilon_contigs"
             #if force:
             #    cmd += " -F"
             #cmd += " --mcdir %s"%(mcdir)
@@ -353,7 +361,7 @@ while i < iterations:
         i+=1
 
 
-if os.path.exists("%s/%s.%d.assembly.out/contigs.fasta"%(prefix,s1id,i-1)):
+if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1)):
     os.system("touch %s/%s.0.assembly.out/run.ok"%(prefix,s1id))
     print("MetaCompass finished succesfully!")
 else:
