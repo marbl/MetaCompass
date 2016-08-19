@@ -125,15 +125,15 @@ def create_report_file(list_ref, result_dir, output_name):
  
          with open(report_file_name,'rt') as report_file:
             for line in report_file:
-               if "TotalSeqs" in line:
-                  nb_contig = line.split()[2].strip()
+               if "AlignedSeqs" in line:
+                  nb_contig = line.split()[2].strip().split('(')[0]
                elif "TotalBases" in line:
                   total_ref_bases = line.split()[1].strip()
                elif "AlignedBases" in line:
                   aligned_bases = line.split()[1].strip().split('(')[0]
-               elif ("AvgLength" in line) and (avg_alignment_len != "NA"):
+               elif ("AvgLength" in line) and (avg_alignment_len == "NA"):
                   avg_alignment_len = line.split()[1].strip()
-               elif ("AvgIdentity" in line) and (avg_identity != "NA"):
+               elif ("AvgIdentity" in line) and (avg_identity == "NA"):
                   avg_identity = line.split()[2].strip()
                elif "TotalSNPs" in line:
                   total_snps = line.split()[2].strip()
@@ -145,6 +145,9 @@ def create_report_file(list_ref, result_dir, output_name):
                               perc_recovered_ref, avg_identity,
                               avg_alignment_len, total_snps, total_gsnps))
 
+   os.system("rm {0}/*.delta {0}/*.1delta {0}/*.qdiff {0}/*.rdiff {0}/*.snps"\
+             " {0}/*.unqry {0}/*.mcoords {0}/*.mdelta {0}/*.delta {0}/*.delta.filt"\
+             " {0}/*.1coords {0}/*.unref".format(result_dir))
 def main():
 
    """Main program function
