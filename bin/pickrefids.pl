@@ -5,9 +5,9 @@
 # Program: Pick reference genomes based on
 #          metaphyler output
 #
-# Author: Bo Liu
+# Author: Bo Liu, Victoria Cepeda, Mathieu Almeida
 #
-# Fri Aug 10 18:12:01 EDT 2012
+# Mon Aug 22 13:57:01 EDT 2016
 #
 #############################################
 
@@ -20,12 +20,14 @@ use FindBin qw($Bin);
 # read command line options
 #----------------------------------------#
 my $blast = "";
-my $part = 0;
-if (scalar @ARGV == 2) {
-    ($blast, $part) = @ARGV;
+my $coverage = 3;
+my $readlen = 100;
+if (scalar @ARGV == 3) {
+    ($blast, $coverage, $readlen) = @ARGV;
 } else {
     Usage();
 }
+
 #----------------------------------------#
 
 
@@ -54,7 +56,7 @@ close FH;
 # abundance for each reference genome
 #----------------------------------------#
 my %tid2num = ();   # # of reads classified within each tax id
-my $totalcount = 0;
+
 # read tab delimited file
 open(FH, "$blast") or die("Could not open $blast.\n");
 foreach my $line (<FH>) {
@@ -66,7 +68,6 @@ foreach my $line (<FH>) {
     $rid = $1;
     my $tid = $seq2tid{$rid};
     $tid2num{$tid}++;
-    $totalcount++;
 }
 close FH;
 #----------------------------------------#
@@ -79,24 +80,23 @@ my $total = 0;
 my %sps = ();
 foreach my $tid (sort {$tid2num{$b} <=> $tid2num{$a}} keys %tid2num) {
 
-    my $num = $tid2num{$tid}*$part;
-    
-    if ($num < 200) { last;}    # if abundance < 200 then ignore
-    if ($total > 10000) { last;} # if more than 10000 genomes have been used then stop
+    my $num = $tid2num{$tid};
+    my $marker_cumulated_size = 10000.0;
+    if (( ($num*$readlen) / $marker_cumulated_size) < $coverage) { last;} # skip if prediceted coverage is below threshold
+    if ($total > 10000) { last;} # skip if more than 10000 genomes selected
     
     my $sp = $tid2sp{$tid};
     if (exists $sps{$sp}) {
-	if ($sps{$sp} >= 5) { next;}  # for a single species, allow max 5 reference genomes
+	if ($sps{$sp} >= 5) { next;}  # skip if more than 5 genomes from same species selected
     }
     
     $sps{$sp}++;
     $total++;
 
-    #put the same counts for each chromosomes and filter genome detected with less than 0.5% mapped reads 
-    if ((($num/$totalcount)*100) >=0.1 ){
-       foreach my $seq (keys %{$tid2seqs{$tid}}) {
+    #put the same counts for the chromosome and all molecules related (like plasmids) 
+    
+    foreach my $seq (keys %{$tid2seqs{$tid}}) {
    	  print "$seq\t$tid\t$num\t$tid2name{$tid}\n";
-       }
     }
 }
 
