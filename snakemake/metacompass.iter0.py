@@ -127,14 +127,15 @@ rule build_contigs:
         genome = '%s'%(config['reference']),
         sam=  rules.bowtie2_map.output.sam
     params:
-        pickref="%s"%(config['pickref'])
+        pickref="%s"%(config['pickref']),
+        mincov="%d"%(config['mincov'])
     output:
         out='%s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']),
         contigs='%s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.buildcontigs.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
-    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 5 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c {params.mincov} -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
 
 #/cbcb/project2-scratch/treangen/test78/c_rudii.0.assembly.out/c_rudii.megahit/final.contigs.fa 
 
