@@ -18,6 +18,8 @@ group5 = parser.add_argument_group("metacompass")
 group5.add_argument("-i",'--iterations', type=int, help='num iterations',default=1, nargs='?')
 group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?')
 group5.add_argument("-p",'--pickref', help='coverage',default="breadth",nargs='?')
+group5.add_argument("-m",'--mincov', help='coverage',default="3",nargs='?',type=int)
+group5.add_argument("-l",'--readlen', help='coverage',default="100",nargs='?',type=int)
 
 group2 = parser.add_argument_group('output')
 group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
@@ -31,10 +33,11 @@ group3.add_argument("-q",'--qsub', help='',default="", nargs='?',required=0)
 
 group4 = parser.add_argument_group('snakemake')
 group4.add_argument("-F",'--force', help='force snakemake to rerun',default=False,required=0,action='store_true')
-group4.add_argument("-m",'--retry', help='retry/resume a failed run',default=False,required=0,action='store_true')
 group4.add_argument("-u",'--unlock',help='unlock snakemake locks',default=False, required=0,action='store_true')
 
 args = parser.parse_args()
+mincov = args.mincov
+readlen=args.readlen
 clobber = args.clobber
 unlock = args.unlock
 threads = int(args.threads)
@@ -50,9 +53,9 @@ qsub = args.qsub
 force = args.force
 verbose = args.verbose
 outdir = args.outdir
-retry = args.retry
 pickref = args.pickref
 prefix = ""
+retry = False
 
 if not os.path.exists(outdir):
     os.makedirs(outdir)
@@ -269,10 +272,10 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d "%(threads,config,prefix,s1id,ref,mcdir,i)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov)
 
             else:        
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d "%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d length=%d mincov=%d"%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i,readlen,mincov)
 
             cmd += " reads="
             for fqfile in allsamples:
@@ -320,9 +323,9 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov)
 
             cmd += " reads="
             for fqfile in allsamples:

@@ -10,6 +10,7 @@
     "memory": 50,
     "nthreads": 12,
     "iter": 1,
+    "mincov" : 3,
     "mcdir": "."
 
 }
