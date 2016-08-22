@@ -85,13 +85,16 @@ rule fastq2fasta:
 rule reference_recruitment:
     input:
         rules.fastq2fasta.output
+    params:
+        mincov = "%d"%(config['mincov']),
+        readlen = "%d"%(config['length']),
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
 	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
     message: """---reference recruitment."""
     threads:config["nthreads"]
     log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
 
 
 #reads=rules.reference_recruitment.output.fqfile
