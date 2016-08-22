@@ -41,7 +41,8 @@ print STDERR "\n";
 
 # select reference genomes
 print STDERR "# Pick reference genomes based on MetaPhyler output\n";
-$cmd = "perl $Bin/pickrefids.pl $outdir/$prefix.blastn 1 > $outdir/$prefix.refseq.ids";
+# pickrefids.pl <blastfile> <coverage_threshold> <max_read_length>
+$cmd = "perl $Bin/pickrefids.pl $outdir/$prefix.blastn 3 100 > $outdir/$prefix.refseq.ids";
 print STDERR "$cmd\n";
 system($cmd);
 print STDERR "\n";
