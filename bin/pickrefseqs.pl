@@ -22,8 +22,10 @@ my $fastafile = "";
 my $outdir = 0;
 my $nthreads = 0;
 my $prefix ="mc";
-if (scalar @ARGV == 3) {
-    ($fastafile, $outdir, $nthreads) = @ARGV;
+my $mincov = 3;
+my $readlen = 100;
+if (scalar @ARGV == 5) {
+    ($fastafile, $outdir, $nthreads,$mincov,$readlen) = @ARGV;
 } else {
     Usage();
 }
@@ -34,7 +36,7 @@ my $cmd = "";
 
 # run metaphyler
 print STDERR "# Run MetaPhyler\n";
-$cmd = "perl $Bin/../src/metaphyler/metaphyler.pl $fastafile $outdir $nthreads";
+$cmd = "perl $Bin/../src/metaphyler/metaphyler.pl $fastafile $outdir $nthreads ";
 print STDERR "$cmd\n";
 system($cmd);
 print STDERR "\n";
@@ -42,7 +44,7 @@ print STDERR "\n";
 # select reference genomes
 print STDERR "# Pick reference genomes based on MetaPhyler output\n";
 # pickrefids.pl <blastfile> <coverage_threshold> <max_read_length>
-$cmd = "perl $Bin/pickrefids.pl $outdir/$prefix.blastn 3 100 > $outdir/$prefix.refseq.ids";
+$cmd = "perl $Bin/pickrefids.pl $outdir/$prefix.blastn $mincov $readlen > $outdir/$prefix.refseq.ids";
 print STDERR "$cmd\n";
 system($cmd);
 print STDERR "\n";
