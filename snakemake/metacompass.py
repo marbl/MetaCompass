@@ -37,7 +37,7 @@ rule pilon_map:
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Map reads for pilon polishing."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --sensitive --end-to-end  --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
 
 
 rule sam_to_bam:
@@ -58,7 +58,7 @@ rule bam_sort:
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:config["nthreads"]
     message: """---Sort bam ."""
-    shell: "samtools sort {input.bam} %s/%s.%s.assembly.out/sorted 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
+    shell: "samtools sort {input.bam} %s/%s.%s.assembly.out/sorted.bam 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
 
 
 #samtools view -bS $samfile | samtools sort - $pilon_dir/$ref.sorted"

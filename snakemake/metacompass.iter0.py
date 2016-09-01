@@ -101,6 +101,31 @@ rule reference_recruitment:
 #    benchmark:
 #       "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
 
+
+rule mrsfast_map:
+    input:
+       ref=rules.reference_recruitment.output.reffile,
+       r1=rules.merge_reads.output.merged
+    output:
+       index= '%s.index'%(config['reference']),
+       sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log: '%s/%s.%s.mrsfastmap.log'%(config['prefix'],config['sample'],config['iter'])
+    threads:config["nthreads"]
+    message: """---Build index and map ."""
+    shell:"mrsfast --index {input.ref} --ws 14 > {log} 2>&1;mrsfast --search {input.ref} --crop 100 --mem 8 --seq {input.r1} --threads {threads} -o {output.sam} --disable-nohits >> {log} 2>&1"
+
+rule bwa_map:
+    input:
+       ref=rules.reference_recruitment.output.reffile,
+       r1=rules.merge_reads.output.merged
+    output:
+       index= '%s.bwt'%(config['reference']),
+       sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log: '%s/%s.%s.bwamap.log'%(config['prefix'],config['sample'],config['iter'])
+    threads:config["nthreads"]
+    message: """---Build index and map ."""
+    shell:"bwa index {input.ref} > {log} 2>&1;bwa aln -R 110 -N -o 0 -t {threads} -f {output.sam}.sai {input.ref} {input.r1} >> {log} 2>&1;bwa samse -n 1000 {input.ref} {output.sam}.sai {input.r1} > {output.sam}.full 2>&1;samtools view -F4 -@ {threads} {output.sam}.full -o {output.sam} >> {log} 2>&1"
+
 rule bowtie2_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
@@ -113,15 +138,9 @@ rule bowtie2_map:
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
+    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
 
 
-
-#shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end -D 15 -R 2 -N 0 -L 31 -i S,1,1.15 -p {threads} -x {output.pref} -f {input.reads} -S {output.sam} > {log} 2>&1"
-
-#    benchmark:
-#       "%s/benchmarks/build_contigs/%s.txt"%(config['prefix'],config['sample'])
-#
 rule build_contigs:
     input:
         genome = '%s'%(config['reference']),
@@ -151,7 +170,7 @@ rule pilon_map:
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Map reads for pilon polishing."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --sensitive --end-to-end --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
 
 
 rule sam_to_bam:
@@ -162,7 +181,7 @@ rule sam_to_bam:
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
-    shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
+    shell:"samtools view -b {input.sam} -o {output.bam} 1>> {log} 2>&1"
 
 rule bam_sort:
     input:
@@ -170,9 +189,9 @@ rule bam_sort:
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:1
+    threads:config['nthreads']
     message: """---Sort bam ."""
-    shell: "samtools sort {input.bam} %s/%s.%s.assembly.out/sorted 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
+    shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
 
 
 #samtools view -bS $samfile | samtools sort - $pilon_dir/$ref.sorted"
@@ -184,12 +203,10 @@ rule pilon_contigs:
         sam = rules.bam_sort.output.bam_sorted
     benchmark:
        "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
-    params:
-        threads="%s"%(config['nthreads'])
     output:
         pilonctg='%s/%s.%s.assembly.out/contigs.pilon.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:1
+    threads:config['nthreads']
     message: """---Pilon polish contigs ."""
     shell:"java -Xmx16G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth 4 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
