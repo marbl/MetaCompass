@@ -13,3 +13,5 @@ all_readme
 install.pl
 .dir_bash_history
 .snakemake
+src/buildcontig/*
+!src/buildcontig/*pp
