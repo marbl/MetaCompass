@@ -222,7 +222,8 @@ void createContig(Cmdopt &cmdopt, S2VC &ref2prof, S2VB &ref2ins, S2VB &ref2cov, 
 	  ofs << ">" << refid << "_" << ctgn++ << " " << ctgstart << " " << pos << endl;
 	  ofs << contig << endl;
 	}
-	contig.clear();
+	if (!contig.empty())
+	  contig.clear();
 	ctgstart = pos+1; // +1: 0 to 1; +1: current is gap, next is true start
       }
     }

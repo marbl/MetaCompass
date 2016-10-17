@@ -45,7 +45,7 @@ void init(const S2S &ref2seq,
     Uint len = citer->second.size();       // length
 
     try {
-      ref2vbool.insert( S2VB::value_type(citer->first, VB((len)*num, 0)) );
+      ref2vbool.insert( S2VB::value_type(citer->first, VB((len)*num, false)) );
     }
     catch (bad_alloc& ba) {
       cerr << endl << endl;

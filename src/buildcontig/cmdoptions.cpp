@@ -20,7 +20,7 @@ void buildcontighelp() {
   cerr << endl;
 
   cerr << "Options:" << endl;
-  cerr << "        -m/--mapfile  read mapping file from mummer-map" << endl;
+//  cerr << "        -m/--mapfile  read mapping file from mummer-map" << endl;
   cerr << "        -s/--samfile  read mapping file from bowtie2, BWA, etc." << endl;
   cerr << "        -r/--refseq   reference sequences used to guide genome assembly" << endl;
   cerr << "        -o/--prefix   output files prefix" << endl;
@@ -56,12 +56,13 @@ void parsecmdoptions(int argc, char *argv[], Cmdopt* cmdopt) {
   bool tag = false;
   for (int i = 1; i < argc; i += 2) {        // read each option
     
-    if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mapfile") == 0) {          // read mapping file
-      cmdopt->mapfile = argv[i+1];
-      cmdopt->filetype = "map";
-    }
+//    if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mapfile") == 0) {          // read mapping file
+//      cmdopt->mapfile = argv[i+1];
+//      cmdopt->filetype = "map";
+//    }
     
-    else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--samfile") == 0) {          // read mapping file
+    //else 
+    if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--samfile") == 0) {          // read mapping file
       cmdopt->mapfile = argv[i+1];
       cmdopt->filetype = "sam";
     }
