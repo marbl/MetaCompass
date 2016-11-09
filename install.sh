@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
  
 echo "#Installing MetaCompass"
 cmd="g++ -Wall -W -O2 -o ./bin/extractSeq ./src/utils/extractSeq.cpp"
@@ -19,7 +19,7 @@ $cmd
 #cd src && make && cd ..
 #cd ..
 
-cmd="wget https://gembox.cbcb.umd.edu/metacompass/markers.blastn.classifier -P ./src/metaphyler/markers"
+cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.blastn.classifier -P ./src/metaphyler/markers"
 echo $cmd
 $cmd
 

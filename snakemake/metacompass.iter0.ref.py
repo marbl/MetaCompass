@@ -126,7 +126,7 @@ rule assemble_unmapped:
     threads:config["nthreads"]
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
-    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit -t {threads} -r {input.reads}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'])
+    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count %d --min-contig-len %d -t {threads} -r {input.reads}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['mincov'],config['minlen'])
 
 
 rule join_contigs:
