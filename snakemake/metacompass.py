@@ -1,4 +1,4 @@
-"""
+xc"""
 DESCRIPTION
 """
 #__author__ = "Victoria Cepeda
@@ -37,7 +37,7 @@ rule pilon_map:
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Map reads for pilon polishing."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --sensitive --end-to-end  --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
 
 
 rule sam_to_bam:
@@ -78,4 +78,4 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:config["nthreads"]
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx16G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth {params.mincov} --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1;cp %s/%s.%s.assembly.out/contigs.pilon.fasta %s/%s.%s.assembly.out/contigs.final.fasta"%(config["mcdir"],config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx64G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth {params.mincov} --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local 1>> {log} 2>&1;cp %s/%s.%s.assembly.out/contigs.pilon.fasta %s/%s.%s.assembly.out/contigs.final.fasta"%(config["mcdir"],config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'])
