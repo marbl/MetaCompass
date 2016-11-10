@@ -161,7 +161,9 @@ rule build_contigs:
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
-       r1=rules.merge_reads.output.merged
+       #r1=rules.merge_reads.output.merged
+       r1=config['reads'].split(",")[0],
+       r2=config['reads'].split(",")[1]
     output:
        index= '%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
