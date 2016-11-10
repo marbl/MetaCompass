@@ -1,4 +1,4 @@
-xc"""
+"""
 DESCRIPTION
 """
 #__author__ = "Victoria Cepeda
