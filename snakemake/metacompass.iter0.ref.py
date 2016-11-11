@@ -59,24 +59,27 @@ rule build_contigs:
     log:'%s/%s.%s.assembly.out/%s.buildcontigs.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
-    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c 5 -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
 
 #/cbcb/project2-scratch/treangen/test78/c_rudii.0.assembly.out/c_rudii.megahit/final.contigs.fa 
 
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
-       r1=rules.merge_reads.output.merged
+       #r1=rules.merge_reads.output.merged
+       r1=config['reads'].split(",")[0],
+       r2=config['reads'].split(",")[1]
     output:
        index= '%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
-       unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+       #unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+       unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       unmappedr2='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.2.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Map reads for pilon polishing."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
-
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {log} 2>&1"
 
 rule sam_to_bam:
     input:
@@ -120,14 +123,14 @@ rule pilon_contigs:
 #concatenate this output with buildcontigs for pilon improvement
 rule assemble_unmapped:
     input:
-        reads=rules.pilon_map.output.unmapped
+        r1=rules.pilon_map.output.unmappedr1,
+        r2=rules.pilon_map.output.unmappedr2
     output:
         megahit_contigs='%s/%s.0.assembly.out/%s.megahit/final.contigs.fa'%(config['prefix'],config['sample'],config['sample'])
     threads:config["nthreads"]
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
-    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count %d --min-contig-len %d -t {threads} -r {input.reads}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['mincov'],config['minlen'])
-
+    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count %d --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['mincov'],config['minlen'])
 
 rule join_contigs:
     input:
