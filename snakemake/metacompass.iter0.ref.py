@@ -44,7 +44,7 @@ rule bowtie2_map:
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Build index ."""
-    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
+    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
 
 
 rule build_contigs:
