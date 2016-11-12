@@ -64,7 +64,7 @@ rule kmer_mask:
     message: """---kmer-mask fastq"""
     params:
         out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])[0],
-        len=str(config["length"]+3)
+        len=int(config["length"])+3
     threads:config["nthreads"]
     log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
     shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1"%(config["mcdir"])
@@ -86,8 +86,8 @@ rule reference_recruitment:
     input:
         rules.fastq2fasta.output
     params:
-        mincov = "%d"%(config['mincov']),
-        readlen = "%d"%(config['length']),
+        mincov = "%d"%(int(config['mincov'])),
+        readlen = "%d"%(int(config['length'])),
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
 	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
@@ -147,7 +147,7 @@ rule build_contigs:
         sam=  rules.bowtie2_map.output.sam
     params:
         pickref="%s"%(config['pickref']),
-        mincov="%d"%(config['mincov'])
+        mincov="%d"%(int(config['mincov']))
     output:
         out='%s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']),
         contigs='%s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],config['iter'])
@@ -225,7 +225,7 @@ rule assemble_unmapped:
     threads:config["nthreads"]
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
-    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count %d --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['mincov'],config['minlen'])
+    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count %d --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['mincov']),int(config['minlen']))
 
 
 rule join_contigs:
