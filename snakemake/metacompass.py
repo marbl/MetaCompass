@@ -71,8 +71,8 @@ rule pilon_contigs:
     benchmark:
        "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
     params:
-        threads="%s"%(config['nthreads']),
-        mincov="%d"%(config['mincov'])
+        threads="%s"%(int(config['nthreads'])),
+        mincov="%d"%(int(config['mincov']))
     output:
         pilonctg='%s/%s.%s.assembly.out/contigs.final.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
