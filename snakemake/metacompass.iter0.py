@@ -64,10 +64,10 @@ rule kmer_mask:
     message: """---kmer-mask fastq"""
     params:
         out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])[0],
-        len=int(config["length"])+3
+        len=str(int(config["length"])+3)
     threads:config["nthreads"]
     log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
-    shell : "kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1"%(config["mcdir"])
+    shell:"kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1"%(config["mcdir"])
 
 
 rule fastq2fasta:
