@@ -213,7 +213,7 @@ elif samples == "" and paired != "" and unpaired != "":
             sys.exit()
 
     if len(allfiles) != 0:
-        allsamples.append(allfiles)
+        allsamples.extend(allfiles)
 
 
 #allsamples = []
