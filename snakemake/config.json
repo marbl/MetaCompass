@@ -4,7 +4,7 @@
     "r2" : [""],
     "reads" : [""],
     "reference":[""],
-    "pickref":"all",
+    "pickref":"breadth",
     "length":300,
     "prefix":".",
     "memory": 50,
