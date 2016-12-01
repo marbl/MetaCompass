@@ -213,7 +213,7 @@ elif samples == "" and paired != "" and unpaired != "":
             sys.exit()
 
     if len(allfiles) != 0:
-        allsamples = allsamples.extend(allfiles)
+        allsamples.append(allfiles)
 
 
 #allsamples = []
@@ -231,7 +231,6 @@ elif samples == "" and paired != "" and unpaired != "":
 
 #3. for all samples, all iterations, go!
 ## process one sample at a time, so that we can track input/output easily and run in parallel if we want (qsub for each)
-
 
 i = 0
 isok = False
@@ -288,7 +287,7 @@ while i < iterations:
 
             cmd += " reads="
             for fqfile in allsamples:
-                cmd += fqfile+","
+                cmd += str(fqfile)+","
              
             if paired != "":
                 cmd += " r1=%s r2=%s"%(paired.split(",")[0],paired.split(",")[1])
