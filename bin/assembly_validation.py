@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Check the metagenomic assembly by comparing with reference genome(s) """ 
 
