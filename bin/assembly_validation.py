@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Check the metagenomic assembly by comparing with reference genome(s) """ 
 
@@ -80,12 +80,11 @@ def compare_contigs_to_ref(contig_file, ref_folder, list_ref, result_dir):
       complete_ref = ref_folder + "/" + ".".join(ref.split('.')[:-1]) + ".fasta" 
       genome_name = ".".join(ref.split('.')[:-1])
       if not os.path.isfile("%s/%s.done" % (result_dir, genome_name)): 
-         #nucmer and gene prediction comparison
+         #nucmer and gene prediction comparison         
          cmd = "nucmer -l 100 {0} {1}/{2}.mc.fasta -p {1}/{2} &>{1}/{2}.log; "\
             "delta-filter -i 95 -l 100 {1}/{2}.delta > {1}/{2}.delta.filt; "\
             "dnadiff -d {1}/{2}.delta.filt -p {1}/{2} &>>{1}/{2}.log 2>&1; "\
             "prodigal -i {1}/{2}.mc.fasta -d {1}/{2}.mc.fna -a {1}/{2}.mc.faa -q > /dev/null; "\
-            "sleep 1s; "\
             "fetchMG.pl -m extraction {1}/{2}.mc.faa -o {1}/{2}.fetchMG > /dev/null; "\
             "cat {1}/{2}.fetchMG/*.fna > {1}/{2}.mc.marker.fna; "\
             "touch {1}/{2}.done".format(complete_ref,result_dir,genome_name)
@@ -109,52 +108,58 @@ def create_report_file(list_ref, result_dir, output_name):
          report_file_name = result_dir + "/" + genome_name + ".report"
          gene = dict.fromkeys(["total","complete","lack_both"],0)
          marker = dict.fromkeys(["total","complete","lack_both"],0)
-         genome = dict.fromkeys(["size_theo","contigs","size_obs",
+         genome = dict.fromkeys(["size_theo","nb_contig","size_obs",
        	       	       	   "perc_identity","perc_recovery", "avg_alignment_len",
                            "snps","gsnps","breakpoints"],0)
 
          
-         #gene status
-         with open("%s/%s.mc.fna"%(result_dir,genome_name)) as gene_file:
-            for line in gene_file:
-               if line[0]==">":
-                  gene["total"] += 1
-                  if "partial=00" in line:
-                     gene["complete"] += 1
-                  elif "partial=11" in line:
-                     gene["lack_both"] += 1
+         #prodigal file
+         if os.path.isfile("%s/%s.mc.fna"%(result_dir,genome_name)):
+            with open("%s/%s.mc.fna"%(result_dir,genome_name)) as gene_file:
+               for line in gene_file:
+                  if line[0]==">":
+                     gene["total"] += 1
+                     if "partial=00" in line:
+                        gene["complete"] += 1
+                     elif "partial=11" in line:
+                        gene["lack_both"] += 1
          
-         #marker status
-         with open("%s/%s.mc.marker.fna"%(result_dir,genome_name)) as marker_file:
-            for	line in	marker_file:
-       	       if line[0]==">":
-       	       	  marker["total"] += 1
-       	       	  if "partial=00" in line:
-       	       	     marker["complete"] += 1
-       	       	  elif "partial=11" in line:
-       	       	     marker["lack_both"] += 1
+         #fetchMG file
+         if os.path.isfile("%s/%s.mc.marker.fna"%(result_dir,genome_name)):
+            with open("%s/%s.mc.marker.fna"%(result_dir,genome_name)) as marker_file:
+               for line in marker_file:
+       	          if line[0]==">":
+       	       	     marker["total"] += 1
+       	       	     if "partial=00" in line:
+       	       	        marker["complete"] += 1
+       	       	     elif "partial=11" in line:
+       	       	        marker["lack_both"] += 1
+
+         #nucmer file
+         if os.path.isfile(report_file_name):
          
-         with open(report_file_name,'rt') as report_file:
-            for line in report_file:
-               if "AlignedSeqs" in line:
-                  genome["nb_contig"] = line.split()[2].strip().split('(')[0]
-               elif "TotalBases" in line:
-                  genome["size_theo"] = line.split()[1].strip()
-               elif "AlignedBases" in line:
-                  genome["size_obs"] = line.split()[1].strip().split('(')[0]
-               elif ("AvgLength" in line) and (genome["avg_alignment_len"] == 0):
-                  genome["avg_alignment_len"] = line.split()[1].strip()
-               elif "TotalSNPs" in line:
-                  genome["snps"] = line.split()[2].strip()
-               elif "TotalGSNPs" in line:
-                  genome["gsnps"] = line.split()[2].strip()
-               elif "Breakpoints" in line:
-                  genome["breakpoints"] = line.split()[2].strip()
+            with open(report_file_name,'rt') as report_file:
+               for line in report_file:
+                  if "AlignedSeqs" in line:
+                     genome["nb_contig"] = line.split()[2].strip().split('(')[0]
+                  elif "TotalBases" in line:
+                     genome["size_theo"] = line.split()[1].strip()
+                  elif "AlignedBases" in line:
+                     genome["size_obs"] = line.split()[1].strip().split('(')[0]
+                  elif ("AvgLength" in line) and (genome["avg_alignment_len"] == 0):
+                     genome["avg_alignment_len"] = line.split()[1].strip()
+                  elif "TotalSNPs" in line:
+                     genome["snps"] = line.split()[2].strip()
+                  elif "TotalGSNPs" in line:
+                     genome["gsnps"] = line.split()[2].strip()
+                  elif "Breakpoints" in line:
+                     genome["breakpoints"] = line.split()[2].strip()
 
-            genome["perc_recovery"] = (float(int(genome["size_obs"])) / float(int(genome["size_theo"]))) * 100.0
-            genome["perc_identity"] = (float(int(genome["size_obs"]) - int(genome["snps"])) / float(int(genome["size_obs"]))) * 100.0
+               if not int(genome["size_obs"])==0:
+                  genome["perc_recovery"] = (float(int(genome["size_obs"])) / float(int(genome["size_theo"]))) * 100.0
+                  genome["perc_identity"] = (float(int(genome["size_obs"]) - int(genome["snps"])) / float(int(genome["size_obs"]))) * 100.0
 
-            output_file.write("%s\t%s\t%s\t%s\t%.3f\t%.3f\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n" % (
+         output_file.write("%s\t%s\t%s\t%s\t%.3f\t%.3f\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n" % (
                               genome_name, genome["nb_contig"], genome["size_theo"], genome["size_obs"], 
                               genome["perc_recovery"], genome["perc_identity"],
                               genome["avg_alignment_len"], genome["snps"], genome["gsnps"], genome["breakpoints"],
@@ -178,9 +183,10 @@ def create_contig_files_shared(contig_file, ref_folder, list_ref, result_dir,con
       os.system("sed 's/>/>{0} /g' {1}/{0}.fasta >> {2}/reference.fasta".format(
                                            genome_name,ref_folder, result_dir))
 
-   print('align sequences...')
-   os.system("makeblastdb -in {0}/reference.fasta -out {0}/reference -dbtype nucl > /dev/null".format(result_dir))
-   os.system("blastn -db {0}/reference -query {1} -word_size 100 -evalue 1e-2"\
+   if not os.path.isfile("%s/contig_to_ref.blastn"%result_dir):
+      print('align sequences...')
+      os.system("makeblastdb -in {0}/reference.fasta -out {0}/reference -dbtype nucl > /dev/null".format(result_dir))
+      os.system("blastn -db {0}/reference -query {1} -word_size 100 -evalue 1e-2"\
                 " -max_target_seqs 100 -perc_identity 95 -outfmt 6 -out {0}/contig_to_ref.blastn".format(
                 result_dir, contig_file))
 
