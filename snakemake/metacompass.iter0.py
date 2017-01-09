@@ -179,13 +179,13 @@ rule pilon_map:
 
 rule sam_to_bam:
     input:
-        sam=  rules.pilon_map.output.sam
+        sam=rules.pilon_map.output.sam
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam)
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
-    shell:"samtools view -b {input.sam} -o {output.bam} 1>> {log} 2>&1"
+    shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
 
 rule bam_sort:
     input:
@@ -212,7 +212,7 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:config['nthreads']
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx16G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local,breaks 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx19G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local,breaks 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
 #concatenate this output with buildcontigs for pilon improvement
 #reads=rules.pilon_map.output.unmapped
