@@ -396,7 +396,7 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
     os.mkdir("%s/metacompass_output"%(prefix))
     os.mkdir("%s/metacompass_logs"%(prefix))
     os.system("cp %s/%s.0.assembly.out/contigs.final.fasta %s/metacompass_output/metacompass.final.ctg.fa"%(prefix,s1id,prefix))
-    os.system("ln -s %s/metacompass_output/metacompass.final.ctg.fa %s/."%(prefix,prefix))
+    os.system("cp %s/metacompass_output/metacompass.final.ctg.fa %s/."%(prefix,prefix))
     os.system("cp %s/%s.0.assembly.out/contigs.pilon.fasta %s/metacompass_output/metacompass.only.ctg.fa"%(prefix,s1id,prefix))
     if mfilter < 1.0:
         os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
