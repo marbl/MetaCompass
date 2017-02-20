@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os,sys,string,subprocess,signal
+import os,sys,string,subprocess,signal,shutil
 #psutil
 import argparse
 
@@ -21,19 +21,20 @@ group5.add_argument("-p",'--pickref', help='depth or breadth',default="breadth",
 group5.add_argument("-m",'--mincov', help='min coverage to assemble',default="3",nargs='?',type=int)
 group5.add_argument("-g",'--minctglen', help='min contig length',default="300",nargs='?',type=int)
 group5.add_argument("-l",'--readlen', help='max read length',default="100",nargs='?',type=int)
-
+group5.add_argument("-f",'--filter',help='filter recruited genomes with mash (experimental)',default=False,required=0,action='store_true')
 group2 = parser.add_argument_group('output')
 group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default="./", nargs='?',type=str,required=1)
 group2.add_argument("-d",'--sampleid', help='sample id (fq prefix is default)',default="NA", nargs='?',type=str,required=0)
 group2.add_argument("-v",'--verbose', help='verbose',default=False,required=0,action='store_true')
+group2.add_argument("-k",'--keepoutput', help='keep all output generated (default is to delete all but final fasta files)',default=False,required=0,action='store_true')
 
 group3 = parser.add_argument_group('performance')
 group3.add_argument("-t",'--threads', type=int,help='num threads',default=1, nargs='?')
 group3.add_argument("-q",'--qsub', help='',default="", nargs='?',required=0)
 
 group4 = parser.add_argument_group('snakemake')
-group4.add_argument("-F",'--force', help='force snakemake to rerun',default=False,required=0,action='store_true')
+group4.add_argument("-F",'--Force', help='force snakemake to rerun',default=False,required=0,action='store_true')
 group4.add_argument("-u",'--unlock',help='unlock snakemake locks',default=False, required=0,action='store_true')
 
 args = parser.parse_args()
@@ -45,6 +46,13 @@ unlock = args.unlock
 threads = int(args.threads)
 iterations = args.iterations
 ref = args.ref
+mfilter = 1.0
+keepoutput = args.keepoutput
+
+if args.filter:
+    #empirically determined on datasets with known truth, right way to do this is with contains operation
+    mfilter = 0.26
+
 #snakefile = args.snakefile
 config = args.config
 samples = args.Samples.replace(" ","")
@@ -52,7 +60,7 @@ unpaired = args.unpaired
 paired = args.paired
 sampleid = args.sampleid
 qsub = args.qsub
-force = args.force
+force = args.Force
 verbose = args.verbose
 outdir = args.outdir
 pickref = args.pickref
@@ -101,7 +109,7 @@ if ref != "NA":
 #else:
 #    print("[OK]")
 #2. check for snakemake, bowtie2
-print("checking for dependencies (Bowtie2, Blast, kmermask, Snakemake)")
+print("checking for dependencies (Bowtie2, Blast, kmermask, Snakemake, etc)")
 
 if len(qsub) > 0:
 
@@ -141,6 +149,15 @@ if ret == 0:
 else:
     print("[FAIL]")
     sys.exit()
+
+if mfilter < 1.0:
+    print("mash--->",end="")
+    ret = subprocess.call("which mash",shell=True)
+    if ret == 0:
+        print("[OK]")
+    else:
+        print("[FAIL]")
+        sys.exit()
 
 print("Snakemake--->",end="")
 ret = subprocess.call("which snakemake",shell=True)
@@ -280,7 +297,7 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d minlen=%d"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov,minctglen)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov,minctglen,mfilter)
 
             else:        
                 cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d length=%d mincov=%d minlen=%d"%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i,readlen,mincov,minctglen)
@@ -331,7 +348,7 @@ while i < iterations:
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d minlen=%d "%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov,minctglen)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d minlen=%d"%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov,minctglen)
             else:
                 cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d minlen=%d"%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov,minctglen)
 
@@ -375,6 +392,27 @@ while i < iterations:
 
 
 if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1)):
+    #cleanup output
+    os.mkdir("%s/metacompass_output"%(prefix))
+    os.mkdir("%s/metacompass_logs"%(prefix))
+    os.system("cp %s/%s.0.assembly.out/contigs.final.fasta %s/metacompass_output/metacompass.final.ctg.fa"%(prefix,s1id,prefix))
+    os.system("ln -s %s/metacompass_output/metacompass.final.ctg.fa %s/."%(prefix,prefix))
+    os.system("cp %s/%s.0.assembly.out/contigs.pilon.fasta %s/metacompass_output/metacompass.only.ctg.fa"%(prefix,s1id,prefix))
+    if mfilter < 1.0:
+        os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
+        os.system("cp %s/%s.0.assembly.out/mc.refseq.filt.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
+    else:
+        os.system("cp %s/%s.0.assembly.out/mc.refseq.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
+        os.system("cp %s/%s.0.assembly.out/mc.refseq.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
+    if not keepoutput:
+        print("Cleaning up files..")
+        shutil.rmtree("%s/%s.0.assembly.out/"%(prefix,s1id))
+        os.system("rm %s/*.fq "%(prefix))
+        os.system("rm %s/*.fastq "%(prefix))
+        os.system("rm %s/*.fasta "%(prefix))
+        os.system("rm %s/*.out "%(prefix))
+        os.system("rm %s/*.ids "%(prefix))
+        os.system("mv %s/*.log %s/metacompass_logs/."%(prefix,prefix))
     os.system("touch %s/%s.0.assembly.out/run.ok"%(prefix,s1id))
     print("MetaCompass finished succesfully!")
 else:

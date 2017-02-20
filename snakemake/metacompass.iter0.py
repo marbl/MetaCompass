@@ -11,7 +11,7 @@ DESCRIPTION
 #os.system("touch %s"%config['reads'][0])
 
 
-ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > assemble_unmapped > join_contigs
+ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > assemble_unmapped > join_contigs
 
 #ruleorder: bowtie2_map > assemble_unmapped > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
 #code to skip initial steps if reference genomes provided 
@@ -96,6 +96,16 @@ rule reference_recruitment:
     log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
     shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
 
+rule mash_filter:
+    input:
+        r1=rules.merge_reads.output.merged,
+        g1=rules.reference_recruitment.output.reffile
+    output:
+        reffile=expand('{prefix}/{sample}.0.assembly.out/mc.refseq.filt.fna',prefix=config['prefix'],sample=config['sample'])
+    message: """---mash filter recruited references"""
+    threads:config["nthreads"]
+    log:'%s/%s.%s.mash.log'%(config['prefix'],config['sample'],config['iter'])
+    shell:"python %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} %s 1>> {log} 2>&1"%(config["mcdir"],config["mfilter"])
 
 #reads=rules.reference_recruitment.output.fqfile
 #    benchmark:
@@ -128,7 +138,7 @@ rule bwa_map:
 
 rule bowtie2_map:
     input:
-       ref=rules.reference_recruitment.output.reffile,
+       ref=rules.mash_filter.output.reffile,
        r1=rules.merge_reads.output.merged
     output:
        index= '%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
@@ -139,7 +149,7 @@ rule bowtie2_map:
     threads:config["nthreads"]
     message: """---Build index ."""
     #shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
-    shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}; rm {output.sam}.all"%(config['reference'],config["mcdir"])
+    shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}; rm {output.sam}.all"%(config["mcdir"])
 
 rule build_contigs:
     input:
@@ -236,7 +246,6 @@ rule join_contigs:
     output:
         final_contigs="%s/%s.0.assembly.out/contigs.final.fasta"%(config['prefix'],config['sample'])
     shell:"cat {input.mh_contigs} {input.mc_contigs} > {output.final_contigs}"
-
 
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
