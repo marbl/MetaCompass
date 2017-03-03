@@ -11,7 +11,9 @@ DESCRIPTION
 #os.system("touch %s"%config['reads'][0])
 
 
-ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > assemble_unmapped > join_contigs
+#ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > remove_zerocov >  assemble_unmapped > join_contigs
+
+ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs
 
 #ruleorder: bowtie2_map > assemble_unmapped > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
 #code to skip initial steps if reference genomes provided 
@@ -87,7 +89,7 @@ rule reference_recruitment:
         rules.fastq2fasta.output
     params:
         mincov = "%d"%(int(config['mincov'])),
-        readlen = "%d"%(int(config['length'])),
+        readlen = "%d"%(int(config['length']))
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
 	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
@@ -102,10 +104,12 @@ rule mash_filter:
         g1=rules.reference_recruitment.output.reffile
     output:
         reffile=expand('{prefix}/{sample}.0.assembly.out/mc.refseq.filt.fna',prefix=config['prefix'],sample=config['sample'])
+    params:
+        mfilter=expand('{mfilter}',mfilter=config["mfilter"])
     message: """---mash filter recruited references"""
     threads:config["nthreads"]
     log:'%s/%s.%s.mash.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"python %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} %s 1>> {log} 2>&1"%(config["mcdir"],config["mfilter"])
+    shell:"python %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} {params.mfilter} 1>> {log} 2>&1"%(config["mcdir"])
 
 #reads=rules.reference_recruitment.output.fqfile
 #    benchmark:
@@ -184,7 +188,7 @@ rule pilon_map:
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:config["nthreads"]
     message: """---Map reads for pilon polishing."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {log} 2>&1"
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {log} 2>&1"
 
 
 rule sam_to_bam:
@@ -222,10 +226,21 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:config['nthreads']
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx19G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local,breaks 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx19G -jar %s/bin/pilon-1.21.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local,breaks,amb 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
+rule remove_zerocov:
+    input:
+        contigs=rules.pilon_contigs.output.pilonctg,
+        bam=rules.bam_sort.output.bam_sorted
+    output:
+        filtctg='%s/%s.%s.assembly.out/contigs.pilon.fasta.fixed'%(config['prefix'],config['sample'],config['iter'])
+    log:'%s/%s.%s.assembly.out/%s.remove_zerocov.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    threads:config['nthreads']
+    message: """---Remove zero coverage regions."""
+    shell:"python %s/bin/cut_zeros.py {input.contigs} {input.bam} 1>> {log} 2>&1"%(config["mcdir"])
 #concatenate this output with buildcontigs for pilon improvement
 #reads=rules.pilon_map.output.unmapped
+
 rule assemble_unmapped:
     input:
         r1=rules.pilon_map.output.unmappedr1,
@@ -235,9 +250,9 @@ rule assemble_unmapped:
     threads:config["nthreads"]
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
-    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count %d --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['mincov']),int(config['minlen']))
+    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
 
-
+#        mc_contigs=rules.remove_zerocov.output.filtctg,
 rule join_contigs:
     input:
         mc_contigs=rules.pilon_contigs.output.pilonctg,

@@ -15,6 +15,7 @@ group1.add_argument("-P",'--paired', help='Provide comma separated list of paire
 group1.add_argument("-U",'--unpaired', help='Provide comma separated list of unpaired reads (r1.fq,r2.fq,r3.fq)',default="", nargs='?',required=0,type=str)
 
 group5 = parser.add_argument_group("metacompass")
+group5.add_argument("-d",'--db', help='marker gene database directory',default="", nargs='?')
 group5.add_argument("-i",'--iterations', type=int, help='num iterations',default=1, nargs='?')
 group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?')
 group5.add_argument("-p",'--pickref', help='depth or breadth',default="breadth",nargs='?')
@@ -25,7 +26,7 @@ group5.add_argument("-f",'--filter',help='filter recruited genomes with mash (ex
 group2 = parser.add_argument_group('output')
 group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default="./", nargs='?',type=str,required=1)
-group2.add_argument("-d",'--sampleid', help='sample id (fq prefix is default)',default="NA", nargs='?',type=str,required=0)
+group2.add_argument("-e",'--sampleid', help='sample id (fq prefix is default)',default="NA", nargs='?',type=str,required=0)
 group2.add_argument("-v",'--verbose', help='verbose',default=False,required=0,action='store_true')
 group2.add_argument("-k",'--keepoutput', help='keep all output generated (default is to delete all but final fasta files)',default=False,required=0,action='store_true')
 
@@ -39,6 +40,11 @@ group4.add_argument("-u",'--unlock',help='unlock snakemake locks',default=False,
 
 args = parser.parse_args()
 minctglen = args.minctglen
+db = args.db
+if db != "" and not os.path.isdir(db):
+    print("provided marker gene database directory %s does not exist; try again"%(db))
+    sys.exit(1)
+
 mincov = args.mincov
 readlen=args.readlen
 clobber = args.clobber
@@ -149,6 +155,14 @@ if ret == 0:
 else:
     print("[FAIL]")
     sys.exit()
+
+#print("bedtools--->",end="")
+#ret = subprocess.call("which bedtools",shell=True)
+#if ret == 0:
+#    print("[OK]")
+#else:
+#    print("[FAIL]")
+#    sys.exit()
 
 if mfilter < 1.0:
     print("mash--->",end="")
@@ -297,10 +311,10 @@ while i < iterations:
         if i == 0:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov,minctglen,mfilter)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f nthreads=%d"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov,minctglen,mfilter,threads)
 
             else:        
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d length=%d mincov=%d minlen=%d"%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i,readlen,mincov,minctglen)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f nthreads=%d"%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i,readlen,mincov,minctglen,mfilter,threads)
 
             cmd += " reads="
             for fqfile in allsamples:
@@ -342,15 +356,17 @@ while i < iterations:
                 except KeyboardInterrupt:
                     os.killpg(ret.pid,signal.SIGKILL)  
                 except :
-                    os.killpg(ret.pid,signal.SIGKILL)  
+                    ret.returncode = 0
+                    break    
+                    #os.killpg(ret.pid,signal.SIGKILL)  
                     
 
         else:
             ret = 0
             if ref != "NA":
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d minlen=%d"%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov,minctglen)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d minlen=%d nthreads=%d"%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov,minctglen,threads)
             else:
-                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d minlen=%d"%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov,minctglen)
+                cmd = "snakemake --cores %d -a --configfile %s --config prefix=%s sample=%s reference=%s/%s.%d.assembly.out/contigs.pilon.fasta mcdir=%s iter=%d pickref=%s length=%d mincov=%d minlen=%d nthreads=%d"%(threads,config,prefix,s1id,prefix,s1id,i-1,mcdir,i,pickref,readlen,mincov,minctglen,threads)
 
             cmd += " reads="
             for fqfile in allsamples:
@@ -382,7 +398,10 @@ while i < iterations:
                 except KeyboardInterrupt:
                     os.killpg(ret.pid,signal.SIGKILL)  
                 except:
-                    os.killpg(ret.pid,signal.SIGKILL)  
+                    #command finished but ran in background and timed out? h
+                    ret.returncode = 0
+                    break
+                    #os.killpg(ret.pid,signal.SIGKILL)  
 
         if ret.returncode != 0:
             print("ERROR: snakemake command failed; exiting..")
@@ -397,14 +416,14 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
     os.mkdir("%s/metacompass_logs"%(prefix))
     os.system("cp %s/%s.0.assembly.out/contigs.final.fasta %s/metacompass_output/metacompass.final.ctg.fa"%(prefix,s1id,prefix))
     os.system("cp %s/metacompass_output/metacompass.final.ctg.fa %s/."%(prefix,prefix))
-    os.system("cp %s/%s.0.assembly.out/contigs.pilon.fasta %s/metacompass_output/metacompass.only.ctg.fa"%(prefix,s1id,prefix))
+    os.system("cp %s/%s.0.assembly.out/contigs.pilon.fasta.fixed %s/metacompass_output/metacompass.only.ctg.fa"%(prefix,s1id,prefix))
     if mfilter < 1.0:
         os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
         os.system("cp %s/%s.0.assembly.out/mc.refseq.filt.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
     else:
         os.system("cp %s/%s.0.assembly.out/mc.refseq.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
         os.system("cp %s/%s.0.assembly.out/mc.refseq.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
-    if not keepoutput:
+    if 1 or not keepoutput:
         print("Cleaning up files..")
         shutil.rmtree("%s/%s.0.assembly.out/"%(prefix,s1id))
         os.system("rm %s/*.fq "%(prefix))

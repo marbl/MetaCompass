@@ -5,7 +5,7 @@ g1 = sys.argv[2]
 outf = open(sys.argv[3],'w')
 g1f = open(sys.argv[2],'r')
 mfilter = float(sys.argv[4])
-
+#print(mfilter)
 if mfilter < 1.0:
     os.system("mash sketch -r -p 64 -k 20 -s 100000 %s"%(r1))
     os.system("mash dist -i -p 64 %s.msh %s -t > %s.mash.out"%(r1,g1,r1))
