@@ -30,12 +30,12 @@ rule pilon_map:
        ref='%s/%s.%d.assembly.out/contigs.final.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1),
        r1='%s/%s.merged.fq'%(config['prefix'],config['sample'])
     output:
-       index= '%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       index= expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.mc.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Map reads for pilon polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --very-sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.fq > {log} 2>&1"
 
@@ -46,7 +46,7 @@ rule sam_to_bam:
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam)
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Convert sam to bam ."""
     shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
 
@@ -56,7 +56,7 @@ rule bam_sort:
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
 
@@ -76,6 +76,6 @@ rule pilon_contigs:
     output:
         pilonctg='%s/%s.%s.assembly.out/contigs.final.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Pilon polish contigs ."""
     shell:"java -Xmx64G -jar %s/bin/pilon-1.18.jar --flank 5 --threads {threads} --mindepth {params.mincov} --genome {input.contigs} --unpaired {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local 1>> {log} 2>&1;cp %s/%s.%s.assembly.out/contigs.pilon.fasta %s/%s.%s.assembly.out/contigs.final.fasta"%(config["mcdir"],config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'])
