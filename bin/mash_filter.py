@@ -17,7 +17,7 @@ idsf = open("%s.mash.out.ids"%(r1),'r')
 idsf.readline()
 
 ids = []
-for line in idsf.xreadlines():
+for line in idsf.readlines():
     ids.append(line.replace("\n","").split("\t")[0])
 
 data = g1f.read().split(">")[1:]

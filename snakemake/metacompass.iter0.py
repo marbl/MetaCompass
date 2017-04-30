@@ -67,7 +67,7 @@ rule kmer_mask:
     params:
         out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])[0],
         len=str(int(config["length"])+3)
-    threads:config["nthreads"]
+    threads:int(config['nthreads'])
     log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
     shell:"kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1"%(config["mcdir"])
 
@@ -94,7 +94,7 @@ rule reference_recruitment:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
 	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
     message: """---reference recruitment."""
-    threads:config["nthreads"]
+    threads:int(config['nthreads'])
     log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
     shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
 
@@ -107,7 +107,7 @@ rule mash_filter:
     params:
         mfilter=expand('{mfilter}',mfilter=config["mfilter"])
     message: """---mash filter recruited references"""
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     log:'%s/%s.%s.mash.log'%(config['prefix'],config['sample'],config['iter'])
     shell:"python %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} {params.mfilter} 1>> {log} 2>&1"%(config["mcdir"])
 
@@ -124,7 +124,7 @@ rule mrsfast_map:
        index= '%s.index'%(config['reference']),
        sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.mrsfastmap.log'%(config['prefix'],config['sample'],config['iter'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Build index and map ."""
     shell:"mrsfast --index {input.ref} --ws 14 > {log} 2>&1;mrsfast --search {input.ref} --crop 100 --mem 8 --seq {input.r1} --threads {threads} -o {output.sam} --disable-nohits >> {log} 2>&1"
 
@@ -136,7 +136,7 @@ rule bwa_map:
        index= '%s.bwt'%(config['reference']),
        sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.bwamap.log'%(config['prefix'],config['sample'],config['iter'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Build index and map ."""
     shell:"bwa index {input.ref} > {log} 2>&1;bwa aln -R 110 -N -o 0 -t {threads} -f {output.sam}.sai {input.ref} {input.r1} >> {log} 2>&1;bwa samse -n 1000 {input.ref} {output.sam}.sai {input.r1} > {output.sam}.full 2>&1;samtools view -F4 -@ {threads} {output.sam}.full -o {output.sam} >> {log} 2>&1"
 
@@ -145,12 +145,12 @@ rule bowtie2_map:
        ref=rules.mash_filter.output.reffile,
        r1=rules.merge_reads.output.merged
     output:
-       index= '%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
        pref='%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
 
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Build index ."""
     #shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
     shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}; rm {output.sam}.all"%(config["mcdir"])
@@ -179,14 +179,14 @@ rule pilon_map:
        r1=config['reads'].split(",")[0],
        r2=config['reads'].split(",")[1]
     output:
-       index= '%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.mc.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        #unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
        unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        unmappedr2='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.2.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Map reads for pilon polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {log} 2>&1"
 
@@ -207,7 +207,7 @@ rule bam_sort:
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:config['nthreads']
+    threads:int(config['nthreads'])
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
 
@@ -224,7 +224,7 @@ rule pilon_contigs:
     output:
         pilonctg='%s/%s.%s.assembly.out/contigs.pilon.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:config['nthreads']
+    threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
     shell:"java -Xmx19G -jar %s/bin/pilon-1.21.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local,breaks,amb 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
@@ -235,7 +235,7 @@ rule remove_zerocov:
     output:
         filtctg='%s/%s.%s.assembly.out/contigs.pilon.fasta.fixed'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.remove_zerocov.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:config['nthreads']
+    threads:int(config['nthreads'])
     message: """---Remove zero coverage regions."""
     shell:"python %s/bin/cut_zeros.py {input.contigs} {input.bam} 1>> {log} 2>&1"%(config["mcdir"])
 #concatenate this output with buildcontigs for pilon improvement
@@ -247,7 +247,7 @@ rule assemble_unmapped:
         r2=rules.pilon_map.output.unmappedr2
     output:
         megahit_contigs='%s/%s.0.assembly.out/%s.megahit/final.contigs.fa'%(config['prefix'],config['sample'],config['sample'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
     shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
