@@ -18,23 +18,18 @@ $cmd
 #cd kmer && make install && cd ..
 #cd src && make && cd ..
 #cd ..
-#cmd="mkdir -p ./src/metaphyler/markers"
-#echo $cmd
-#$cmd
 
 cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.tar.gz -P ./src/metaphyler"
 echo $cmd
 $cmd
 
+cd ./src/metaphyler/
+
 cmd="tar -xzvf ./src/metaphyler/markers.tar.gz"
 echo $cmd
 $cmd
 
-
-#cmd="tar -xzvf mc.tar.gz"
-#echo $cmd
-#$cmd
-
+cd ../../
 cmd="wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz"
 echo $cmd
 $cmd
@@ -44,10 +39,6 @@ echo $cmd
 $cmd
 
 cmd="wget https://gembox.cbcb.umd.edu/metacompass/test.tar.gz"
-echo $cmd
-$cmd
-
-cmd="tar -xzvf test.tar.gz"
 echo $cmd
 $cmd
 
