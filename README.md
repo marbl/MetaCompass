@@ -11,6 +11,9 @@ Last updated: August 9th, 2016
 * samtools (>=) 1.x: http://samtools.sourceforge.net/ 
 * snakemake 3.7.1: https://bitbucket.org/snakemake/snakemake/src
 
+# Memory and Disk Space Requirements.
+You must have at least XXMB of memory and XXMB of hard disk space to perform a normal installation.
+
 # INSTALLATION:
 
     git clone https://github.com/marbl/MetaCompass.git
