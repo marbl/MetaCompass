@@ -26,7 +26,7 @@ cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers
 echo $cmd
 $cmd
 
-cmd="tar -xzvf ./src/metaphyler/marker.tar.gz"
+cmd="tar -xzvf ./src/metaphyler/markers.tar.gz"
 echo $cmd
 $cmd
 
