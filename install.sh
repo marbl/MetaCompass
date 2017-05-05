@@ -23,13 +23,19 @@ cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers
 echo $cmd
 $cmd
 
-cd ./src/metaphyler/
+cmd="cd ./src/metaphyler/"
+echo $cmd
+$cmd
 
 cmd="tar -xzvf ./src/metaphyler/markers.tar.gz"
 echo $cmd
 $cmd
 
-cd ../../
+
+cmd="cd ../../"
+echo $cmd
+$cmd
+
 cmd="wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz"
 echo $cmd
 $cmd
