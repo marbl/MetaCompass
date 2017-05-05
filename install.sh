@@ -27,7 +27,7 @@ cmd="cd ./src/metaphyler/"
 echo $cmd
 $cmd
 
-cmd="tar -xzvf ./src/metaphyler/markers.tar.gz"
+cmd="tar -xzvf ./markers.tar.gz"
 echo $cmd
 $cmd
 
