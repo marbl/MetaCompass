@@ -1,5 +1,5 @@
 # MetaCompass v1.0
-Last updated: May 5th, 2017
+Last updated: May 8th, 2017
 
 # Required software:
 
@@ -10,11 +10,12 @@ Last updated: May 5th, 2017
 * kmer-mask (May 13th, 2015): https://sourceforge.net/p/kmer/code/HEAD/tree/trunk/
 * samtools (>=) 1.x: http://samtools.sourceforge.net/ 
 * MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
-* java
-* perl
+* Java runtime (>=) 1.7 
+* Perl5 (>=) 5.16
 
 # Memory and Disk Space Requirements.
-You must have at least XXMB of memory and XXMB of hard disk space to perform a normal installation.
+You must have at least 13GB of hard disk space to perform a normal installation.
+You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 # INSTALLATION:
 
@@ -26,7 +27,7 @@ You must have at least XXMB of memory and XXMB of hard disk space to perform a n
 
 -- I have a set of metagenomic reads, and want to perform comparative assembly.
 
-    python go_metacompass.py -P read1,read2 -o output -t $ncpu
+    python go_metacompass.py -P read1.fq,read2.fq -o output_folder -t ncpu
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
