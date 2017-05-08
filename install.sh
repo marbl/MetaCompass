@@ -36,7 +36,7 @@ cmd="cd ../../"
 echo $cmd
 $cmd
 
-cmd="wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz"
+cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz"
 echo $cmd
 $cmd
 
@@ -44,7 +44,7 @@ cmd="tar -xzvf refseq.tar.gz"
 echo $cmd
 $cmd
 
-cmd="wget https://gembox.cbcb.umd.edu/metacompass/test.tar.gz"
-echo $cmd
-$cmd
+#cmd="wget https://gembox.cbcb.umd.edu/metacompass/test.tar.gz"
+#echo $cmd
+#$cmd
 
