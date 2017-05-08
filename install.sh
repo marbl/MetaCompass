@@ -19,11 +19,20 @@ $cmd
 #cd src && make && cd ..
 #cd ..
 
-cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.blastn.classifier -P ./src/metaphyler/markers"
+cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.tar.gz -P ./src/metaphyler"
 echo $cmd
 $cmd
 
-cmd="tar -xzvf mc.tar.gz"
+cmd="cd ./src/metaphyler/"
+echo $cmd
+$cmd
+
+cmd="tar -xzvf ./markers.tar.gz"
+echo $cmd
+$cmd
+
+
+cmd="cd ../../"
 echo $cmd
 $cmd
 
@@ -36,10 +45,6 @@ echo $cmd
 $cmd
 
 cmd="wget https://gembox.cbcb.umd.edu/metacompass/test.tar.gz"
-echo $cmd
-$cmd
-
-cmd="tar -xzvf test.tar.gz"
 echo $cmd
 $cmd
 
