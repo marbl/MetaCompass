@@ -40,3 +40,7 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
       
       Selected Reference genomes:
                 metacompass_output/metacompass.recruited.fa
+                
+                
+Contact:
+vcepeda{at}cs.umd.edu
