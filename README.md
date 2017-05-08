@@ -25,29 +25,18 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 # USAGE    
 
--- I have a set of metagenomic reads, and want to perform comparative assembly.
+-- I have a set of metagenomic reads, and want to perform reference-guided assembly.
 
-    python go_metacompass.py -P read1.fq,read2.fq -o output_folder -t ncpu
+    python go_metacompass.py -P [read1.fq,read2.fq] -o [output_folder] -t [ncpu]
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
-    python go_metacompass.py
+    python go_metacompass.py -r [references.fasta] -P [read1.fq,read2.fq] -o [output_folder] -t [ncpu]
 
 
--- You can try MetaCompass on a test data set.
-
-For a mock data set assuming reference genomes are known:
-
-    python go_metacompass.py
-
-For a mock data set assuming reference genomes are NOT known:
-
-    python go_metacompass.py
-
-
-# Output:
+# Output directory:
       Assembled contigs:
-                contigs_[iteration #].fasta
+                metacompass_output/metacompass.final.ctf.fa
       
       Selected Reference genomes:
-                mc.refseq.fasta
+                metacompass_output/metacompass.recruited.fa
