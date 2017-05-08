@@ -27,7 +27,7 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 -- I have a set of metagenomic reads, and want to perform reference-guided assembly.
 
-    python go_metacompass.py -P [read1.fq,read2.fq] -o [output_folder] -t [ncpu]
+    python go_metacompass.py -P [read1.fq,read2.fq] -l [max read length]-o [output_folder] -t [ncpu]
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
