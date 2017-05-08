@@ -37,12 +37,12 @@ rule bowtie2_map:
        ref=config['reference'],
        r1=rules.merge_reads.output.merged
     output:
-       index= '%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']), 
        pref='%s/%s.%s.assembly.out/%s.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
 
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Build index ."""
     #shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
     shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}; rm {output.sam}.all"%(config['reference'],config["mcdir"])
@@ -70,14 +70,15 @@ rule pilon_map:
        r1=config['reads'].split(",")[0],
        r2=config['reads'].split(",")[1]
     output:
-       index= '%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.mc.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']), 
+#'%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        #unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
        unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        unmappedr2='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.2.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     message: """---Map reads for pilon polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {log} 2>&1"
 
@@ -99,7 +100,7 @@ rule bam_sort:
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Sort bam ."""
-    shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
+    shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
 
 
 #samtools view -bS $samfile | samtools sort - $pilon_dir/$ref.sorted"
@@ -127,7 +128,7 @@ rule assemble_unmapped:
         r2=rules.pilon_map.output.unmappedr2
     output:
         megahit_contigs='%s/%s.0.assembly.out/%s.megahit/final.contigs.fa'%(config['prefix'],config['sample'],config['sample'])
-    threads:config["nthreads"]
+    threads:int(config["nthreads"])
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
     shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count %d --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['mincov']),int(config['minlen']))

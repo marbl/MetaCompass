@@ -140,6 +140,14 @@ rule bwa_map:
     message: """---Build index and map ."""
     shell:"bwa index {input.ref} > {log} 2>&1;bwa aln -R 110 -N -o 0 -t {threads} -f {output.sam}.sai {input.ref} {input.r1} >> {log} 2>&1;bwa samse -n 1000 {input.ref} {output.sam}.sai {input.r1} > {output.sam}.full 2>&1;samtools view -F4 -@ {threads} {output.sam}.full -o {output.sam} >> {log} 2>&1"
 
+#import os
+#def get_bowtie2_input(wildcards):
+#    if os.stat(rules.mash_filter.output.reffile).st_size ==0:
+ #      return expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])#reference_recruitment.output.reffile
+ #   else:
+ #      return expand('{prefix}/{sample}.0.assembly.out/mc.refseq.filt.fna',prefix=config['prefix'],sample=config['sample'])#rules.mash_filter.output.reffile
+#input:
+#       ref=get_bowtie2_input, 
 rule bowtie2_map:
     input:
        ref=rules.mash_filter.output.reffile,
