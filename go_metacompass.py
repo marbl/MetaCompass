@@ -422,8 +422,9 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
         os.system("cp %s/%s.0.assembly.out/mc.refseq.filt.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
     else:
-        os.system("cp %s/%s.0.assembly.out/mc.refseq.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
-        os.system("cp %s/%s.0.assembly.out/mc.refseq.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
+        if os.path.exists("%s/%s.%d.assembly.out/mc.refseq.ids"%(prefix,s1id,i-1)):
+            os.system("cp %s/%s.0.assembly.out/mc.refseq.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
+            os.system("cp %s/%s.0.assembly.out/mc.refseq.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
 
 ###
     if not keepoutput:
@@ -433,35 +434,45 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         os.system("rm %s/*.fastq "%(prefix))
         os.system("rm %s/*.fasta "%(prefix))
         #os.system("rm %s/*.out "%(prefix))
-        os.system("rm %s/*.ids "%(prefix))
+        if os.path.exists("%s/%s.%d.assembly.out/mc.refseq.ids"%(prefix,s1id,i-1)):
+            os.system("rm %s/*.ids "%(prefix))
         #os.system("mv %s/*.log %s/metacompass_logs/."%(prefix,prefix))
     else:
-        os.mkdir("%s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id))
-        #os.mkdir("%s/%s.0.assembly.out/mapping_output"%(prefix,s1id))        
+        #if referece selection
+        if os.stat("%s/%s.0.assembly.out/mc.refseq.fna"%(prefix,s1id)).st_size!= 0:
+            os.mkdir("%s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id))
+            os.system("mv %s/%s.0.assembly.out/mc.* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
+        else:
+            os.system("rm %s/%s.0.assembly.out/mc.refseq.fna"%(prefix,s1id))
         os.mkdir("%s/%s.0.assembly.out/pilon_output"%(prefix,s1id))
-        os.mkdir("%s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id))
         os.mkdir("%s/%s.0.assembly.out/assembly_output"%(prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/mc.* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
-        #os.system("mv %s/%s.0.assembly.out/%s.sam %s/%s.0.assembly.out/mapping_output"%(prefix,s1id,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/contigs.fasta %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/%s.sam %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*buildcontigs* %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/sorted.bam %s/%s.0.assembly.out/pilon_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*.pilon.* %s/%s.0.assembly.out/pilon_output/"%(prefix,s1id,prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/*sam.unmapped* %s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id,prefix,s1id))
+ #if unmmaped reads#
+        if os.stat("%s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq"%(prefix,s1id,s1id)).st_size!= 0:
+            os.mkdir("%s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id))
+            os.system("mv %s/%s.0.assembly.out/*sam.unmapped* %s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id,prefix,s1id))
+            os.system("mv %s/%s.0.assembly.out/*.megahit %s/%s.0.assembly.out/megahit_output"%(prefix,s1id,prefix,s1id))
+        else:
+            os.system("rm -rf %s/%s.0.assembly.out/*.megahit"%(prefix,s1id))
+            os.system("rm %s/%s.0.assembly.out/*mc.sam.unmapped*"%(prefix,s1id))
         #provide mapped reads too? the bam is in pilon_output 
         os.mkdir("%s/%s.0.assembly.out/mapped_reads"%(prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*.mc.sam %s/%s.0.assembly.out/mapped_reads"%(prefix,s1id,prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/*.megahit %s/%s.0.assembly.out/megahit_output"%(prefix,s1id,prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*index "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.bt2 "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.sam "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.bam* "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.fasta "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.log "%(prefix,s1id))
-        os.system("rm %s/*.f*[a-q] "%(prefix))
+        os.system("rm %s/*.f*q "%(prefix))
+        os.system("rm %s/*.fasta "%(prefix))
         os.system("mv %s/%s.0.assembly.out  %s/intermediate_files"%(prefix,s1id,prefix))
-        os.system("rm %s/*.ids "%(prefix))
+        if os.path.exists("%s/%s.merged.fq.mash.out.ids"%(prefix,s1id)):
+            os.system("rm %s/%s.merged.fq.mash.out.ids "%(prefix,s1id))
     #os.system("touch %s/%s.0.assembly.out/run.ok"%(prefix,s1id))
     print("MetaCompass finished succesfully!")
 else:
