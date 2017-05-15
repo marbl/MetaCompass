@@ -14,7 +14,7 @@ else:
     os.system("cp %s %s.mash.out.ids"%(g1.replace(".fna",".ids"),r1))
 
 idsf = open("%s.mash.out.ids"%(r1),'r')
-idsf.readline()
+#idsf.readline()
 
 ids = []
 for line in idsf.readlines():
