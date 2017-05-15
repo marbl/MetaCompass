@@ -236,16 +236,16 @@ rule pilon_contigs:
     message: """---Pilon polish contigs ."""
     shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local,breaks,amb 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
-rule remove_zerocov:
-    input:
-        contigs=rules.pilon_contigs.output.pilonctg,
-        bam=rules.bam_sort.output.bam_sorted
-    output:
-        filtctg='%s/%s.%s.assembly.out/contigs.pilon.fasta.fixed'%(config['prefix'],config['sample'],config['iter'])
-    log:'%s/%s.%s.assembly.out/%s.remove_zerocov.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-    threads:int(config['nthreads'])
-    message: """---Remove zero coverage regions."""
-    shell:"python %s/bin/cut_zeros.py {input.contigs} {input.bam} 1>> {log} 2>&1"%(config["mcdir"])
+#rule remove_zerocov:
+#    input:
+#        contigs=rules.pilon_contigs.output.pilonctg,
+#        bam=rules.bam_sort.output.bam_sorted
+#    output:
+#        filtctg='%s/%s.%s.assembly.out/contigs.pilon.fasta.fixed'%(config['prefix'],config['sample'],config['iter'])
+#    log:'%s/%s.%s.assembly.out/%s.remove_zerocov.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+#    threads:int(config['nthreads'])
+#    message: """---Remove zero coverage regions."""
+#    shell:"python %s/bin/cut_zeros.py {input.contigs} {input.bam} 1>> {log} 2>&1"%(config["mcdir"])
 #concatenate this output with buildcontigs for pilon improvement
 #reads=rules.pilon_map.output.unmapped
 
@@ -258,7 +258,9 @@ rule assemble_unmapped:
     threads:int(config["nthreads"])
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
-    shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
+    shell:"if [[ -s %s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq ]]; then rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; fi"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
+    #then touch {output.megahit_contigs} {log}; else
+    #shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; if  [[ -s tutorial_thao_mash/thao2000.0.assembly.out/thao2000.mc.sam.unmapped.1.fq ]]; then empty=0; else echo empty=1; fi; if [[ $empty ]]; then touch {output.megahit_contigs} {log}; fi;  megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
 
 #        mc_contigs=rules.remove_zerocov.output.filtctg,
 rule join_contigs:
