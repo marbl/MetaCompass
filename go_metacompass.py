@@ -436,6 +436,8 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         #os.system("rm %s/*.out "%(prefix))
         if os.path.exists("%s/%s.%d.assembly.out/mc.refseq.ids"%(prefix,s1id,i-1)):
             os.system("rm %s/*.ids "%(prefix))
+        if os.path.exists("%s/%s.merged.fq.mash.out.ids"%(prefix,s1id)):
+            os.system("rm %s/%s.merged.fq.mash.out.ids "%(prefix,s1id))
         #os.system("mv %s/*.log %s/metacompass_logs/."%(prefix,prefix))
     else:
         #if referece selection
