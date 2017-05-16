@@ -44,7 +44,7 @@ cmd="tar -xzvf refseq.tar.gz"
 echo $cmd
 $cmd
 
-#cmd="wget https://gembox.cbcb.umd.edu/metacompass/test.tar.gz"
+cmd="rm refseq.tar.gz"
 #echo $cmd
-#$cmd
+$cmd
 
