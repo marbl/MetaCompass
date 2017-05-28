@@ -15,7 +15,7 @@ group1.add_argument("-P",'--paired', help='Provide comma separated list of paire
 group1.add_argument("-U",'--unpaired', help='Provide comma separated list of unpaired reads (r1.fq,r2.fq,r3.fq)',default="", nargs='?',required=0,type=str)
 
 group5 = parser.add_argument_group("metacompass")
-group5.add_argument("-d",'--db', help='marker gene database directory',default="", nargs='?')
+group5.add_argument("-d",'--db', help='marker gene database directory',default="", nargs='?',type=str)
 group5.add_argument("-i",'--iterations', type=int, help='num iterations',default=1, nargs='?')
 group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?')
 group5.add_argument("-p",'--pickref', help='depth or breadth',default="breadth",nargs='?')
@@ -38,9 +38,10 @@ group4 = parser.add_argument_group('snakemake')
 group4.add_argument("-F",'--Force', help='force snakemake to rerun',default=False,required=0,action='store_true')
 group4.add_argument("-u",'--unlock',help='unlock snakemake locks',default=False, required=0,action='store_true')
 
+
 args = parser.parse_args()
 minctglen = args.minctglen
-db = args.db
+db = str(args.db)
 if db != "" and not os.path.isdir(db):
     print("provided marker gene database directory %s does not exist; try again"%(db))
     sys.exit(1)
@@ -49,7 +50,7 @@ mincov = args.mincov
 readlen=args.readlen
 clobber = args.clobber
 unlock = args.unlock
-threads = int(args.threads)
+threads = args.threads
 iterations = args.iterations
 ref = args.ref
 mfilter = 1.0
@@ -70,7 +71,7 @@ force = args.Force
 verbose = args.verbose
 outdir = args.outdir
 pickref = args.pickref
-prefix = ""
+prefix = "."
 retry = False
 
 if not os.path.exists(outdir):
@@ -84,7 +85,8 @@ else:
         os.system("rm -rf %s/*"%(outdir))
         os.system("mkdir %s"%(outdir))
         prefix = outdir
-
+    elif os.path.exists(outdir):
+        prefix = outdir
 #1. ensure required files are present
 #if not os.path.exists(snakefile):
 #    print("ERROR: snakefile %s not found!"%(snakefile))
@@ -192,7 +194,7 @@ if samples != "" and (paired != "" or unpaired != ""):
 if samples != "" and (paired == "" and unpaired == ""):
     samplesf = open(samples,'r')
     for line in samplesf.readlines():
-        allsamples.append(line.replace("\n",""))
+        allsamples.append(line.strip())
 
 
 elif samples == "" and paired != "" and unpaired == "":
@@ -212,7 +214,7 @@ elif samples == "" and paired == "" and unpaired != "":
     if "," in unpaired:
         allfiles = unpaired.split(",")
     else:
-        allfiles = [unpaired]
+        allfiles.append(unpaired)
     for ufile in allfiles:
         if not os.path.exists(ufile):
             print("ERROR: could not locate --unpaired file %s"%(ufile))
@@ -307,28 +309,61 @@ while i < iterations:
             print("ERROR: Output dir (%s/%s.0.assembly.out) exists and contains a previous, failed run. If you'd like to retry/resume this run, specify: --retry"%(prefix,s1id))
             sys.exit(1)
         if unlock:
-            ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s/snakemake/metacompass.iter0.py --configfile %s --unlock"%(s1id,mcdir,config),shell=True)
+            #ret = subprocess.call("snakemake -r --verbose --config ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s/snakemake/metacompass.iter0.unpaired.py --configfile %s --unlock"%(s1id,mcdir,config),shell=True)
+            cmd_ret="snakemake -r --verbose --reason --unlock --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f nthreads=%d ref=%s.0.assembly.out/mc.refseq.fna"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov,minctglen,mfilter,threads,s1id)
+            cmd_ret += " reads="
+            for fqfile in allsamples:
+                cmd_ret += str(fqfile)+","
+                cmd_ret = cmd_ret[:-1]
+            #todo:fix to work in all cases, add r1,r2,ru
+            if paired != "":
+                cmd_ret += " r1=%s r2=%s"%(paired.split(",")[0],paired.split(",")[1])
+            if unpaired != "":
+                cmd_ret += " ru=%s"%(unpaired)
+            if unpaired != "" and paired =="":
+                cmd_ret +=" --snakefile %s/snakemake/metacompass.iter0.unpaired.py"%(mcdir)
+            elif paired != "" and unpaired =="":
+                cmd_ret +=" --snakefile %s/snakemake/metacompass.iter0.paired.py"%(mcdir)
+            elif paired != "" and unpaired !="":
+                cmd_ret +=" --snakefile %s/snakemake/metacompass.iter0.py"%(mcdir)
+#               elif samples =="":
+#
+            ret = subprocess.call(cmd_ret,shell=True)
+#            ret = subprocess.call("snakemake -r --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f nthreads=%d ref=%s.0.assembly.out/mc.refseq.fna --snakefile %s/snakemake/metacompass.iter0.unpaired.py reads=%s --unlock"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov,minctglen,mfilter,threads,s1id,mcdir,allsamples),shell=True)
+# if paired != "":cmd += " r1=%s r2=%s"%(paired.split(",")[0],paired.split(",")[1])
         if i == 0:
             ret = 0
+            #todo: fix to work with diff types of reads?
             if ref != "NA":
                 cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f nthreads=%d"%(threads,config,prefix,s1id,ref,mcdir,i,readlen,mincov,minctglen,mfilter,threads)
 
             else:        
-                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f nthreads=%d"%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i,readlen,mincov,minctglen,mfilter,threads)
+                cmd = "snakemake --verbose --reason --cores %d -a --configfile %s --config prefix=%s sample=%s pickref=breadth reference=%s/%s.%d.assembly.out/mc.refseq.fna mcdir=%s iter=%d length=%d mincov=%d minlen=%d mfilter=%f nthreads=%d "%(threads,config,prefix,s1id,prefix,s1id,i,mcdir,i,readlen,mincov,minctglen,mfilter,threads)
 
             cmd += " reads="
             for fqfile in allsamples:
                 cmd += str(fqfile)+","
-             
+                #cmd = cmd[:-1]
             if paired != "":
                 cmd += " r1=%s r2=%s"%(paired.split(",")[0],paired.split(",")[1])
+            if unpaired != "":
+                cmd += " ru=%s"%(unpaired)
   
             if ref != "NA":
                 cmd += " --snakefile %s/snakemake/metacompass.iter0.ref.py"%(mcdir)
-            else:
-                cmd += " --snakefile %s/snakemake/metacompass.iter0.py"%(mcdir)
+            else: 
+                if unpaired != "" and paired =="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.unpaired.py"%(mcdir)
+                elif paired != "" and unpaired =="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.paired.py"%(mcdir)
+                elif paired != "" and unpaired !="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.py"%(mcdir)
+                #todo: fix to work with diff types of reads..
+                elif samples =="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.py"%(mcdir)
 
             if verbose:
+#iredunpaired reads -U?
                 cmd += " --verbose"
             if retry:
                 cmd += " --rerun-incomplete"
@@ -371,7 +406,7 @@ while i < iterations:
             cmd += " reads="
             for fqfile in allsamples:
                 cmd += fqfile+","
-             
+            cmd = cmd[:-1]         
             if paired != "":
                 cmd += " r1=%s r2=%s"%(paired.split(",")[0],paired.split(",")[1])
  
@@ -412,8 +447,10 @@ while i < iterations:
 
 if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1)):
     #cleanup output
-    os.mkdir("%s/metacompass_output"%(prefix))
-    os.mkdir("%s/metacompass_logs"%(prefix))
+    if not os.path.exists("%s/metacompass_output"%(prefix)):
+        os.mkdir("%s/metacompass_output"%(prefix))
+    if not os.path.exists("%s/metacompass_logs"%(prefix)):
+        os.mkdir("%s/metacompass_logs"%(prefix))
     os.system("cp %s/%s.0.assembly.out/contigs.final.fasta %s/metacompass_output/metacompass.final.ctg.fa"%(prefix,s1id,prefix))
     os.system("cp %s/metacompass_output/metacompass.final.ctg.fa %s/."%(prefix,prefix))
     os.system("mv %s/*.log %s/metacompass_logs/."%(prefix,prefix))
@@ -442,19 +479,21 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
     else:
         #if referece selection
         if os.stat("%s/%s.0.assembly.out/mc.refseq.fna"%(prefix,s1id)).st_size!= 0:
-            os.mkdir("%s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id))
+            os.makedirs("%s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id), exist_ok=True)
             os.system("mv %s/%s.0.assembly.out/mc.* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
         else:
             os.system("rm %s/%s.0.assembly.out/mc.refseq.fna"%(prefix,s1id))
-        os.mkdir("%s/%s.0.assembly.out/pilon_output"%(prefix,s1id))
-        os.mkdir("%s/%s.0.assembly.out/assembly_output"%(prefix,s1id))
+        os.makedirs("%s/%s.0.assembly.out/pilon_output"%(prefix,s1id), exist_ok=True)
+        os.makedirs("%s/%s.0.assembly.out/assembly_output"%(prefix,s1id), exist_ok=True)
         os.system("mv %s/%s.0.assembly.out/contigs.fasta %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/%s.sam %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*buildcontigs* %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/sorted.bam %s/%s.0.assembly.out/pilon_output"%(prefix,s1id,prefix,s1id))
+        os.system("mv %s/%s.0.assembly.out/sorted*.bam %s/%s.0.assembly.out/pilon_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*.pilon.* %s/%s.0.assembly.out/pilon_output/"%(prefix,s1id,prefix,s1id))
  #if unmmaped reads#
         if os.stat("%s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq"%(prefix,s1id,s1id)).st_size!= 0:
+            if os.path.exists("%s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id)):
+                os.system("rm -rf %s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id))
             os.mkdir("%s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id))
             os.system("mv %s/%s.0.assembly.out/*sam.unmapped* %s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id,prefix,s1id))
             os.system("mv %s/%s.0.assembly.out/*.megahit %s/%s.0.assembly.out/megahit_output"%(prefix,s1id,prefix,s1id))
@@ -463,7 +502,7 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
             os.system("rm %s/%s.0.assembly.out/*mc.sam.unmapped*"%(prefix,s1id))
         #provide mapped reads too? the bam is in pilon_output 
         os.mkdir("%s/%s.0.assembly.out/mapped_reads"%(prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/*.mc.sam %s/%s.0.assembly.out/mapped_reads"%(prefix,s1id,prefix,s1id))
+        os.system("mv %s/%s.0.assembly.out/*.mc*.sam %s/%s.0.assembly.out/mapped_reads"%(prefix,s1id,prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*index "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.bt2 "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.sam "%(prefix,s1id))
@@ -472,7 +511,10 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         os.system("rm %s/%s.0.assembly.out/*.log "%(prefix,s1id))
         os.system("rm %s/*.f*q "%(prefix))
         os.system("rm %s/*.fasta "%(prefix))
-        os.system("mv %s/%s.0.assembly.out  %s/intermediate_files"%(prefix,s1id,prefix))
+        if os.path.exists("%s/%s.0.assembly.out"%(prefix,s1id)):
+            if os.path.exists("%s/intermediate_files"%(prefix)):
+                os.system("rm -rf %s/intermediate_files"%(prefix))
+            shutil.move("%s/%s.0.assembly.out"%(prefix,s1id) , "%s/intermediate_files"%(prefix))
         if os.path.exists("%s/%s.merged.fq.mash.out.ids"%(prefix,s1id)):
             os.system("rm %s/%s.merged.fq.mash.out.ids "%(prefix,s1id))
     #os.system("touch %s/%s.0.assembly.out/run.ok"%(prefix,s1id))
