@@ -6,7 +6,7 @@ Last updated: May 8th, 2017
 * Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
 * snakemake 3.7.1: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
 * BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
-* bowtie2  (>=) 2.2.4: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.4/ 
+* bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.4/ 
 * kmer-mask (May 13th, 2015): https://sourceforge.net/p/kmer/code/HEAD/tree/trunk/
 * samtools (>=) 1.x: http://samtools.sourceforge.net/ 
 * MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
