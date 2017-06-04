@@ -226,8 +226,8 @@ rule pilon_contigs:
     input:
         contigs=rules.build_contigs.output.contigs,
         sam = rules.bam_sort.output.bam_sorted
-    benchmark:
-       "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
+    #benchmark:
+    #   "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
     output:
         pilonctg='%s/%s.%s.assembly.out/contigs.pilon.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
