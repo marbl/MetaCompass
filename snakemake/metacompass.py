@@ -68,8 +68,8 @@ rule pilon_contigs:
     input:
         contigs='%s/%s.%d.assembly.out/contigs.final.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1),
         sam = rules.bam_sort.output.bam_sorted
-    benchmark:
-       "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
+    #benchmark:
+    #   "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
     params:
         threads="%s"%(int(config['nthreads'])),
         mincov="%d"%(int(config['mincov']))
