@@ -27,11 +27,11 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 -- I have a set of metagenomic reads, and want to perform reference-guided assembly. 
 
-    python go_metacompass.py -P [read1.fq,read2.fq] -l [max read length]-o [output_folder] -t [ncpu]
+    python3 go_metacompass.py -P [read1.fq,read2.fq] -l [max read length]-o [output_folder] -m [min coverage] -t [ncpu]
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
-    python go_metacompass.py -r [references.fasta] -P [read1.fq,read2.fq] -o [output_folder] -t [ncpu]
+    python3 go_metacompass.py -r [references.fasta] -P [read1.fq,read2.fq] -o [output_folder] -m [min coverage] -t [ncpu]
 
 
 # Output directory:
@@ -51,7 +51,7 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
                             thao2000.2.fq	
 -- Run:
    
-     python go_metacompass.py --r Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P thao2000.1.fq,thao2000.2.fq -o example1_output -t 1
+     python3 go_metacompass.py --r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -o example1_output -m 3 -t 4
 
 # Reference-guided assembly with reference selection.
 
@@ -65,7 +65,7 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
         SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq
 -- Run:
    
-     python go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -o example2_output
+     python3 go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -o example2_output
 
                 
                 
