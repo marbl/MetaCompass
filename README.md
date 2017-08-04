@@ -34,12 +34,26 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
     python3 go_metacompass.py -r [references.fasta] -P [read1.fq,read2.fq] -o [output_folder] -m [min coverage] -t [ncpu]
 
 
-# Output directory:
-      Assembled contigs:
-                metacompass_output/metacompass.final.ctf.fa
-      
-      Selected Reference genomes:
-                metacompass_output/metacompass.recruited.fa
+# OUTPUT
+
+--Output folder contains the following files:
+    
+    1) metacompass_output folder:
+         Assembled contigs:
+                metacompass_output/metacompass.final.ctg.fa
+         Selected Reference genomes sequences:
+                metacompass_output/metacompass.recruited.fa  
+         Selected Reference genomes ids and taxonomy ids
+                metacompass_output/metacompass.recruited.ids
+    2) Assembly information
+         metacompass.tsv file with the following information: 
+            -contig ID
+            -contig size
+            -reference genome used (only reference-guided assembled contigs)
+            -start and end position in the genome where contig originates from
+            -taxonomic label of the genome
+            -name of the genome  
+
                 
 # EXAMPLES
 
@@ -67,20 +81,6 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
    
      python3 go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -o example2_output
 
-# OUTPUT
-
---Output folder contains the following files:
-    
-    1) metacompass_output: folder with the following files:
-         -metacompass.final.ctg.fa: assembled contigs in fasta format
-         -metacompass.recruited.fa: selected reference genomes in fasta format
-         -metacompass.recruited.ids: selected reference genomes ids and taxonomy ids
-    2) metacompass.tsv: file with addtional assembly information: 
-          -contig ID
-          -contig size
-          -reference genome used (only reference-guided assembled contigs)
-          -start and end position in the genome where contig originates from
-          -taxonomic label of the genome
-          -name of the genome    
+  
 Contact:
 vcepeda{at}cs.umd.edu
