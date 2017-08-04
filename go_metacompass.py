@@ -463,7 +463,11 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
             os.system("cp %s/%s.0.assembly.out/mc.refseq.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
             os.system("cp %s/%s.0.assembly.out/mc.refseq.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
 
-###
+###create tsv output
+#    os.system("grep '>' %s/%s.0.assembly.out/contigs.fasta| tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))
+#    os.system("grep '>' %s/tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))
+
+
     if not keepoutput:
         print("Cleaning up files..")
         shutil.rmtree("%s/%s.0.assembly.out/"%(prefix,s1id))
@@ -518,6 +522,8 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         if os.path.exists("%s/%s.merged.fq.mash.out.ids"%(prefix,s1id)):
             os.system("rm %s/%s.merged.fq.mash.out.ids "%(prefix,s1id))
     #os.system("touch %s/%s.0.assembly.out/run.ok"%(prefix,s1id))
+   # os.system("samtools faidx metacompass.final.ctg.fa")
+       #|cut -f1-2> %s/.tmp2"%(prefix))
     print("MetaCompass finished succesfully!")
 else:
     os.system("touch %s/%s.0.assembly.out/run.fail"%(prefix,s1id))

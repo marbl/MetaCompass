@@ -11,7 +11,10 @@ DESCRIPTION
 #os.system("touch %s"%config['reads'][0])
 
 
-ruleorder: merge_reads > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > assemble_unmapped > join_contigs
+ruleorder: merge_reads > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > assemble_unmapped > join_contigs > create_tsv
+
+rule all:
+     input:expand('{prefix}/metacompass.tsv',prefix=config["prefix"])
 
 rule merge_reads:
     input:
@@ -156,4 +159,13 @@ rule join_contigs:
     shell:"cat {input.mh_contigs} {input.mc_contigs} > {output.final_contigs}"
 
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
+
+rule create_tsv:
+    input:
+        all_contigs=rules.join_contigs.output.final_contigs,
+        mc_contigs=rules.build_contigs.output.contigs
+    message: """---information reference-guided and de novo contigs"""
+    output:"%s/metacompass.tsv"%(config['prefix'])
+    shell:"sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} NA {output}"%(config["mcdir"])
+
 

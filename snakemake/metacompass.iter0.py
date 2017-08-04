@@ -13,7 +13,7 @@ DESCRIPTION
 
 #ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > remove_zerocov >  assemble_unmapped > join_contigs
 
-ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs
+ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv
 
 #ruleorder: bowtie2_map > assemble_unmapped > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
 #code to skip initial steps if reference genomes provided 
@@ -23,7 +23,7 @@ if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sampl
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
-
+     os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.ids',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s/%s.%s.assembly.out/%s.sam"%(config['prefix'],config['sample'],config['iter'],config['sample']))
      os.system("touch %s/%s.%s.assembly.out/%s.sam.unmapped.fq"%(config['prefix'],config['sample'],config['iter'],config['sample']))
      os.system('touch %s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']))
@@ -33,7 +33,8 @@ if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sampl
          os.system('cp %s/%s.%d.assembly.out/contigs.final.fasta %s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1, config['prefix'],config['sample'],int(config['iter'])))
 
 
-#rule all:
+rule all:
+     input:expand('{prefix}/metacompass.tsv',prefix=config["prefix"])
 #    input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
 
 
@@ -92,7 +93,8 @@ rule reference_recruitment:
         readlen = "%d"%(int(config['length']))
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
-	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
+	reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample']),
+        refids=expand('{prefix}/{sample}.0.assembly.out/mc.refseq.ids',prefix=config['prefix'],sample=config['sample'])
     message: """---reference recruitment."""
     threads:int(config['nthreads'])
     log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
@@ -273,10 +275,22 @@ rule join_contigs:
     input:
         mc_contigs=rules.pilon_contigs.output.pilonctg,
         mh_contigs=rules.assemble_unmapped.output.megahit_contigs
-    message: """---concanenate reference-guided and de novo contigs"""
+    message: """---concanenate !!!! reference-guided and de novo contigs"""
     output:
         final_contigs="%s/%s.0.assembly.out/contigs.final.fasta"%(config['prefix'],config['sample'])
     shell:"cat {input.mh_contigs} {input.mc_contigs} > {output.final_contigs}"
 
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
+#mc_contigs=rules.build_contigs.output.contigs
+rule create_tsv:
+    input:
+        all_contigs=rules.join_contigs.output.final_contigs,
+        mc_contigs=rules.build_contigs.output.contigs,
+        ref=rules.reference_recruitment.output.refids
+    message: """---information reference-guided and de novo contigs"""
+    output:"%s/metacompass.tsv"%(config['prefix'])
+    shell:"sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} {input.ref} {output}"%(config["mcdir"])
+# shell:"sh %s/bin/tab.sh {input.all_contigs} {input.ref} > {output}"
+ #"grep '>' %s/%s.0.assembly.out/contigs.fasta| tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))
+ # "grep '>' %s/tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))
