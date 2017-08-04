@@ -67,7 +67,20 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
    
      python3 go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -o example2_output
 
-                
-                
+# OUTPUT
+
+--Output folder contains the following files:
+    
+    3) metacompass_output: folder with the foloowing files:
+         -metacompass.final.ctg.fa: assembled contigs in fasta format
+         -metacompass.recruited.fa: selected reference genomes in fasta format
+         -metacompass.recruited.ids: selected reference genomes ids and taxonomy ids
+    2) metacompass.tsv: addtional assembly information: 
+          -contig ID
+          -contig size
+          -reference genome used (only reference-guided assembled contigs)
+          -start and end position in the genome where contig originates from
+          -taxonomic label of the genome
+          -name of the genome    
 Contact:
 vcepeda{at}cs.umd.edu
