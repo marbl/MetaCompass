@@ -1,5 +1,5 @@
 # MetaCompass v1.0
-Last updated: May 8th, 2017
+Last updated: August 4th, 2017
 
 # Required software:
 
