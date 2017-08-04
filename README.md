@@ -71,11 +71,11 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 --Output folder contains the following files:
     
-    3) metacompass_output: folder with the foloowing files:
+    1) metacompass_output: folder with the following files:
          -metacompass.final.ctg.fa: assembled contigs in fasta format
          -metacompass.recruited.fa: selected reference genomes in fasta format
          -metacompass.recruited.ids: selected reference genomes ids and taxonomy ids
-    2) metacompass.tsv: addtional assembly information: 
+    2) metacompass.tsv: file with addtional assembly information: 
           -contig ID
           -contig size
           -reference genome used (only reference-guided assembled contigs)
