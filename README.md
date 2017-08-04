@@ -25,13 +25,13 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 # USAGE    
 
--- I have a set of metagenomic reads, and want to perform reference-guided assembly.
+-- I have a set of metagenomic reads, and want to perform reference-guided assembly. 
 
-    python go_metacompass.py -P [read1.fq,read2.fq] -l [max read length]-o [output_folder] -t [ncpu]
+    python3 go_metacompass.py -P [read1.fq,read2.fq] -l [max read length]-o [output_folder] -m [min coverage] -t [ncpu]
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
-    python go_metacompass.py -r [references.fasta] -P [read1.fq,read2.fq] -o [output_folder] -t [ncpu]
+    python3 go_metacompass.py -r [references.fasta] -P [read1.fq,read2.fq] -o [output_folder] -m [min coverage] -t [ncpu]
 
 
 # Output directory:
@@ -40,6 +40,33 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
       
       Selected Reference genomes:
                 metacompass_output/metacompass.recruited.fa
+                
+# EXAMPLES
+
+# Reference-guided assembly with known reference genomes (no reference selection).
+-- Input data is available in the tutorial folder:
+
+    Reference genome file:  Candidatus_Carsonella_ruddii_HT_Thao2000.fasta
+    Metagenomic reads:      thao2000.1.fq
+                            thao2000.2.fq	
+-- Run:
+   
+     python3 go_metacompass.py --r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -o example1_output -m 3 -t 4
+
+# Reference-guided assembly with reference selection.
+
+-- Download and extract metagenomic sample:
+
+    ftp://public-ftp.hmpdacc.org/Illumina/posterior_fornix/SRS044742.tar.bz2
+   
+    SRS044742/
+        SRS044742.denovo_duplicates_marked.trimmed.1.fastq
+        SRS044742.denovo_duplicates_marked.trimmed.2.fastq
+        SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq
+-- Run:
+   
+     python3 go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -o example2_output
+
                 
                 
 Contact:
