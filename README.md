@@ -1,5 +1,10 @@
 # MetaCompass v1.0
-Last updated: August 4th, 2017
+Last updated: November 1st, 2017
+
+
+# Publication
+Victoria Cepeda, Bo Liu, Mathieu Almeida, Christopher M. Hill, Sergey Koren, Todd J. Treangen, Mihai Pop.
+bioRxiv 212506; doi: https://doi.org/10.1101/212506
 
 # Required software:
 
