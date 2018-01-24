@@ -1,5 +1,10 @@
 # MetaCompass v1.0
-Last updated: May 8th, 2017
+Last updated: November 1st, 2017
+
+
+# Publication
+Victoria Cepeda, Bo Liu, Mathieu Almeida, Christopher M. Hill, Sergey Koren, Todd J. Treangen, Mihai Pop.
+bioRxiv 212506; doi: https://doi.org/10.1101/212506
 
 # Required software:
 
@@ -34,12 +39,25 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
     python3 go_metacompass.py -r [references.fasta] -P [read1.fq,read2.fq] -o [output_folder] -m [min coverage] -t [ncpu]
 
 
-# Output directory:
-      Assembled contigs:
-                metacompass_output/metacompass.final.ctf.fa
-      
-      Selected Reference genomes:
-                metacompass_output/metacompass.recruited.fa
+# OUTPUT
+
+--Output folder contains the following files:
+    
+    1) metacompass_output folder:
+         - Assembled contigs:
+                metacompass_output/metacompass.final.ctg.fa
+         - Selected Reference genomes sequences:
+                metacompass_output/metacompass.recruited.fa  
+         - Selected Reference genomes ids and taxonomy ids
+                metacompass_output/metacompass.recruited.ids
+    2) metacompass.tsv file with the following information: 
+         - contig ID
+         - contig size
+         - reference genome used (only reference-guided assembled contigs)
+         - start and end position in the genome where contig originates from
+         - taxonomic label of the genome
+         - name of the genome  
+
                 
 # EXAMPLES
 
@@ -67,7 +85,6 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
    
      python3 go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -o example2_output
 
-                
-                
+  
 Contact:
 vcepeda{at}cs.umd.edu
