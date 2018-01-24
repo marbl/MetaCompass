@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+#
 #############################################
 #
 # Program: Pick reference genomes using MetaPhyler.
@@ -18,14 +18,14 @@ use FindBin qw($Bin);
 #----------------------------------------#
 # read command line options
 #----------------------------------------#
-my $fastafile = "";
-my $outdir = 0;
+my $fastafile = "f";
+my $outdir = "o";
 my $nthreads = 0;
 my $prefix ="mc";
 my $mincov = 3;
 my $readlen = 100;
-if (scalar @ARGV == 5) {
-    ($fastafile, $outdir, $nthreads,$mincov,$readlen) = @ARGV;
+if (scalar @ARGV == 4) {
+    ($fastafile, $outdir, $nthreads, $mincov) = @ARGV;
 } else {
     Usage();
 }
@@ -43,8 +43,8 @@ print STDERR "\n";
 
 # select reference genomes
 print STDERR "# Pick reference genomes based on MetaPhyler output\n";
-# pickrefids.pl <blastfile> <coverage_threshold> <max_read_length>
-$cmd = "perl $Bin/pickrefids.pl $outdir/$prefix.blastn $mincov $readlen > $outdir/$prefix.refseq.ids";
+# pickrefids.pl <blastfile> <coverage_threshold> 
+$cmd = "python $Bin/pickrefids.py $outdir/$prefix.blastn $mincov > $outdir/$prefix.refseq.ids";
 print STDERR "$cmd\n";
 system($cmd);
 print STDERR "\n";
