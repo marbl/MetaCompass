@@ -69,7 +69,7 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
                             thao2000.2.fq	
 -- Run:
    
-     python3 go_metacompass.py --r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -o example1_output -m 3 -t 4
+     python3 go_metacompass.py -r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -o example1_output -m 3 -t 4
 
 # Reference-guided assembly with reference selection.
 
