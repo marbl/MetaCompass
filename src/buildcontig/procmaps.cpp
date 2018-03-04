@@ -17,7 +17,7 @@ using std::istringstream;
 
 #include "procmaps.hpp"
 #include "memory.hpp"
-
+#include "outputfiles.hpp"
 
 // convert nucleotide to char number
 /***************************************/
@@ -54,20 +54,22 @@ void readrefseqfile(const string refseqfile, S2S &ref2seq) {
                 //reset variables
                 refseq.clear();
                 refid.clear();
-                len = 0;
+                //len = 0;
             }
             
             // parse fasta header line to get fasta id
             istringstream iss(line);
             iss >> refid;       // only read the first word
             refid.erase(0, 1);  // remove first char '>'
+	    len = 0;
         }
         
         // sequence line
         else {
             len += line.size(); // increase length
-            if (refseq.empty()) refseq.reserve(line.size());
-            else refseq.resize(len);
+            //if (refseq.empty()) {refseq.reserve(line.size());
+            // cerr << "refseq.empty: " << refseq<< " len: " << len << endl;}
+            //else refseq.resize(len);
             refseq += line;       // append sequence
         }
         
@@ -75,6 +77,7 @@ void readrefseqfile(const string refseqfile, S2S &ref2seq) {
     /****************************************************************************/
     
     // store the last fasta record
+    //cerr << refid << " length: " << refseq.size() << " len: " << len << endl;
     ref2seq.insert(S2S::value_type(refid, refseq) );
 }
 //deleted comments to stdout, march 15 2016
@@ -163,14 +166,16 @@ static void storesam(VC &prof, VB &ins, VB &cov, I2VC &pos2ins, string mutstr, s
     }
 }
 
-static void compute_breadth_sam(ifstream &ifs, S2D &ref2bre, S2S &ref2seq) {
+static void compute_breadth_sam(const Cmdopt &cmdopt, ifstream &ifs, S2D &ref2bre, S2S &ref2seq) {
     
     S2VB ref2cov;
     init(ref2seq, ref2cov, 1);
-    
+    ofstream ofs(string(cmdopt.outprefix + "/coverage.txt").c_str());
+ 
     string eachline, refid;
     size_t pos1, pos2, len;
     Uint start, end;
+    ofs <<  "Ref_id\tbases\tRef_length\tcoverage" << endl;
     while (getline(ifs, eachline)) {
         if ( eachline[0] == '@') continue;
         pos1 = eachline.find("\t");           // 1
@@ -201,6 +206,9 @@ static void compute_breadth_sam(ifstream &ifs, S2D &ref2bre, S2S &ref2seq) {
             if (iter->second[i])
                 ++cov;
         ref2bre.insert(S2D::value_type(iter->first, cov));
+//cerr << "iterfirist: " << iter->first << " itersecond: " << iter->second << " cov: " << cov << " itersecondsize: " << iter->second.size() << endl;
+	ofs <<  iter->first << "\t" << cov << "\t" << iter->second.size() << "\t" << cov/iter->second.size() << endl;
+
     }
     
 }
@@ -300,7 +308,7 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
             compute_depth_sam(ifs, ref2val, ref2seq);
         
         else if (cmdopt.pickref == "breadth")
-            compute_breadth_sam(ifs, ref2val, ref2seq);
+            compute_breadth_sam(cmdopt, ifs, ref2val, ref2seq);
         
         
         // rewind input file stream
