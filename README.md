@@ -11,7 +11,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 * Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
 * snakemake 3.7.1: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
 * BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
-* bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.4/ 
+* bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9
 * kmer-mask (May 13th, 2015): https://sourceforge.net/p/kmer/code/HEAD/tree/trunk/
 * samtools (>=) 1.x: http://samtools.sourceforge.net/ 
 * MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
@@ -69,7 +69,7 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
                             thao2000.2.fq	
 -- Run:
    
-     python3 go_metacompass.py --r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -o example1_output -m 3 -t 4
+     python3 go_metacompass.py -r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -o example1_output -m 3 -t 4
 
 # Reference-guided assembly with reference selection.
 
