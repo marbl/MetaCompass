@@ -98,7 +98,8 @@ rule reference_recruitment:
     message: """---reference recruitment."""
     threads:int(config['nthreads'])
     log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"mkdir -p {output.out}; %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"mkdir -p {output.out}; python %s/bin/select_references.py {input} {output.out} {threads} {params.mincov}  1>> {log} 2>&1"%(config["mcdir"])
+    #shell:"mkdir -p {output.out}; python %s/bin/select_references.py {input} {output.out} {threads} {params.mincov}  1>> {log} 2>&1"%(config["mcdir"])
 
 rule mash_filter:
     input:
