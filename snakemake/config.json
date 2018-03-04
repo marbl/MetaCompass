@@ -11,8 +11,8 @@
     "nthreads": 64,
     "iter": 1,
     "mincov" : 3,
-    "minlen" : 300,
-    "mfilter" : 1.0,
+    "minlen" : 100,
+    "mfilter" : 0.00005,
     "mcdir": "."
 
 }
