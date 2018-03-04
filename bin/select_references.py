@@ -69,7 +69,7 @@ def average(L):
 def init_marker_data(marker2coverage):
    marker2length={}
    mlength=0
-   with open(pathbin + "/src/metaphyler/markers/markers.length", "rt") as markerfile:
+   with open(pathbin + "/src/markers/markers.length", "rt") as markerfile:
    #with open("/Users/victoria/metacompass/new/bin/new_pick/markers.length", "rt") as markerfile:
       id=""
       for line in markerfile:
@@ -120,7 +120,7 @@ def extract_marker_data(blast_filename):
 #markertotalcount
 #covthreshold ???
 #============================================================
-def create_refid_file(marker2coverage, marker2lenght, markertotalcount, covthreshold,refid_filename,markercoverage_filename):
+def create_refid_file(marker2coverage, marker2lenght, markertotalcount, covthreshold,refid_filename, assembly_id_filename, markercoverage_filename):
    total_ref_cov={}
    total_marker_cov={}
    list_ref_median_cov={}
@@ -135,21 +135,53 @@ def create_refid_file(marker2coverage, marker2lenght, markertotalcount, covthres
    #prev_ref="_".join(prev_ref.split('_')[0:2])
    prev_ref="NA"
    id_list=[]
+   ass_list=[]
    for marker, cov in sorted(total_marker_cov.items(), key=operator.itemgetter(1), reverse=True):
        #outfile.write( 'dict = ' + repr(dict) + '\n' )
        ref = "_".join(marker.split('_')[0:2])
+       ##add assembly accession
+       assembly_acc= "_".join(marker.split('_')[2:4])
        #if median_cov >= covthreshold:
        print ( "%s\t%.5f" % (marker, cov), file= outfile)  
        id_list.append(ref)
+       ass_list.append(assembly_acc)
    outfile.close()
    outfile = open(refid_filename,'w')
    myset=set(id_list)
    for id in myset:
       print ("%s" % (id), file =outfile)
-#list_species.append(species)
-# %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
+   outfile.close()
+   outfile = open(assembly_id_filename,'w')
+   myset=set(ass_list)
+   for id in myset:
+      print ("%s" % (id), file =outfile)
+   return total_marker_cov
 
+def cog_stats(total_marker_cov,marker2coverage, marker2lenght, markertotalcount,refid_filename, assembly_id_filename, totalmarkercoverage_filename, cog_filename):
+   new_list={}
+   new_cog={}
+   for marker, cov in total_marker_cov.items():
+       ref = "_".join(marker.split('_')[0:2])
+       assembly_acc= "_".join(marker.split('_')[2:4])
+       cog_acc ="_".join(marker.split('_')[4:5])
+       if ref in new_list:
+            new_list[ref]+=cov  
+       else:
+            new_list[ref]=cov
+       if ref in new_cog:
+            if cog_acc not in new_cog[ref]:
+               new_cog[ref].append(cog_acc)
+       else:
+            new_cog[ref]=[cog_acc]
 
+   outfile = open(totalmarkercoverage_filename,'w')         
+   for marker, cov in sorted(new_list.items(), key=operator.itemgetter(1), reverse=True): 
+       print ( "%s\t%.5f" % (marker, cov), file= outfile)
+   outfile.close()
+   outfile = open(cog_filename,'w')
+   for marker, cov in new_cog.items():
+       print ( "%s\t%s\t%d" % (marker, cov,len(cov)), file= outfile)
+   outfile.close()
 
 #===========================
 #MAIN
@@ -183,18 +215,29 @@ def main():
 #{input} {output.out} {threads} {params.mincov} {params.readlen}
 
    blast_filename = outdir+"/"+prefix+"."+blast+".all"#sys.argv[1]
-   refid_filename = outdir+"/"+prefix+".refseq.ids"#sys.argv[1]
+   refid_filename = outdir+"/"+prefix+".refseq_old.ids"#sys.argv[1]
+   assembly_id_filename = outdir+"/"+prefix+".assembly.ids"#sys.argv[1]
    markercoverage_filename = outdir+"/"+prefix+ ".markercoverage.txt"#sys.argv[1]
+   total_markercoverage_filename = outdir+"/"+prefix+ ".assemblymarkercoverage.txt"#sys.argv[1]   
+   cog_filename = outdir+"/"+prefix+ ".cogmarkercoverage.txt"#sys.argv[1]   
    
    #coverage per marker gene or based on the all marker genes in a genome
-
+   total_marker_cov={}
    marker2coverage, markertotalcount = extract_marker_data(blast_filename)
    marker2length = init_marker_data(marker2coverage)
-   create_refid_file(marker2coverage, marker2length, markertotalcount, covthreshold,refid_filename, markercoverage_filename)
-   
+   total_marker_cov=create_refid_file(marker2coverage, marker2length, markertotalcount, covthreshold,refid_filename, assembly_id_filename, markercoverage_filename)
+   cog_stats(total_marker_cov,marker2coverage, marker2length, markertotalcount,refid_filename, assembly_id_filename, total_markercoverage_filename, cog_filename)   
 
    print ("# Extract reference genome sequences")
-   cmd = "%s/bin/extractSeq %s/refseq/bacgeno.fna %s/%s.refseq.ids > %s/%s.refseq.fna"%(pathbin,pathbin,outdir,prefix,outdir,prefix)
+   #buscar ids del mismo assembly project
+   cmd ="for file in $(cat %s/%s.assembly.ids);do cat  %s/refseq/genomes/${file}/${file}.fasta >> %s/%s.refseq.fna;done"%(outdir,prefix,pathbin,outdir,prefix)
+   print ("%s" % (cmd))
+   os.system(cmd)
+   cmd ="grep '>'  %s/%s.refseq.fna|tr -d '>'|cut -f1 -d ' '> %s/%s.refseq.ids" %(outdir,prefix,outdir,prefix)
+   print ("%s" % (cmd))
+   os.system(cmd)
+   cmd = "%s/bin/extractSeq %s/refseq/bacgeno.fna %s/%s.refseq_old.ids > %s/%s.refseq_old.fna"%(pathbin,pathbin,outdir,prefix,outdir,prefix)
+
    print ("%s" % (cmd))
    os.system(cmd)
           

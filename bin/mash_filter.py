@@ -1,37 +1,33 @@
 import os,sys,string
+import operator
 
+
+pathbin="/".join(os.path.realpath(__file__).split('/')[:-2])
+print ("%s" % (pathbin))
 r1 = sys.argv[1]
 g1 = sys.argv[2]
-outf = open(sys.argv[3],'w')
-g1f = open(sys.argv[2],'r')
+results = sys.argv[3]
+#print ("%s" % (outf))
+#g1f = open(sys.argv[2],'r')
 mfilter = float(sys.argv[4])
-#print(mfilter)
-if mfilter < 1.0:
-    os.system("mash sketch -r -p 64 -k 20 -s 100000 %s"%(r1))
-    os.system("mash dist -i -p 64 %s.msh %s -t > %s.mash.out"%(r1,g1,r1))
-    os.system("awk '{if($2<%f) print $1}' %s.mash.out > %s.mash.out.ids"%(mfilter,r1,r1))
-else:
-    os.system("cp %s %s.mash.out.ids"%(g1.replace(".fna",".ids"),r1))
+#shell:"/usr/bin/time %/bin/mash-Linux64-v2.0/mash sketch -p 12 -k 21 -s 1000 -i {input.g1} -o %/%.0.assembly.out/sketch; /usr/bin/time %/bin/mash-Linux64-v2.0/mash screen -w -p 12 {output.mashfile} {input.r1} >mash_screen.tab; cut -f4 mash_screen.tab >mc.refseq.filt.ids %bin/extractseq "
+#if mfilter < 1.0:
+cmd="%s/bin/mash-Linux64-v2.0/mash sketch -p 64 -k 21 -s 1000 -i %s"%(pathbin,g1)
+print ("%s" % (cmd))
+os.system(cmd)
 
-idsf = open("%s.mash.out.ids"%(r1),'r')
-#idsf.readline()
+cmd="%s/bin/mash-Linux64-v2.0/mash screen -w -p 64 %s.msh %s > %s.mash.tab"%(pathbin,g1,r1,r1)
+print ("%s" % (cmd))
+os.system(cmd)
+#mfliter=0000000001
+cmd="awk '{if($4<%s) print $5}' %s.mash.tab > %s.mash.ids"%(mfilter,r1,r1)
+print ("%s" % (cmd))
+os.system(cmd)
+cmd="%s/bin/extractSeq %s %s.mash.ids > %s"%(pathbin,g1,r1,results)
+#cmd="/bin/extractSeq {1} {2}.mash.ids  outf".format((pathbin,g1,r1))
+print ("%s" % (cmd))
+os.system(cmd)
 
-ids = []
-for line in idsf.readlines():
-    ids.append(line.replace("\n","").split("\t")[0])
-
-data = g1f.read().split(">")[1:]
-seq_dict = {}
-for seq in data:
-    hdr,fasta = seq.split("\n",1)
-    seq_dict[hdr.replace("\n","").split(" ")[0]] = fasta
-
-for id in ids:
-    outf.write(">%s\n"%(id))
-    outf.write(seq_dict[id])
-
-outf.close()
-g1f.close()
-#1. open up mash output
-#2. keep ids that have distance <0.3
-#3. filter reffile to remove genomes with distance >0.2
+#1. run mash screen
+#2. keep ids that have identity >.7
+#3. filter reffile to remove genomes with distance >.7

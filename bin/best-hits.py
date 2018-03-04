@@ -12,6 +12,7 @@ with open (input_name, 'rt') as infile,\
    items = line.split('\t')
    oldquery = items[0]
    oldscore = items[-1].strip()
+   lenalign=items[4]
    infile.seek(0)
 
    for line in infile:
