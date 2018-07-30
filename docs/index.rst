@@ -6,6 +6,17 @@
 Welcome to MetaCompass's documentation!
 =======================================
 
+|
+
+Reference-guided metagenome assembly
+
+|
+
+Publication
+Victoria Cepeda, Bo Liu, Mathieu Almeida, Christopher M. Hill, Sergey Koren, Todd J. Treangen, Mihai Pop.
+bioRxiv 212506; doi: https://doi.org/10.1101/212506
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
