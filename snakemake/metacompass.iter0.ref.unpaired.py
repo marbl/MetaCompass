@@ -47,10 +47,8 @@ rule bowtie2_map:
     threads:int(config["nthreads"])
     message: """---Build index ."""
     #shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} > {log} 2>&1;%s/bin/best_strata.py {output.sam}.all {output.sam}"
-    shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1;python3 %s/bin/best_strata.py {output.sam}.all {output.sam}"%(config["mcdir"])
-    #ln -s {output.sam}.all {output.sam}
+    shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}"%(config["mcdir"])
     #; rm {output.sam}.all"%(config["mcdir"])
-
 
 rule build_contigs:
     input:
@@ -72,46 +70,38 @@ rule build_contigs:
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
-       #r1=rules.merge_reads.output.merged
-       r1=config['r1'],#['reads'].split(",")[0],
-       r2=config['r2'],#['reads'].split(",")[1],
-       ru=config['ru']#['reads'].split(",")[2],
+       r1=rules.merge_reads.output.merged
+       #r1=config['reads']#.split(",")[0]
     output:
        index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.mc.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
-       sam2='%s/%s.%s.assembly.out/%s.mc_unpaired.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        #unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-       unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample']),
-       unmappedr2='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.2.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+       unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:int(config["nthreads"])
     message: """---Map reads for pilon polishing."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {log} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.ru}  -S {output.sam2} >> {log} 2>&1"
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} --un {output.sam}.unmapped.1.fq > {log} 2>&1"
 
 rule sam_to_bam:
     input:
-        sam=rules.pilon_map.output.sam,
-        sam2=rules.pilon_map.output.sam2
+        sam=rules.pilon_map.output.sam
     output:
-        bam = "%s.bam"%(rules.pilon_map.output.sam),
-        bam2= "%s.bam"%(rules.pilon_map.output.sam2)
+        bam = "%s.bam"%(rules.pilon_map.output.sam)
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
-    shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1;samtools view -bS {input.sam2} -o {output.bam2} 1>> {log} 2>&1;"
+    shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
 
 rule bam_sort:
     input:
-        bam = rules.sam_to_bam.output.bam,
-        bam2 = rules.sam_to_bam.output.bam
+        bam = rules.sam_to_bam.output.bam 
     output:
-        bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter']),
-        bam_sorted2 = "%s/%s.%s.assembly.out/sorted2.bam"%(config['prefix'],config['sample'],config['iter'])
+        bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Sort bam ."""
-    shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1;samtools sort -@ {threads} {input.bam2} -o %s/%s.%s.assembly.out/sorted2.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted2} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'])
+    shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
 
 
 #samtools view -bS $samfile | samtools sort - $pilon_dir/$ref.sorted"
@@ -120,8 +110,7 @@ rule bam_sort:
 rule pilon_contigs:
     input:
         contigs=rules.build_contigs.output.contigs,
-        sam = rules.bam_sort.output.bam_sorted,
-        sam2 = rules.bam_sort.output.bam_sorted2
+        sam = rules.bam_sort.output.bam_sorted
     #benchmark:
     #   "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
     output:
@@ -129,8 +118,8 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
-   ##why mindepth 3?
+    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+   
 #rule remove_zerocov:
 #    input:
 #        contigs=rules.pilon_contigs.output.pilonctg,
@@ -146,16 +135,13 @@ rule pilon_contigs:
 
 rule assemble_unmapped:
     input:
-        r1=rules.pilon_map.output.unmappedr1,
-        r2=rules.pilon_map.output.unmappedr2
+        r1=rules.pilon_map.output.unmappedr1
     output:
         megahit_contigs='%s/%s.0.assembly.out/%s.megahit/final.contigs.fa'%(config['prefix'],config['sample'],config['sample'])
     threads:int(config["nthreads"])
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
-    shell:"if [[ -s %s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq || -s %s/%s.0.assembly.out/%s.mc.sam.unmapped.2.fq ]]; then rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
-    #why3? missing -r for unpaired? or not
-
+    shell:"if [[ -s %s/%s.0.assembly.out/%s.mc.sam.unmapped.fq  ]]; then rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -r {input.r1} 1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
     #then touch {output.megahit_contigs} {log}; else
     #shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; if  [[ -s tutorial_thao_mash/thao2000.0.assembly.out/thao2000.mc.sam.unmapped.1.fq ]]; then empty=0; else echo empty=1; fi; if [[ $empty ]]; then touch {output.megahit_contigs} {log}; fi;  megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
 
@@ -171,7 +157,6 @@ rule join_contigs:
 
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
-#mc_contigs=rules.build_contigs.output.contigs
 rule create_tsv:
     input:
         all_contigs=rules.join_contigs.output.final_contigs,
@@ -180,7 +165,3 @@ rule create_tsv:
     message: """---information reference-guided and de novo contigs"""
     output:"%s/metacompass.tsv"%(config['prefix'])
     shell:"grep '>' {input.ref}|tr -d '>'>ref.ids;sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} ref.ids {output};rm ref.ids"%(config["mcdir"])
-
-# shell:"sh %s/bin/tab.sh {input.all_contigs} {input.ref} > {output}"
- #"grep '>' %s/%s.0.assembly.out/contigs.fasta| tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))
- # "grep '>' %s/tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))

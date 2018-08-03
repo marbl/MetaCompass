@@ -23,7 +23,7 @@ if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sampl
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
-
+     os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.ids',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s/%s.%s.assembly.out/%s.sam"%(config['prefix'],config['sample'],config['iter'],config['sample']))
      os.system("touch %s/%s.%s.assembly.out/%s.sam.unmapped.fq"%(config['prefix'],config['sample'],config['iter'],config['sample']))
      os.system('touch %s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']))
@@ -32,15 +32,12 @@ if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sampl
      if int(config['iter']) >= 1:
          os.system('cp %s/%s.%d.assembly.out/contigs.final.fasta %s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1, config['prefix'],config['sample'],int(config['iter'])))
 
+
 rule all:
      input:expand('{prefix}/metacompass.tsv',prefix=config["prefix"])
 #rule all:
 #    input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
 
-
-#expand('{reads}',reads=config['r1'])[0]
-#config['reads'].split(",")[0]
-#FQS=["/cbcb/project2-scratch/vicky/workspace/metacompass/src/MetaCompass/SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq","/cbcb/project2-scratch/vicky/workspace/metacompass/src/MetaCompass/SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq"]
 rule merge_reads:
     input:
         reads=config['reads'].split(",")[0]#expand('{fqs}',fqs=config['reads'])
@@ -90,7 +87,7 @@ rule reference_recruitment:
     input:
         rules.fastq2fasta.output
     params:
-        mincov = "%d"%(int(config['mincov'])),
+        cogcov = "%d"%(int(config['cogcov'])),
         readlen = "%d"%(int(config['length']))
     output:
         out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
@@ -99,7 +96,8 @@ rule reference_recruitment:
     message: """---reference recruitment."""
     threads:int(config['nthreads'])
     log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"mkdir -p {output.out}; perl %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"mkdir -p {output.out}; python3 %s/bin/select_references.py {input} {output.out} {threads} {params.cogcov}  1>> {log} 2>&1"%(config["mcdir"])
+    #shell:"mkdir -p {output.out}; perl %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
 
 rule mash_filter:
     input:
@@ -108,11 +106,11 @@ rule mash_filter:
     output:
         reffile=expand('{prefix}/{sample}.0.assembly.out/mc.refseq.filt.fna',prefix=config['prefix'],sample=config['sample'])
     params:
-        mfilter=expand('{mfilter}',mfilter=config["mfilter"])
+        mfilter= "%f"%(float(config['mfilter']))#mfilter=expand('{mfilter}',mfilter=config["mfilter"])
     message: """---mash filter recruited references"""
     threads:int(config["nthreads"])
     log:'%s/%s.%s.mash.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"python %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} {params.mfilter} 1>> {log} 2>&1"%(config["mcdir"])
+    shell:"echo {params.mfilter};python3 %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} {params.mfilter} 1>> {log} 2>&1"%(config["mcdir"])
 
 #reads=rules.reference_recruitment.output.fqfile
 #    benchmark:
@@ -163,8 +161,9 @@ rule bowtie2_map:
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:int(config["nthreads"])
     message: """---Build index ."""
-    #shell:"bowtie2-build -o 3 --threads {threads} -q %s {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1}  -S {output.sam} > {log} 2>&1"%(config['reference'])
-    shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}; rm {output.sam}.all"%(config["mcdir"])
+    #shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam} > {log} 2>&1;%s/bin/best_strata.py {output.sam}.all {output.sam}"
+    shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}"%(config["mcdir"])
+    #; rm {output.sam}.all"%(config["mcdir"])
 
 rule build_contigs:
     input:
@@ -172,17 +171,17 @@ rule build_contigs:
         sam=  rules.bowtie2_map.output.sam
     params:
         pickref="%s"%(config['pickref']),
-        mincov="%d"%(int(config['mincov']))
+        mincov="%d"%(int(config['mincov'])),
+        minlen="%d"%(int(config['minlen']))
     output:
         out='%s/%s.%s.assembly.out'%(config['prefix'],config['sample'],config['iter']),
         contigs='%s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.buildcontigs.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Build contigs ."""
-    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c {params.mincov} -l 300 -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c {params.mincov} -l {params.minlen} -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
 
 #/cbcb/project2-scratch/treangen/test78/c_rudii.0.assembly.out/c_rudii.megahit/final.contigs.fa 
-
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
@@ -193,7 +192,7 @@ rule pilon_map:
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        #unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-       unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample']),
+       unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:int(config["nthreads"])
     message: """---Map reads for pilon polishing."""
@@ -234,7 +233,7 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,local,breaks,amb 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
 #rule remove_zerocov:
 #    input:
