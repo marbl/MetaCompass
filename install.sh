@@ -19,7 +19,7 @@ $cmd
 #cd src && make && cd ..
 #cd ..
 
-cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.tar.gz -P ./src/metaphyler"
+cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.tar.gz -P ./src"
 echo $cmd
 $cmd
 
