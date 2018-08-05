@@ -14,6 +14,7 @@
     "mincov" : 3,
     "minlen" : 100,
     "mfilter" : 0.00005,
+    "cogcov" = 10,
     "mcdir": "."
 
 }
