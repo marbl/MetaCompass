@@ -87,4 +87,4 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
   
 Contact:
-vcepeda{at}cs.umd.edu
+vcepeda@cs.umd.edu
