@@ -150,7 +150,7 @@ rule bwa_map:
 #       ref=get_bowtie2_input, 
 rule bowtie2_map:
     input:
-       ref=rules.reference_recruitment.output.reffile#rules.mash_filter.output.reffile,
+       ref=rules.reference_recruitment.output.reffile,#rules.mash_filter.output.reffile,
        r1=rules.merge_reads.output.merged
     output:
        index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
