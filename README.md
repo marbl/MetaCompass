@@ -54,11 +54,9 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
          - contig ID
          - contig size
          - reference genome used (only reference-guided assembled contigs)
-         - start and end position in the genome where contig originates from
-         - taxonomic label of the genome
          - name of the genome  
+       
 
-                
 # EXAMPLES
 
 # Reference-guided assembly with known reference genomes (no reference selection).
