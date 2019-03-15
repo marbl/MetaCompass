@@ -13,13 +13,7 @@ cmd="g++ -Wall -W -O2 -o ./bin/buildcontig ./src/buildcontig/buildcontig.cpp ./s
 echo $cmd
 $cmd
 
-#wget https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz
-#cd wgs-8.3rc2
-#cd kmer && make install && cd ..
-#cd src && make && cd ..
-#cd ..
-
-cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.tar.gz -P ./src/metaphyler"
+cmd="wget --no-check-certificate https://obj.umiacs.umd.edu/metacompass/markers.tar.gz -P ./src/metaphyler"
 echo $cmd
 $cmd
 
@@ -31,12 +25,15 @@ cmd="tar -xzvf ./markers.tar.gz"
 echo $cmd
 $cmd
 
+cmd="rm markers.tar.gz"
+echo $cmd
+$cmd
 
 cmd="cd ../../"
 echo $cmd
 $cmd
 
-cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz"
+cmd="wget --no-check-certificate https://obj.umiacs.umd.edu/metacompass/refseq.tar.gz"
 echo $cmd
 $cmd
 
