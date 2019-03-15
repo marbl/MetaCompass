@@ -1,5 +1,5 @@
 # MetaCompass v1.1
-Last updated: November 1st, 2017
+Last updated: March 14st, 2018
 
 
 # Publication
@@ -23,6 +23,14 @@ You must have at least 13GB of hard disk space to perform a normal installation.
 You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 # INSTALLATION:
+Get the Latest release from https://github.com/marbl/MetaCompass/releases:
+
+    wget https://github.com/marbl/MetaCompass/archive/1.2.tar.gz
+    tar -xzvf 1.2.tar.gz
+    cd MetaCompass-1.2
+    ./install.sh
+
+# INSTALLATION Using Git:
 
     git clone https://github.com/marbl/MetaCompass.git
     cd MetaCompass
