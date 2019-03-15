@@ -25,9 +25,9 @@ You must have 8GB or more memory to allocate to the JVM (used by pilon).
 # INSTALLATION From Source:
 Get the Latest release from https://github.com/marbl/MetaCompass/releases:
 
-    wget https://github.com/marbl/MetaCompass/archive/1.2.tar.gz
-    tar -xzvf 1.2.tar.gz
-    cd MetaCompass-1.2
+    wget https://github.com/marbl/MetaCompass/archive/1.12.tar.gz
+    tar -xzvf 1.12.tar.gz
+    cd MetaCompass-1.12
     ./install.sh
 
 # INSTALLATION Using Git:
