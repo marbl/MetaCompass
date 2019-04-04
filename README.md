@@ -1,5 +1,5 @@
-# MetaCompass v1.0
-Last updated: August 4th, 2018
+# MetaCompass v1.2b
+Last updated: March 15th, 2018
 
 
 # Publication
@@ -9,7 +9,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 # Required software:
 
 * Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
-* snakemake 3.7.1: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
+* snakemake v3.7.1 - v3.11.x: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
 * BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
 * bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9
 * kmer-mask (May 13th, 2015): https://sourceforge.net/p/kmer/code/HEAD/tree/trunk/
@@ -22,7 +22,15 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 You must have at least 13GB of hard disk space to perform a normal installation.
 You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
-# INSTALLATION:
+# INSTALLATION From Source (RECOMMENDED):
+Get the Latest release from https://github.com/marbl/MetaCompass/releases:
+
+    wget https://github.com/marbl/MetaCompass/archive/1.xx.tar.gz
+    tar -xzvf 1.xx.tar.gz
+    cd MetaCompass-1.xx
+    ./install.sh
+
+# INSTALLATION Using Git:
 
     git clone https://github.com/marbl/MetaCompass.git
     cd MetaCompass
