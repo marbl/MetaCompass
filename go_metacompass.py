@@ -483,7 +483,7 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         os.system("mv %s/%s.0.assembly.out/sorted*.bam* %s/%s.0.assembly.out/pilon_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*.pilon* %s/%s.0.assembly.out/pilon_output/"%(prefix,s1id,prefix,s1id))
  #if unmmaped reads#
-        if os.stat("%s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq"%(prefix,s1id,s1id)).st_size!= 0:
+        if os.stat("%s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq"%(prefix,s1id,s1id)).st_size!= 0 or os.stat("%s/%s.0.assembly.out/%s.mc.sam.unmapped.2.fq"%(prefix,s1id,s1id)).st_size!= 0 :
             if os.path.exists("%s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id)):
                 os.system("rm -rf %s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id))
             os.mkdir("%s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id))
