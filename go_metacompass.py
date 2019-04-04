@@ -22,7 +22,7 @@ group5.add_argument("-p",'--pickref', help='depth or breadth',default="breadth",
 group5.add_argument("-m",'--mincov', help='min coverage to assemble',default="3",nargs='?',type=int)
 group5.add_argument("-g",'--minctglen', help='min contig length',default="300",nargs='?',type=int)
 group5.add_argument("-l",'--readlen', help='max read length',default="100",nargs='?',type=int)
-group5.add_argument("-f",'--filter',help='filter recruited genomes with mash (experimental)',default=False,required=0,action='store_true')
+group5.add_argument("-f",'--filter',help='filter recruited genomes with mash (experimental)',default=False,required=0, type=float)
 group2 = parser.add_argument_group('output')
 group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
 group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default="./", nargs='?',type=str,required=1)
@@ -53,12 +53,13 @@ unlock = args.unlock
 threads = args.threads
 iterations = args.iterations
 ref = args.ref
-mfilter = 1.0
+mfilter = args.filter
 keepoutput = args.keepoutput
 
-if args.filter:
-    #empirically determined on datasets with known truth, right way to do this is with contains operation
-    mfilter = 0.26
+#if args.filter:
+#why todd?
+#    #empirically determined on datasets with known truth, right way to do this is with contains operation
+#    mfilter = 0.26
 
 #snakefile = args.snakefile
 config = args.config
@@ -268,28 +269,10 @@ elif samples == "" and paired != "" and unpaired != "":
 i = 0
 isok = False
 while i < iterations:
-    for s1 in allsamples[0:1]:
-        #s1a = ""
-        #s1b = ""
-        #if "," in s1: 
-        #    s1a,s1b = s1.split(",")
-        #else:
-        #    s1a = s1
-        #if not os.path.exists("%s"%(s1a)):# or not os.path.exists("%s"%(s1b)):
-        #    print("ERROR: Cannot locate file %s within input file %s. Please verify and restart"%(s1a,args.Samples))
-        #    sys.exit(1)
-
-        #snakemake -s recruitgenomes 
-        #if genomes == 0
-        #snakemake -s runmegahit
-        #else
-        #snakemake -s runmetacompass
-        
+    for s1 in allsamples[0:1]:  
         s1id = s1.split(os.sep)[-1].split(".")[0]
         if sampleid != "NA":
             s1id = sampleid
-
-        
         if force:
             if os.path.exists("%s.fasta"%(s1id)):
                 os.system("rm %s.fasta"%(s1id))
@@ -350,7 +333,16 @@ while i < iterations:
                 cmd += " ru=%s"%(unpaired)
   
             if ref != "NA":
-                cmd += " --snakefile %s/snakemake/metacompass.iter0.ref.py"%(mcdir)
+                if unpaired != "" and paired =="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.ref.unpaired.py"%(mcdir)
+                elif paired != "" and unpaired =="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.ref.paired.py"%(mcdir)
+                elif paired != "" and unpaired !="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.ref.py"%(mcdir)
+                #todo: fix to work with diff types of reads..
+                elif samples =="":
+                    cmd += " --snakefile %s/snakemake/metacompass.iter0.ref.py"%(mcdir)
+                
             else: 
                 if unpaired != "" and paired =="":
                     cmd += " --snakefile %s/snakemake/metacompass.iter0.unpaired.py"%(mcdir)
@@ -370,18 +362,8 @@ while i < iterations:
             else:
                 cmd += " --ignore-incomplete"
 
-
             cmd += " --prioritize join_contigs"
-            #if ref != "NA":
-            #    cmd += " --allowed-rules all,kmer_mask,bam_sort,bowtie2_map,build_contigs,merge_reads,pilon_contigs,pilon_map,sam_to_bam,assemble_unmapped"
 
-            #bowtie2_map
-            #cmd += " --mcdir %s"%(mcdir)
-
-            #if force:
-            #    cmd += " -F"
-
-           
             if len(qsub) > 0:
                 cmd += " --cluster %s"%(qsub)
             else:
@@ -392,10 +374,7 @@ while i < iterations:
                     os.killpg(ret.pid,signal.SIGKILL)  
                 except :
                     ret.returncode = 0
-                    break    
-                    #os.killpg(ret.pid,signal.SIGKILL)  
-                    
-
+                    break                        
         else:
             ret = 0
             if ref != "NA":
@@ -420,9 +399,6 @@ while i < iterations:
             else:
                 cmd += " --ignore-incomplete"
             cmd += " --prioritize pilon_contigs"
-            #if force:
-            #    cmd += " -F"
-            #cmd += " --mcdir %s"%(mcdir)
             if len(qsub) > 0:
                 cmd += " --cluster %s"%(qsub)
                 
@@ -437,7 +413,6 @@ while i < iterations:
                     ret.returncode = 0
                     break
                     #os.killpg(ret.pid,signal.SIGKILL)  
-
         if ret.returncode != 0:
             print("ERROR: snakemake command failed; exiting..")
             os.system("touch %s/%s.0.assembly.out/run.fail"%(prefix,s1id))
@@ -452,12 +427,17 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
     if not os.path.exists("%s/metacompass_logs"%(prefix)):
         os.mkdir("%s/metacompass_logs"%(prefix))
     os.system("cp %s/%s.0.assembly.out/contigs.final.fasta %s/metacompass_output/metacompass.final.ctg.fa"%(prefix,s1id,prefix))
-    os.system("cp %s/metacompass_output/metacompass.final.ctg.fa %s/."%(prefix,prefix))
+    #os.system("cp %s/metacompass_output/metacompass.final.ctg.fa %s/."%(prefix,prefix))
+    os.system("mv %s/metacompass*tsv %s/metacompass_output/."%(prefix,prefix))
     os.system("mv %s/*.log %s/metacompass_logs/."%(prefix,prefix))
+    os.system("mv %s/%s.0.assembly.out/*.log %s/metacompass_logs/."%(prefix,s1id,prefix))
+    os.system("mv %s/%s.0.assembly.out/coverage.txt %s/metacompass_output/metacompass.genomes_coverage.txt"%(prefix,s1id,prefix))
+    
     #os.system("cp %s/%s.0.assembly.out/contigs.pilon.fasta.fixed %s/metacompass_output/metacompass.only.ctg.fa"%(prefix,s1id,prefix))
     if mfilter < 1.0:
-        os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
-        os.system("cp %s/%s.0.assembly.out/mc.refseq.filt.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
+        if os.path.exists("%s/%s.merged.fq.mash.out.ids"%(prefix,s1id)):
+            os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
+            os.system("cp %s/%s.0.assembly.out/mc.refseq.filt.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
     else:
         if os.path.exists("%s/%s.%d.assembly.out/mc.refseq.ids"%(prefix,s1id,i-1)):
             os.system("cp %s/%s.0.assembly.out/mc.refseq.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
@@ -485,15 +465,23 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         if os.stat("%s/%s.0.assembly.out/mc.refseq.fna"%(prefix,s1id)).st_size!= 0:
             os.makedirs("%s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id), exist_ok=True)
             os.system("mv %s/%s.0.assembly.out/mc.* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
+#SRS016585.merged.fq.mash.
+            os.system("mv %s/%s.0.assembly.out/*merged.fq.mash* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
         else:
             os.system("rm %s/%s.0.assembly.out/mc.refseq.fna"%(prefix,s1id))
         os.makedirs("%s/%s.0.assembly.out/pilon_output"%(prefix,s1id), exist_ok=True)
         os.makedirs("%s/%s.0.assembly.out/assembly_output"%(prefix,s1id), exist_ok=True)
+        ########moving mapping after best strata    
         os.system("mv %s/%s.0.assembly.out/contigs.fasta %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/%s.sam %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,s1id,prefix,s1id))
+########testingstart
+        os.system("mv %s/%s.0.assembly.out/%s.sam.all %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,s1id,prefix,s1id))
+########testing end
+        if os.path.exists("%s/%s.0.assembly.out/selected_maps.sam"%(prefix,s1id)):
+            os.system("mv %s/%s.0.assembly.out/selected_maps.sam %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*buildcontigs* %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/sorted*.bam %s/%s.0.assembly.out/pilon_output"%(prefix,s1id,prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/*.pilon.* %s/%s.0.assembly.out/pilon_output/"%(prefix,s1id,prefix,s1id))
+        os.system("mv %s/%s.0.assembly.out/sorted*.bam* %s/%s.0.assembly.out/pilon_output"%(prefix,s1id,prefix,s1id))
+        os.system("mv %s/%s.0.assembly.out/*.pilon* %s/%s.0.assembly.out/pilon_output/"%(prefix,s1id,prefix,s1id))
  #if unmmaped reads#
         if os.stat("%s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq"%(prefix,s1id,s1id)).st_size!= 0:
             if os.path.exists("%s/%s.0.assembly.out/unmapped_reads"%(prefix,s1id)):
@@ -506,13 +494,18 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
             os.system("rm %s/%s.0.assembly.out/*mc.sam.unmapped*"%(prefix,s1id))
         #provide mapped reads too? the bam is in pilon_output 
         os.mkdir("%s/%s.0.assembly.out/mapped_reads"%(prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/*.mc*.sam %s/%s.0.assembly.out/mapped_reads"%(prefix,s1id,prefix,s1id))
+        os.system("mv %s/%s.0.assembly.out/*.mc*.sam* %s/%s.0.assembly.out/mapped_reads"%(prefix,s1id,prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*index "%(prefix,s1id))
         os.system("rm %s/%s.0.assembly.out/*.bt2 "%(prefix,s1id))
-        os.system("rm %s/%s.0.assembly.out/*.sam "%(prefix,s1id))
-        os.system("rm %s/%s.0.assembly.out/*.bam* "%(prefix,s1id))
+#####only for testing ???????
+        #os.system("rm %s/%s.0.assembly.out/*.sam "%(prefix,s1id))
+        #os.system("rm %s/%s.0.assembly.out/*.bam* "%(prefix,s1id))
+        #os.system("mv %s/%s.0.assembly.out/*.sam "%(prefix,s1id))
+        ###???os.system("mv %s/%s.0.assembly.out/*.sam %s/%s.0.assembly.out/mapped_reads"%(prefix,s1id,prefix,s1id))
+        
+        
         os.system("rm %s/%s.0.assembly.out/*.fasta "%(prefix,s1id))
-        os.system("rm %s/%s.0.assembly.out/*.log "%(prefix,s1id))
+        #os.system("rm %s/%s.0.assembly.out/*.log "%(prefix,s1id))
         os.system("rm %s/*.f*q "%(prefix))
         os.system("rm %s/*.fasta "%(prefix))
         if os.path.exists("%s/%s.0.assembly.out"%(prefix,s1id)):
