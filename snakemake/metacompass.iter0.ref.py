@@ -29,7 +29,7 @@ rule merge_reads:
                 os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
         if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
              os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
-             os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
+             #os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
              os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
              os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
              os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
@@ -96,7 +96,7 @@ rule sam_to_bam:
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam),
         bam2= "%s.bam"%(rules.pilon_map.output.sam2)
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
     shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1;samtools view -bS {input.sam2} -o {output.bam2} 1>> {log} 2>&1;"
@@ -108,7 +108,7 @@ rule bam_sort:
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter']),
         bam_sorted2 = "%s/%s.%s.assembly.out/sorted2.bam"%(config['prefix'],config['sample'],config['iter'])
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1;samtools sort -@ {threads} {input.bam2} -o %s/%s.%s.assembly.out/sorted2.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted2} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'])
@@ -171,15 +171,15 @@ rule join_contigs:
 
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
-#mc_contigs=rules.build_contigs.output.contigs
 rule create_tsv:
     input:
-        all_contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
+        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mg_contigs=rules.assemble_unmapped.output.megahit_contigs,
         ref=config['reference']
     message: """---information reference-guided and de novo contigs"""
     output:"%s/metacompass.tsv"%(config['prefix'])
-    shell:"grep '>' {input.ref}|tr -d '>'>ref.ids;sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} ref.ids {output};rm ref.ids"%(config["mcdir"])
+    shell:"sh %s/bin/create_tsv.sh {input.mc_contigs_pilon} {input.mc_contigs} {input.mg_contigs} {input.ref} {output}"%(config["mcdir"])
 
 # shell:"sh %s/bin/tab.sh {input.all_contigs} {input.ref} > {output}"
  #"grep '>' %s/%s.0.assembly.out/contigs.fasta| tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))

@@ -1,36 +1,54 @@
 #!/bin/bash
-#metacompass.final.ctg.fa 
-final_contigs=$1
-mc_contigs=$2
-#mc_contigs=$2
-#metacompass_output/metacompass.recruited.ids
-recruited_ids=$3
-output=$4
+mc_contigs_pilon=$1 #contigs.pilon.fasta
+mc_contigs=$2 #contigs.fasta
+mg_contigs=$3 #megahit contigs
+recruited_ids=$4 #metacompass_output/metacompass.recruited.fna or -r $file
+output=$5 #output file
+#echo $1 $2 $3 $4 $5
 
-grep '>' $2 | tr -d '>'|sed 's/_[0-9]\+ / /g' >.tmp
-cut -f1-2 -d '_' .tmp >.tmp_mc
-grep '>' $final_contigs |tr -d '>' |grep ^k >.tmp_mg_ids
-grep '>' $final_contigs |tr -d '>' |grep ^N >.tmp_mc_ids
-samtools faidx $final_contigs |cut -f1-2>.tmp2
-grep ^N "$final_contigs".fai|cut -f2 >.tmp2_mc_ln
-grep ^k "$final_contigs".fai|cut -f2 >.tmp2_mg_ln
-
-#if [ -f .tmp_tax ] ; then
-#    rm .tmp_tax
-#fi
-
-if [ $recruited_ids !="NA" ] ; then
-    for i in $(cat .tmp_mc);do
-        grep $i $recruited_ids |cut -f2,4 >>.tmp_tax
-    done
-    printf "contig ID\tcontig size\treference genome\tposition start\tposition end\ttaxonomy id\tgenome name\n" >$output
-    paste .tmp_mc_ids .tmp2_mc_ln .tmp .tmp_tax >>$output
-else
-    printf "contig ID\tcontig size\treference genome\tposition start\tposition end\n" >$output
-    paste .tmp_mc_ids .tmp2_mc_ln .tmp  >>$output
+#processing metacompass buildcontig output to get genome ids and genome start and end positions
+if [ -s ${mc_contigs} ] ; then
+	grep '>' ${mc_contigs} |rev| cut -f2- -d '_'|rev|tr -d '>'>.tmp_genome_id
+	grep '>' ${mc_contigs} |rev| cut -f1,2 -d ' ' |rev >.tmp_coords
 fi
 
-paste .tmp_mg_ids .tmp2_mg_ln >>$output
+#processing pilon contigs to get ids and length
+if [ -s ${mc_contigs_pilon} ] ; then
+	grep '>' ${mc_contigs_pilon} |tr -d '>' >.tmp_mc_ids	
+	samtools faidx ${mc_contigs_pilon}
+	cat ${mc_contigs_pilon}.fai|cut -f2 >.tmp_mc_ln
+fi
+
+#processing megahit contigs to get ids and length
+if [ -s ${mg_contigs} ] ; then
+	grep '>' ${mg_contigs} |tr -d '>' >.tmp_mg_ids
+	samtools faidx ${mg_contigs}
+	cat ${mg_contigs}.fai|cut -f2 >.tmp_mg_ln
+fi
+
+if [ -s ${output} ] ; then
+	rm $output
+fi
+#processing reference ids
+if [ -s ${recruited_ids} ] ; then
+    for i in $(cat .tmp_genome_id);do
+        grep $i $recruited_ids |cut -f2- -d ' ' >>.tmp_name		
+    done
+    printf "contig ID\tcontig size\treference genome\tposition start\tposition end\tgenome name\n" > $output
+    paste .tmp_mc_ids .tmp_mc_ln .tmp_genome_id .tmp_coords .tmp_name >> $output
+else
+	if [ -s ${mc_contigs_pilon} ] ; then
+    	printf "contig ID\tcontig size\treference genome\tposition start\tposition end\n" > $output
+    	paste .tmp_mc_ids .tmp_mc_ln .tmp  >> $output
+    fi
+fi
+
+#create final megahit +metacompass summary
+if [ -s ${mg_contigs} ] ; then
+	paste .tmp_mg_ids .tmp_mg_ln >> $output
+fi
+
+#delete temporary files
 rm .tmp*
 
        

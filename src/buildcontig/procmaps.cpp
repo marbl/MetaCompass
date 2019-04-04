@@ -213,10 +213,13 @@ static void compute_breadth_sam(const Cmdopt &cmdopt, ifstream &ifs, S2D &ref2br
     
 }
 
-static void compute_depth_sam(ifstream &ifs, S2D &ref2dep, S2S &ref2seq) {
+static void compute_depth_sam(const Cmdopt &cmdopt,ifstream &ifs, S2D &ref2dep, S2S &ref2seq) {
     
     string eachline, refid;
     size_t pos1, pos2, len;
+    ofstream ofs(string(cmdopt.outprefix + "/depthcoverage.txt").c_str());
+    ofs <<  "Ref_id\tbases\tRef_length\tcoverage" << endl;
+	
     while (getline(ifs, eachline)) {
         
         if ( eachline[0] == '@') continue;
@@ -250,6 +253,9 @@ static void compute_depth_sam(ifstream &ifs, S2D &ref2dep, S2S &ref2seq) {
             iter->second = 0;
         else
             iter->second /= ref2seq.find(iter->first)->second.size(); // normalize by length
+		//ofs <<  "Ref_id\tbases?\tRef_length\tcoverage" << endl;
+		ofs <<  iter->first << "\t" <<ref2dep.find(iter->first)->second<<"\t"<< ref2seq.find(iter->first)->second.size()<< "\t"<< iter->second << endl ;
+		
     }
     
 }
@@ -257,7 +263,15 @@ static void compute_depth_sam(ifstream &ifs, S2D &ref2dep, S2S &ref2seq) {
 void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2ins, S2VB &ref2cov, S2I2VC &ref2pos2ins) {
     
     init(b2n);
-    
+	//////
+    ofstream ofs(string(cmdopt.outprefix + "/selected_maps.sam").c_str());
+    if (!ofs) {
+      cerr << "Could not open sam file " << string(cmdopt.outprefix + "/selected_maps.sam").c_str() << endl;
+      exit(1);
+    }
+	//////
+	
+	
     ifstream ifs(cmdopt.mapfile.c_str());
     if (!ifs) {
         cerr << "Could not open file " << cmdopt.mapfile << endl;
@@ -266,7 +280,6 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
     
     // use all map records
     if (cmdopt.pickref == "all") {
-        
         // stores each map record
         size_t  pos1 = 0, pos2 = 0;
         string eachline, refid, mutstr, seq;
@@ -276,7 +289,7 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
             
             pos1 = eachline.find("\t");           // 1
             pos1 = eachline.find("\t", pos1+1);   // 2
-            if (eachline[pos1-1] == '4') continue;// unmapped
+			if (eachline[pos1-1] == '4') continue;// unmapped
             
             pos2 = eachline.find("\t", pos1+1);   // 3
             refid = eachline.substr(pos1+1, pos2-pos1-1);
@@ -296,20 +309,19 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
             seq = eachline.substr(pos1+1, pos2-pos1-1);
 
             storesam(ref2prof.at(refid), ref2ins.at(refid), ref2cov.at(refid), ref2pos2ins.at(refid), mutstr, seq, start);
+	        ofs << eachline << endl;
 
         }
     }
     
     else {
         
-        S2D ref2val;
-        bool store=true;
+        S2D ref2val;//to store coverage double number per each genome
         if (cmdopt.pickref == "depth")
-            compute_depth_sam(ifs, ref2val, ref2seq);
+            compute_depth_sam(cmdopt,ifs, ref2val, ref2seq);
         
         else if (cmdopt.pickref == "breadth")
             compute_breadth_sam(cmdopt, ifs, ref2val, ref2seq);
-        
         
         // rewind input file stream
         ifs.clear();
@@ -319,7 +331,7 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
         std::string eachline(""), refid(""), mutstr(""), seq(""), preqid(""), qid(""), prerefid("");
         Uint start = 0;
         double maxval = 0.0;
-        
+        std::string prev("");
         while (getline(ifs, eachline)) {
             
             if (eachline[0] == '@') continue;
@@ -330,22 +342,16 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
             pos1 = eachline.find("\t", pos1+1);   // 2
             if (eachline[pos1-1] == '4') continue;// unmapped
             
-            
             pos2 = eachline.find("\t", pos1+1);   // 3
             refid = eachline.substr(pos1+1, pos2-pos1-1);
-            
             S2D::iterator iter = ref2val.find(refid);
             
-            if (qid != preqid && !mutstr.empty()) // store previous record
-            {
-                storesam(ref2prof.at(prerefid), ref2ins.at(prerefid), ref2cov.at(prerefid), ref2pos2ins.at(prerefid), mutstr, seq, start);
+            if (qid != preqid && !mutstr.empty()) // store previous record if read is different and is not first alignment in sam file
+            {	storesam(ref2prof.at(prerefid), ref2ins.at(prerefid), ref2cov.at(prerefid), ref2pos2ins.at(prerefid), mutstr, seq, start);
+		        ofs << prev << endl;				
             }
-            else if (iter->second <= maxval)
-            {// not as good as previous one
-                store=false;
-                continue;
-            }
-            store=true;
+            else if (iter->second <= maxval)// not as good as previous one, coverage not the highet among genomes
+			continue;
             maxval = iter->second;
             preqid = qid;
             prerefid = refid;
@@ -363,11 +369,15 @@ void processsams(const Cmdopt &cmdopt, S2S &ref2seq, S2VC &ref2prof, S2VB &ref2i
             pos1 = eachline.find("\t", pos1+1);   // 9
             pos2 = eachline.find("\t", pos1+1);   // 10
             seq = eachline.substr(pos1+1, pos2-pos1-1);
+			prev=eachline;
             
         }
-        
-        if(store)
-            storesam(ref2prof.at(refid), ref2ins.at(refid), ref2cov.at(refid), ref2pos2ins.at(refid), mutstr, seq, start);
+		//if read is dif from prev should be stored because is unique mapping. 
+		//if read is equal to previous one and maxval is >than prev refid, line shoud be stored
+		//if read is equal to previous one and maxval is <= than prev refid, line saved in prev with highest breadth should be stored
+        storesam(ref2prof.at(refid), ref2ins.at(refid), ref2cov.at(refid), ref2pos2ins.at(refid), mutstr, seq, start);	
+	    ofs << prev << endl;
+
         
     }
 }

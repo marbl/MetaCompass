@@ -219,7 +219,7 @@ void createContig(Cmdopt &cmdopt, S2VC &ref2prof, S2VB &ref2ins, S2VB &ref2cov, 
 
 	//cout << i << "\t" << contig.size() << endl;
 	if (contig.size() >= cmdopt.minlen) {
-	  ofs << ">" << refid << "_" << ctgn++ << " " << ctgstart << " " << pos << endl;
+	  ofs << ">" << refid << "_" << ctgn++ << " " << ctgstart +1 << " " << pos + 1 << endl;
 	  ofs << contig << endl;
 	}
 	if (!contig.empty())
@@ -229,7 +229,7 @@ void createContig(Cmdopt &cmdopt, S2VC &ref2prof, S2VB &ref2ins, S2VB &ref2cov, 
     }
 
     if (contig.size() >= cmdopt.minlen) {
-      ofs << ">" << refid << "_" << ctgn++ << " " << ctgstart << " " << vc.size()/5 << endl;
+      ofs << ">" << refid << "_" << ctgn++ << " " << ctgstart +1 << " " << vc.size()/5 +1 << endl;
       ofs << contig << endl;
     }
   }

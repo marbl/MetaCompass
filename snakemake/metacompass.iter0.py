@@ -33,7 +33,7 @@ if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sampl
          os.system('cp %s/%s.%d.assembly.out/contigs.final.fasta %s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1, config['prefix'],config['sample'],int(config['iter'])))
 
 rule all:
-     input:expand('{prefix}/metacompass.tsv',prefix=config["prefix"])
+     input:expand('{prefix}/metacompass_summary.tsv',prefix=config["prefix"])
 #    input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
 #expand('{reads}',reads=config['r1'])[0]
 
@@ -206,7 +206,7 @@ rule sam_to_bam:
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam),
         bam2= "%s.bam"%(rules.pilon_map.output.sam2)
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
     shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1;samtools view -bS {input.sam2} -o {output.bam2} 1>> {log} 2>&1;"
@@ -218,7 +218,7 @@ rule bam_sort:
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter']),
         bam_sorted2 = "%s/%s.%s.assembly.out/sorted2.bam"%(config['prefix'],config['sample'],config['iter'])
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1;samtools sort -@ {threads} {input.bam2} -o %s/%s.%s.assembly.out/sorted2.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted2} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'],config['prefix'],config['sample'],config['iter'])
@@ -239,7 +239,8 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes --vcf 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+
    ##why mindepth 3?
 #rule remove_zerocov:
 #    input:
@@ -281,15 +282,18 @@ rule join_contigs:
 
 #shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
-#mc_contigs=rules.build_contigs.output.contigs
 rule create_tsv:
     input:
-        all_contigs=rules.join_contigs.output.final_contigs,
+        contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
-        ref=rules.reference_recruitment.output.refids
+        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mg_contigs=rules.assemble_unmapped.output.megahit_contigs,
+        ref=rules.reference_recruitment.output.reffile
+    params:    
+        minlen="%d"%(int(config['minlen']))
     message: """---information reference-guided and de novo contigs"""
-    output:"%s/metacompass.tsv"%(config['prefix'])
-    shell:"sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} {input.ref} {output}"%(config["mcdir"])
-# shell:"sh %s/bin/tab.sh {input.all_contigs} {input.ref} > {output}"
- #"grep '>' %s/%s.0.assembly.out/contigs.fasta| tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))
- # "grep '>' %s/tr -d '>'|sed 's/_[0-9]\+ / /g' >%s/.tmp"%(prefix,s1id,prefix))
+    output:
+        summary="%s/metacompass_summary.tsv"%(config['prefix']),
+        stats="%s/metacompass_assembly_stats.tsv"%(config['prefix'])
+    shell:"sh %s/bin/create_tsv.sh {input.mc_contigs_pilon} {input.mc_contigs} {input.mg_contigs} {input.ref} {output.summary};python %s/bin/assembly_stats.py {input.contigs} {params.minlen} > {output.stats}"%(config["mcdir"],config["mcdir"])
+

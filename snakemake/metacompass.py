@@ -45,7 +45,7 @@ rule sam_to_bam:
         sam=  rules.pilon_map.output.sam
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam)
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config["nthreads"])
     message: """---Convert sam to bam ."""
     shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
@@ -55,7 +55,7 @@ rule bam_sort:
         bam = rules.sam_to_bam.output.bam 
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config["nthreads"])
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])

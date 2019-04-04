@@ -3,20 +3,10 @@ DESCRIPTION
 """
 #__author__ = "Victoria Cepeda
 
-#configfile: expand("config.json",
-
-#include_prefix="https://"
-#include_prefix + "rules"
-
-#os.system("touch %s"%config['reads'][0])
-
-
-#ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > remove_zerocov >  assemble_unmapped > join_contigs
+#configfile: "config.json"
 
 ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv
 
-#ruleorder: bowtie2_map > assemble_unmapped > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
-#code to skip initial steps if reference genomes provided 
 if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
      os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
      os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
@@ -33,10 +23,7 @@ if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sampl
          os.system('cp %s/%s.%d.assembly.out/contigs.final.fasta %s/%s.%s.assembly.out/contigs.fasta'%(config['prefix'],config['sample'],int(config['iter'])-1, config['prefix'],config['sample'],int(config['iter'])))
 
 rule all:
-     input:expand('{prefix}/metacompass.tsv',prefix=config["prefix"])
-#rule all:
-#    input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
-#expand('{reads}',reads=config['r1'])[0]
+     input:expand('{prefix}/metacompass_summary.tsv',prefix=config["prefix"])
 
 rule merge_reads:
     input:
@@ -55,7 +42,6 @@ rule merge_reads:
              os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
              os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
              os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
-
 
 rule kmer_mask:
     input:
@@ -78,11 +64,6 @@ rule fastq2fasta:
     shell : "perl %s/bin/fq2fa.pl -i {input} -o {output}"%(config["mcdir"])
     log:'%s/%s.%s.fastq2fasta.log'%(config['prefix'],config['sample'],config['iter'])
 
-#    benchmark:
-#       "%s/benchmarks/reference_recruitment/%s.txt"%(config['prefix'],config['sample'])
-
-#fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
-#'{prefix}/{sample}.{iter}.assembly.out/mc.refseq.fna'
 rule reference_recruitment:
     input:
         rules.fastq2fasta.output
@@ -111,11 +92,6 @@ rule mash_filter:
     log:'%s/%s.%s.mash.log'%(config['prefix'],config['sample'],config['iter'])
     shell:"echo {params.mfilter};python3 %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} {params.mfilter} 1>> {log} 2>&1"%(config["mcdir"])
 
-#reads=rules.reference_recruitment.output.fqfile
-#    benchmark:
-#       "%s/benchmarks/bowtie2_map/%s.txt"%(config['prefix'],config['sample'])
-
-
 rule mrsfast_map:
     input:
        ref=rules.reference_recruitment.output.reffile,
@@ -140,17 +116,9 @@ rule bwa_map:
     message: """---Build index and map ."""
     shell:"bwa index {input.ref} > {log} 2>&1;bwa aln -R 110 -N -o 0 -t {threads} -f {output.sam}.sai {input.ref} {input.r1} >> {log} 2>&1;bwa samse -n 1000 {input.ref} {output.sam}.sai {input.r1} > {output.sam}.full 2>&1;samtools view -F4 -@ {threads} {output.sam}.full -o {output.sam} >> {log} 2>&1"
 
-#import os
-#def get_bowtie2_input(wildcards):
-#    if os.stat(rules.mash_filter.output.reffile).st_size ==0:
- #      return expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])#reference_recruitment.output.reffile
- #   else:
- #      return expand('{prefix}/{sample}.0.assembly.out/mc.refseq.filt.fna',prefix=config['prefix'],sample=config['sample'])#rules.mash_filter.output.reffile
-#input:
-#       ref=get_bowtie2_input, 
 rule bowtie2_map:
     input:
-       ref=rules.mash_filter.output.reffile,
+       ref=rules.reference_recruitment.output.reffile,#rules.mash_filter.output.reffile,
        r1=rules.merge_reads.output.merged
     output:
        index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
@@ -159,8 +127,7 @@ rule bowtie2_map:
     log: '%s/%s.%s.bowtie2map.log'%(config['prefix'],config['sample'],config['iter'])
     threads:int(config["nthreads"])
     message: """---Build index ."""
-    shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; %s/bin/best_strata.py {output.sam}.all {output.sam}"%(config["mcdir"])
-    #; rm {output.sam}.all"%(config["mcdir"])
+    shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.r1} -S {output.sam}.all > {log} 2>&1; python3 %s/bin/best_strata.py {output.sam}.all {output.sam}; rm {output.sam}.all"%(config["mcdir"])
 
 rule build_contigs:
     input:
@@ -177,19 +144,16 @@ rule build_contigs:
     threads:1
     message: """---Build contigs ."""
     shell:"%s/bin/buildcontig -r {input.genome} -s {input.sam} -o {output.out} -c {params.mincov} -l {params.minlen} -n T -b F -u F -k {params.pickref}  1>> {log} 2>&1"%(config["mcdir"])
-#/cbcb/project2-scratch/treangen/test78/c_rudii.0.assembly.out/c_rudii.megahit/final.contigs.fa 
 
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
-       #r1=rules.merge_reads.output.merged
        r1=config['r1'],#['reads']#.split(",")[0],
        r2=config['r2']#['reads'].split(",")[1]
     output:
        index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.mc.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
        pref='%s/%s.%s.assembly.out/%s.mc.index'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        sam='%s/%s.%s.assembly.out/%s.mc.sam'%(config['prefix'],config['sample'],config['iter'],config['sample']),
-       #unmapped='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
        unmappedr1='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.1.fq'%(config['prefix'],config['sample'],config['iter'],config['sample']),
        unmappedr2='%s/%s.%s.assembly.out/%s.mc.sam.unmapped.2.fq'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     log: '%s/%s.%s.pilon.map.log'%(config['prefix'],config['sample'],config['iter'])
@@ -202,7 +166,7 @@ rule sam_to_bam:
         sam=rules.pilon_map.output.sam
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam)
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
     shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
@@ -212,40 +176,21 @@ rule bam_sort:
         bam = rules.sam_to_bam.output.bam 
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
-
-
-#samtools view -bS $samfile | samtools sort - $pilon_dir/$ref.sorted"
-#$cmd = "samtools index $pilon_dir/$ref.sorted.bam";
 
 rule pilon_contigs:
     input:
         contigs=rules.build_contigs.output.contigs,
         sam = rules.bam_sort.output.bam_sorted
-    #benchmark:
-    #   "%s/benchmarks/pilon_contigs/%s.txt"%(config['prefix'],config['sample'])
     output:
         pilonctg='%s/%s.%s.assembly.out/contigs.pilon.fasta'%(config['prefix'],config['sample'],config['iter'])
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
     shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
-   
-#rule remove_zerocov:
-#    input:
-#        contigs=rules.pilon_contigs.output.pilonctg,
-#        bam=rules.bam_sort.output.bam_sorted
-#    output:
-#        filtctg='%s/%s.%s.assembly.out/contigs.pilon.fasta.fixed'%(config['prefix'],config['sample'],config['iter'])
-#    log:'%s/%s.%s.assembly.out/%s.remove_zerocov.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
-#    threads:int(config['nthreads'])
-#    message: """---Remove zero coverage regions."""
-#    shell:"python %s/bin/cut_zeros.py {input.contigs} {input.bam} 1>> {log} 2>&1"%(config["mcdir"])
-#concatenate this output with buildcontigs for pilon improvement
-#reads=rules.pilon_map.output.unmapped
 
 rule assemble_unmapped:
     input:
@@ -257,10 +202,7 @@ rule assemble_unmapped:
     log: '%s/%s.%s.megahit.log'%(config['prefix'],config['sample'],config['iter'])
     message: """---Assemble unmapped reads ."""
     shell:"if [[ -s %s/%s.0.assembly.out/%s.mc.sam.unmapped.1.fq || -s %s/%s.0.assembly.out/%s.mc.sam.unmapped.2.fq ]]; then rm -rf %s/%s.0.assembly.out/%s.megahit; megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
-    #then touch {output.megahit_contigs} {log}; else
-    #shell:"rm -rf %s/%s.0.assembly.out/%s.megahit; if  [[ -s tutorial_thao_mash/thao2000.0.assembly.out/thao2000.mc.sam.unmapped.1.fq ]]; then empty=0; else echo empty=1; fi; if [[ $empty ]]; then touch {output.megahit_contigs} {log}; fi;  megahit -o %s/%s.0.assembly.out/%s.megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2}  1>> {log} 2>&1"%(config['prefix'],config['sample'],config['sample'],config['prefix'],config['sample'],config['sample'],int(config['minlen']))
 
-#        mc_contigs=rules.remove_zerocov.output.filtctg,
 rule join_contigs:
     input:
         mc_contigs=rules.pilon_contigs.output.pilonctg,
@@ -270,13 +212,17 @@ rule join_contigs:
         final_contigs="%s/%s.0.assembly.out/contigs.final.fasta"%(config['prefix'],config['sample'])
     shell:"cat {input.mh_contigs} {input.mc_contigs} > {output.final_contigs}"
 
-#shell:"python %s/bin/fixhdr.py {input.contigs} ;java -Xmx16G -jar %s/bin/pilon-1.18.jar --threads {threads} --mindepth 0.75 --genome {input.contigs}.fna --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases 1>> {log} 2>&1"%(config["mcdir"],config["mcdir"],config['prefix'],config['sample'],config['iter'])
-
 rule create_tsv:
     input:
-        all_contigs=rules.join_contigs.output.final_contigs,
+        contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
-        ref=rules.reference_recruitment.output.refids
+        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mg_contigs=rules.assemble_unmapped.output.megahit_contigs,
+        ref=rules.reference_recruitment.output.reffile
+    params:    
+        minlen="%d"%(int(config['minlen']))
     message: """---information reference-guided and de novo contigs"""
-    output:"%s/metacompass.tsv"%(config['prefix'])
-    shell:"sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} {input.ref} {output}"%(config["mcdir"])
+    output:
+        summary="%s/metacompass_summary.tsv"%(config['prefix']),
+        stats="%s/metacompass_assembly_stats.tsv"%(config['prefix'])
+    shell:"sh %s/bin/create_tsv.sh {input.mc_contigs_pilon} {input.mc_contigs} {input.mg_contigs} {input.ref} {output.summary};python %s/bin/assembly_stats.py {input.contigs} {params.minlen} > {output.stats}"%(config["mcdir"],config["mcdir"])

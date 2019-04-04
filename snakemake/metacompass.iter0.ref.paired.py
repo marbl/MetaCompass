@@ -14,7 +14,9 @@ DESCRIPTION
 ruleorder: merge_reads > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > assemble_unmapped > join_contigs > create_tsv
 
 rule all:
-     input:expand('{prefix}/metacompass.tsv',prefix=config["prefix"])
+     input:expand('{prefix}/metacompass_summary.tsv',prefix=config["prefix"])
+     #,
+     #expand('{prefix}/metacompass_assembly_stats.tsv',prefix=config["prefix"])
 
 rule merge_reads:
     input:
@@ -88,7 +90,7 @@ rule sam_to_bam:
         sam=rules.pilon_map.output.sam
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam)
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:1
     message: """---Convert sam to bam ."""
     shell:"samtools view -bS {input.sam} -o {output.bam} 1>> {log} 2>&1"
@@ -98,7 +100,7 @@ rule bam_sort:
         bam = rules.sam_to_bam.output.bam 
     output:
         bam_sorted = "%s/%s.%s.assembly.out/sorted.bam"%(config['prefix'],config['sample'],config['iter'])
-    log:'%s/%s.%s.assembly.out/%s.assembly.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
+    log:'%s/%s.%s.assembly.out/%s.samtools.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/%s.%s.assembly.out/sorted.bam -O bam -T tmp 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1"%(config['prefix'],config['sample'],config['iter'])
@@ -118,7 +120,7 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes --vcf 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
    
 #rule remove_zerocov:
 #    input:
@@ -160,9 +162,23 @@ rule join_contigs:
 
 rule create_tsv:
     input:
-        all_contigs=rules.join_contigs.output.final_contigs,
+        contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
+        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mg_contigs=rules.assemble_unmapped.output.megahit_contigs,
         ref=config['reference']
+    params:    
+        minlen="%d"%(int(config['minlen']))
     message: """---information reference-guided and de novo contigs"""
-    output:"%s/metacompass.tsv"%(config['prefix'])
-    shell:"grep '>' {input.ref}|tr -d '>'>ref.ids;sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} ref.ids {output};rm ref.ids"%(config["mcdir"])
+    output:
+        summary="%s/metacompass_summary.tsv"%(config['prefix']),
+        stats="%s/metacompass_assembly_stats.tsv"%(config['prefix'])
+    shell:"sh %s/bin/create_tsv.sh {input.mc_contigs_pilon} {input.mc_contigs} {input.mg_contigs} {input.ref} {output.summary};python %s/bin/assembly_stats.py {input.contigs} {params.minlen} > {output.stats}"%(config["mcdir"],config["mcdir"])
+
+rule assembly_stats:
+    input:
+        contigs=rules.join_contigs.output.final_contigs
+    params:    
+        minlen="%d"%(int(config['minlen']))
+    output:"%s/metacompass_assembly_stats.tsv"%(config['prefix'])
+    shell:"sh %s/bin/assembly_stats.py {input.contigs} {params.minlen} > {output}"%(config["mcdir"])
