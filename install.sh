@@ -19,7 +19,7 @@ $cmd
 #cd src && make && cd ..
 #cd ..
 
-cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/markers.tar.gz -P ./src"
+cmd="wget --no-check-certificate https://obj.umiacs.umd.edu/metacompassdb/markers.tar.gz -P ./src/metaphyler"
 echo $cmd
 $cmd
 
@@ -27,7 +27,7 @@ cmd="cd ./src/metaphyler/"
 echo $cmd
 $cmd
 
-cmd="tar -xzvf ./markers.tar.gz"
+cmd="tar -xzvf markers.tar.gz"
 echo $cmd
 $cmd
 
@@ -36,7 +36,7 @@ cmd="cd ../../"
 echo $cmd
 $cmd
 
-cmd="wget --no-check-certificate https://gembox.cbcb.umd.edu/metacompass/refseq.tar.gz"
+cmd="wget --no-check-certificate https://obj.umiacs.umd.edu/metacompassdb/refseq.tar.gz"
 echo $cmd
 $cmd
 
