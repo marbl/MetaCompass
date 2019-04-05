@@ -66,7 +66,8 @@ rule fastq2fasta:
 
 rule reference_recruitment:
     input:
-        rules.fastq2fasta.output
+        fasta = rules.fastq2fasta.output
+        fastq = rules.merge_reads.output
     params:
         cogcov = "%d"%(int(config['cogcov'])),
         readlen = "%d"%(int(config['length']))
@@ -77,7 +78,7 @@ rule reference_recruitment:
     message: """---reference recruitment."""
     threads:int(config['nthreads'])
     log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"mkdir -p {output.out}; python3 %s/bin/select_references.py {input} {output.out} {threads} {params.cogcov}  1>> {log} 2>&1"%(config["mcdir"])
+    shell:"mkdir -p {output.out}; python3 %s/bin/select_references.py {input.fasta} {input.fastq} {output.out} {threads} {params.cogcov}  1>> {log} 2>&1"%(config["mcdir"])
 
 rule mash_filter:
     input:
