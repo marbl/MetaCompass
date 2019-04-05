@@ -13,6 +13,7 @@ cmd="g++ -Wall -W -O2 -o ./bin/buildcontig ./src/buildcontig/buildcontig.cpp ./s
 echo $cmd
 $cmd
 
+#downloaded on Jan 11th 2019
 cmd="wget --no-check-certificate https://obj.umiacs.umd.edu/metacompassdb/2019/01/refseq.tar.gz"
 echo $cmd
 $cmd
@@ -23,6 +24,6 @@ $cmd
 
 #optional
 cmd="rm refseq.tar.gz"
-#echo $cmd
+echo $cmd
 $cmd
 
