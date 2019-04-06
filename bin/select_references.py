@@ -331,7 +331,7 @@ def main():
    cmd ="grep '>'  %s/%s.refseq.fna|tr -d '>'|cut -f1 -d ' '> %s/%s.refseq.ids" %(outdir,prefix,outdir,prefix)
    print ("%s" % (cmd))
    os.system(cmd)
-   refseq_tax = pathbin + "/refseq/markers/refseq_tax"
+   refseq_tax = pathbin + "/refseq/refseq_tax"
    
    tax_file = outdir + "/"+ prefix + ".tax"
    cmd="grep -f %s/%s.assembly.ids %s |sort -k2,2 >>%s/%s.tax" %(outdir,prefix,refseq_tax,outdir,prefix)
@@ -373,12 +373,12 @@ def main():
    print ("%s" % (cmd))
    os.system(cmd)  
    
-   cmd="%s/bin/mash-Linux64-v2.1/mash paste -l %s/%s.assembly %s/%s.msh.list"%(pathbin,outdir,prefix,outdir,prefix)
+   cmd="mash paste -l %s/%s.assembly %s/%s.msh.list"%(outdir,prefix,outdir,prefix)
    print ("%s" % (cmd))
    os.system(cmd) 
    #run mash screen
    screen=outdir+"/screen_bacgeno.tab"
-   cmd="%s/bin/mash-Linux64-v2.1/mash screen -p %s %s/%s.assembly.msh  %s >%s/screen_bacgeno.tab"%(pathbin,nump,outdir,prefix,reads,outdir)
+   cmd="mash screen -p %s %s/%s.assembly.msh  %s >%s/screen_bacgeno.tab"%(nump,outdir,prefix,reads,outdir)
    print ("%s" % (cmd))
    os.system(cmd)
    #parse mash screen, sort from highest to lowest # shared-hashes
