@@ -13,7 +13,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 * BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
 * bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9
 * kmer-mask (May 13th, 2015): https://sourceforge.net/projects/kmer/files/meryl-r2013.tar.xz
-* mash : https://github.com/marbl/Mash/releases/tag/v2.1
+* mash (>=) 2.1: https://github.com/marbl/Mash/releases/tag/v2.1
 * samtools (>=) 1.x: http://samtools.sourceforge.net/ 
 * MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
 * Java runtime (>=) 1.7 
