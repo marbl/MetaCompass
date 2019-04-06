@@ -76,7 +76,7 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
                             thao2000.2.fq	
 -- Run:
    
-     python3 go_metacompass.py -r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -o example1_output -m 1 -t 4
+     python3 go_metacompass.py -r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -P tutorial/thao2000.1.fq,tutorial/thao2000.2.fq -l 150 -o example1_output -m 1 -t 4
 
 # Reference-guided assembly with reference selection.
 
