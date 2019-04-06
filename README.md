@@ -1,4 +1,4 @@
-# MetaCompass v1.2b
+# MetaCompass v1.3
 Last updated: March 15th, 2018
 
 
