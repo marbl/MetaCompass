@@ -90,7 +90,7 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
         SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq
 -- Run:
    
-     python3 go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -o example2_output
+     python3 go_metacompass.py -P SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq,SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -l 100 -o example2_output
 
   
 Contact:
