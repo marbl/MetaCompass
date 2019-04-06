@@ -66,7 +66,7 @@ rule fastq2fasta:
 
 rule reference_recruitment:
     input:
-        fasta = rules.fastq2fasta.output
+        fasta = rules.fastq2fasta.output,
         fastq = rules.merge_reads.output
     params:
         cogcov = "%d"%(int(config['cogcov'])),
