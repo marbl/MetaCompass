@@ -434,12 +434,13 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
     os.system("mv %s/%s.0.assembly.out/coverage.txt %s/metacompass_output/metacompass.genomes_coverage.txt"%(prefix,s1id,prefix))
     
     #os.system("cp %s/%s.0.assembly.out/contigs.pilon.fasta.fixed %s/metacompass_output/metacompass.only.ctg.fa"%(prefix,s1id,prefix))
-    if mfilter < 1.0:
-        if os.path.exists("%s/%s.merged.fq.mash.out.ids"%(prefix,s1id)):
-            os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
-            os.system("cp %s/%s.0.assembly.out/mc.refseq.filt.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
-    else:
-        if os.path.exists("%s/%s.%d.assembly.out/mc.refseq.ids"%(prefix,s1id,i-1)):
+#not supported
+#    if mfilter < 1.0:
+#        if os.path.exists("%s/%s.merged.fq.mash.out.ids"%(prefix,s1id)):
+#            os.system("cp %s/%s.merged.fq.mash.out.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
+#            os.system("cp %s/%s.0.assembly.out/mc.refseq.filt.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
+#    else:
+    if os.path.exists("%s/%s.%d.assembly.out/mc.refseq.ids"%(prefix,s1id,i-1)):
             os.system("cp %s/%s.0.assembly.out/mc.refseq.ids  %s/metacompass_output/metacompass.recruited.ids"%(prefix,s1id,prefix))
             os.system("cp %s/%s.0.assembly.out/mc.refseq.fna  %s/metacompass_output/metacompass.recruited.fa"%(prefix,s1id,prefix))
 
@@ -466,7 +467,8 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
             os.makedirs("%s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id), exist_ok=True)
             os.system("mv %s/%s.0.assembly.out/mc.* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
 #SRS016585.merged.fq.mash.
-            os.system("mv %s/%s.0.assembly.out/*merged.fq.mash* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
+            #currently not in any output
+            #os.system("mv %s/%s.0.assembly.out/*merged.fq.mash* %s/%s.0.assembly.out/reference_selection_output"%(prefix,s1id,prefix,s1id))
         else:
             os.system("rm %s/%s.0.assembly.out/mc.refseq.fna"%(prefix,s1id))
         os.makedirs("%s/%s.0.assembly.out/pilon_output"%(prefix,s1id), exist_ok=True)
@@ -475,11 +477,12 @@ if os.path.exists("%s/%s.%d.assembly.out/contigs.final.fasta"%(prefix,s1id,i-1))
         os.system("mv %s/%s.0.assembly.out/contigs.fasta %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/%s.sam %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,s1id,prefix,s1id))
 ########testingstart
-        os.system("mv %s/%s.0.assembly.out/%s.sam.all %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,s1id,prefix,s1id))
+        if os.path.exists("%s/%s.0.assembly.out/%s.sam.all"%(prefix,s1id,s1id)):
+            os.system("mv %s/%s.0.assembly.out/%s.sam.all %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,s1id,prefix,s1id))
 ########testing end
         if os.path.exists("%s/%s.0.assembly.out/selected_maps.sam"%(prefix,s1id)):
             os.system("mv %s/%s.0.assembly.out/selected_maps.sam %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
-        os.system("mv %s/%s.0.assembly.out/*buildcontigs* %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
+        #os.system("mv %s/%s.0.assembly.out/*buildcontigs* %s/%s.0.assembly.out/assembly_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/sorted*.bam* %s/%s.0.assembly.out/pilon_output"%(prefix,s1id,prefix,s1id))
         os.system("mv %s/%s.0.assembly.out/*.pilon* %s/%s.0.assembly.out/pilon_output/"%(prefix,s1id,prefix,s1id))
  #if unmmaped reads#

@@ -374,11 +374,13 @@ def main():
    os.system(cmd)  
    
    cmd="mash paste -l %s/%s.assembly %s/%s.msh.list"%(outdir,prefix,outdir,prefix)
+   #cmd="%s/bin/scratch/mash-Linux64-v2.1/mash paste -l %s/%s.assembly %s/%s.msh.list"%(pathbin,outdir,prefix,outdir,prefix)
    print ("%s" % (cmd))
    os.system(cmd) 
    #run mash screen
-   screen=outdir+"/screen_bacgeno.tab"
-   cmd="mash screen -p %s %s/%s.assembly.msh  %s >%s/screen_bacgeno.tab"%(nump,outdir,prefix,reads,outdir)
+   screen=outdir+"/mc.mashscreen.tab"
+   cmd="mash screen -p %s %s/%s.assembly.msh  %s >%s"%(nump,outdir,prefix,reads,screen)
+   #cmd="%s/bin/scratch/mash-Linux64-v2.1/mash screen -p %s %s/%s.assembly.msh  %s >%s"%(pathbin,nump,outdir,prefix,reads,screen)
    print ("%s" % (cmd))
    os.system(cmd)
    #parse mash screen, sort from highest to lowest # shared-hashes
@@ -404,7 +406,6 @@ def main():
    cmd ="grep '>'  %s/%s.refseq.filt.fna|tr -d '>'|cut -f1 -d ' '> %s/%s.refseq.filt.ids" %(outdir,prefix,outdir,prefix)
    print ("%s" % (cmd))
    os.system(cmd)
-   
+
 if __name__ == '__main__':
-    main()
- 
+    main() 

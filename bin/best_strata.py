@@ -31,36 +31,3 @@ with open (input_name, 'rt') as infile,\
       
 #print('end')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
