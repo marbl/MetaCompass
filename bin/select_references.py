@@ -277,7 +277,14 @@ def main():
    reads  = sys.argv[3]
    outdir = sys.argv[4]
    nump   = sys.argv[5]
-   covthreshold = float(sys.argv[5])
+   if len(sys.argv) >= 7:
+       cutoff = sys.argv[7]
+   else
+       cutoff = 1.1
+   if len(sys.argv) >= 6:
+       covthreshold = float(sys.argv[6])
+   else
+       covthreshold = 1.0
 #----------------------------------------#
    ref = pathbin +"/refseq/markers/markers.refseq.dna"
    
@@ -393,7 +400,7 @@ def main():
    filt_assembly_fna_filename = outdir+"/"+prefix+".refseq.fna"
    
    filt_tax_file=outdir + "/"+ prefix + ".filt.tax"
-   cutoff=1.1
+  
    parse_mash_screen(screen,tax_dic,tax_dic_old,filt_assembly_id_filename,filt_assembly_fna_filename,filt_tax_file,cutoff)#cut -f1
 
    cmd ="mv  %s/%s.refseq.ids  %s/%s.refseq.all.ids" %(outdir,prefix,outdir,prefix)
