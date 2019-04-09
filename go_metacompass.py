@@ -132,6 +132,13 @@ if len(qsub) > 0:
         print("[FAIL]")
         qsub=""
 
+print("Snakemake--->",end="")
+ret = subprocess.call("which snakemake",shell=True)
+if ret == 0:
+    print("[OK]")
+else:
+    print("[FAIL]")
+    sys.exit()
 
 print("Bowtie2--->",end="")
 sout = open("out.txt",'w')
@@ -144,31 +151,22 @@ else:
     print("[FAIL]")
     sys.exit()
 
-print("Blast+--->",end="")
-ret = subprocess.call("which blastn",shell=True)
-if ret == 0:
-    print("[OK]")
-else:
-    print("[FAIL]")
-    sys.exit()
+if ref == "NA":
+    print("Blast+--->",end="")
+    ret = subprocess.call("which blastn",shell=True)
+    if ret == 0:
+        print("[OK]")
+    else:
+        print("[FAIL]")
+        sys.exit()
 
-print("kmer-mask--->",end="")
-ret = subprocess.call("which kmer-mask",shell=True)
-if ret == 0:
-    print("[OK]")
-else:
-    print("[FAIL]")
-    sys.exit()
-
-#print("bedtools--->",end="")
-#ret = subprocess.call("which bedtools",shell=True)
-#if ret == 0:
-#    print("[OK]")
-#else:
-#    print("[FAIL]")
-#    sys.exit()
-
-if mfilter < 1.0:
+    print("kmer-mask--->",end="")
+    ret = subprocess.call("which kmer-mask",shell=True)
+    if ret == 0:
+        print("[OK]")
+    else:
+        print("[FAIL]")
+        sys.exit()
     print("mash--->",end="")
     ret = subprocess.call("which mash",shell=True)
     if ret == 0:
@@ -176,14 +174,13 @@ if mfilter < 1.0:
     else:
         print("[FAIL]")
         sys.exit()
-
-print("Snakemake--->",end="")
-ret = subprocess.call("which snakemake",shell=True)
-if ret == 0:
-    print("[OK]")
-else:
-    print("[FAIL]")
-    sys.exit()
+#print("bedtools--->",end="")
+#ret = subprocess.call("which bedtools",shell=True)
+#if ret == 0:
+#    print("[OK]")
+#else:
+#    print("[FAIL]")
+#    sys.exit()
 
 #3. process sample file
 #3 paths: sample file, -P, or -U
