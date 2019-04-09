@@ -272,10 +272,11 @@ def main():
    outdir = ""
    prefix = "mc"
    nump = 0
-   query  = sys.argv[1]
-   reads  = sys.argv[2]
-   outdir = sys.argv[3]
-   nump   = sys.argv[4]
+   selection=sys.argv[1]
+   query  = sys.argv[2]
+   reads  = sys.argv[3]
+   outdir = sys.argv[4]
+   nump   = sys.argv[5]
    covthreshold = float(sys.argv[5])
 #----------------------------------------#
    ref = pathbin +"/refseq/markers/markers.refseq.dna"
@@ -331,6 +332,10 @@ def main():
    cmd ="grep '>'  %s/%s.refseq.fna|tr -d '>'|cut -f1 -d ' '> %s/%s.refseq.ids" %(outdir,prefix,outdir,prefix)
    print ("%s" % (cmd))
    os.system(cmd)
+
+####mash option
+   if selection =="all":
+       sys.exit(0)#Success!!
    refseq_tax = pathbin + "/refseq/refseq_tax"
    
    tax_file = outdir + "/"+ prefix + ".tax"
@@ -385,11 +390,19 @@ def main():
    os.system(cmd)
    #parse mash screen, sort from highest to lowest # shared-hashes
    filt_assembly_id_filename = outdir+"/"+prefix+".filt.assembly.ids"
-   filt_assembly_fna_filename = outdir+"/"+prefix+".refseq.filt.fna"
+   filt_assembly_fna_filename = outdir+"/"+prefix+".refseq.fna"
    
    filt_tax_file=outdir + "/"+ prefix + ".filt.tax"
    cutoff=1.1
    parse_mash_screen(screen,tax_dic,tax_dic_old,filt_assembly_id_filename,filt_assembly_fna_filename,filt_tax_file,cutoff)#cut -f1
+
+   cmd ="mv  %s/%s.refseq.ids  %s/%s.refseq.all.ids" %(outdir,prefix,outdir,prefix)
+   print ("%s" % (cmd))
+   os.system(cmd)
+   cmd ="mv  %s/%s.refseq.fna  %s/%s.refseq.all.fna" %(outdir,prefix,outdir,prefix)
+   print ("%s" % (cmd))
+   os.system(cmd)
+
    cmd ="for file in $(cat %s);do cat %s/refseq/genomes/${file}/${file}.fasta >> %s;done"%(filt_assembly_id_filename,pathbin,filt_assembly_fna_filename)
    print ("%s" % (cmd))
    os.system(cmd)
@@ -403,9 +416,10 @@ def main():
    os.system(cmd)
    
    
-   cmd ="grep '>'  %s/%s.refseq.filt.fna|tr -d '>'|cut -f1 -d ' '> %s/%s.refseq.filt.ids" %(outdir,prefix,outdir,prefix)
+   cmd ="grep '>'  %s/%s.refseq.fna|tr -d '>'|cut -f1 -d ' '> %s/%s.refseq.ids" %(outdir,prefix,outdir,prefix)
    print ("%s" % (cmd))
    os.system(cmd)
+#switch names
 
 if __name__ == '__main__':
     main() 

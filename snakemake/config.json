@@ -15,6 +15,7 @@
     "mfilter" : 1e-05,
     "mcdir": ".",
     "cogcov": 2,
+    "refsel":"tax",
     "assembly": "[]"
 }
 
