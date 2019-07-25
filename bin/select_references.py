@@ -279,11 +279,11 @@ def main():
    nump   = sys.argv[5]
    if len(sys.argv) >= 7:
        cutoff = sys.argv[7]
-   else
+   else:
        cutoff = 1.1
    if len(sys.argv) >= 6:
        covthreshold = float(sys.argv[6])
-   else
+   else:
        covthreshold = 1.0
 #----------------------------------------#
    ref = pathbin +"/refseq/markers/markers.refseq.dna"
