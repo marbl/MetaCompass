@@ -277,9 +277,15 @@ rule join_contigs:
 
 rule create_tsv:
     input:
-        all_contigs=rules.join_contigs.output.final_contigs,
+        contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
-        ref=rules.reference_recruitment.output.refids
+        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mg_contigs=rules.assemble_unmapped.output.megahit_contigs,
+        ref=rules.reference_recruitment.output.reffile
+    params:    
+        minlen="%d"%(int(config['minlen']))
     message: """---information reference-guided and de novo contigs"""
-    output:"%s/metacompass.tsv"%(config['prefix'])
-    shell:"sh %s/bin/create_tsv.sh {input.all_contigs} {input.mc_contigs} {input.ref} {output}"%(config["mcdir"])
+    output:
+        summary="%s/metacompass_summary.tsv"%(config['prefix']),
+        stats="%s/metacompass_assembly_stats.tsv"%(config['prefix'])
+    shell:"sh %s/bin/create_tsv.sh {input.mc_contigs_pilon} {input.mc_contigs} {input.mg_contigs} {input.ref} {output.summary};python %s/bin/assembly_stats.py {input.contigs} {params.minlen} > {output.stats}"%(config["mcdir"],config["mcdir"])
