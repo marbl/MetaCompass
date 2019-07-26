@@ -14,7 +14,7 @@
     "minlen" : 100,
     "mfilter" : 1e-05,
     "mcdir": ".",
-    "cogcov": 2,
+    "cogcov": 1,
     "refsel":"tax",
     "assembly": "[]"
 }
