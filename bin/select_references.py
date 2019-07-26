@@ -277,14 +277,15 @@ def main():
    reads  = sys.argv[3]
    outdir = sys.argv[4]
    nump   = sys.argv[5]
-   #if len(sys.argv) >= 7:
-   #    cutoff = sys.argv[7]
-   #else:
-   #    cutoff = 1.1
    if len(sys.argv) >= 6:
        covthreshold = float(sys.argv[6])
    else:
        covthreshold = 1.0
+   if len(sys.argv) >= 7:
+       cutoff = sys.argv[7]
+   else:
+       cutoff = 1.0
+      
 #----------------------------------------#
    ref = pathbin +"/refseq/markers/markers.refseq.dna"
    
