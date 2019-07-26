@@ -102,18 +102,18 @@ rule reference_recruitment:
     shell:"mkdir -p {output.out}; python3 %s/bin/select_references.py {params.refsel} {input.fasta} {input.fastq} {output.out} {threads} {params.cogcov}  1 1>> {log} 2>&1"%(config["mcdir"])
     #shell:"mkdir -p {output.out}; perl %s/bin/pickrefseqs.pl {input} {output.out} {threads} {params.mincov} {params.readlen}  1>> {log} 2>&1"%(config["mcdir"])
 
-#rule mash_filter:
-#    input:
-#        r1=rules.merge_reads.output.merged,
-#        g1=rules.reference_recruitment.output.reffile
-#    output:
-#        reffile=expand('{prefix}/{sample}.0.assembly.out/mc.refseq.filt.fna',prefix=config['prefix'],sample=config['sample'])
-#    params:
-#        mfilter= "%f"%(float(config['mfilter']))#mfilter=expand('{mfilter}',mfilter=config["mfilter"])
-#    message: """---mash filter recruited references"""
-#    threads:int(config["nthreads"])
-#    log:'%s/%s.%s.mash.log'%(config['prefix'],config['sample'],config['iter'])
-#    shell:"echo {params.mfilter};python3 %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} {params.mfilter} 1>> {log} 2>&1"%(config["mcdir"])
+rule mash_filter:
+    input:
+        r1=rules.merge_reads.output.merged,
+        g1=rules.reference_recruitment.output.reffile
+    output:
+        reffile=expand('{prefix}/{sample}.0.assembly.out/mc.refseq.filt.fna',prefix=config['prefix'],sample=config['sample'])
+    params:
+        mfilter= "%f"%(float(config['mfilter']))#mfilter=expand('{mfilter}',mfilter=config["mfilter"])
+    message: """---mash filter recruited references"""
+    threads:int(config["nthreads"])
+    log:'%s/%s.%s.mash.log'%(config['prefix'],config['sample'],config['iter'])
+    shell:"echo {params.mfilter};python3 %s/bin/mash_filter.py {input.r1} {input.g1} {output.reffile} {params.mfilter} 1>> {log} 2>&1"%(config["mcdir"])
 
 #reads=rules.reference_recruitment.output.fqfile
 #    benchmark:
@@ -154,7 +154,7 @@ rule bwa_map:
 #       ref=get_bowtie2_input, 
 rule bowtie2_map:
     input:
-       ref=rules.mash_filter.output.reffile,
+       ref=rules.reference_recruitment.output.reffile,#rules.mash_filter.output.reffile,
        r1=rules.merge_reads.output.merged
     output:
        index=expand('{prefix}/{sample}.{itera}.assembly.out/{sample}.index',prefix=config['prefix'],sample=config['sample'],itera=config['iter']),
