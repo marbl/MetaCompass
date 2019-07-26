@@ -13,7 +13,8 @@ DESCRIPTION
 
 #ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs > remove_zerocov >  assemble_unmapped > join_contigs
 
-ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv
+#ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > mash_filter > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv
+ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment > bowtie2_map > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv
 
 #ruleorder: bowtie2_map > assemble_unmapped > build_contigs > pilon_map > sam_to_bam > bam_sort > pilon_contigs
 #code to skip initial steps if reference genomes provided 
