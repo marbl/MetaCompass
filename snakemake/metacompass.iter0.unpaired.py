@@ -35,7 +35,7 @@ if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sampl
 
 
 rule all:
-     input:expand('{prefix}/metacompass.tsv',prefix=config["prefix"])
+     input:expand('{prefix}/metacompass_summary.tsv',prefix=config["prefix"])
 #rule all:
 #    input:expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',sample=config["sample"],prefix=config["prefix"],iter=config["iter"])
 
