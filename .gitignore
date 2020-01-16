@@ -6,7 +6,6 @@ bin/meryl-r2013
 src/scratch
 src/buildcontig/*
 !src/buildcontig/*pp
-*.sh
 *.log
 *.out
 SRS*

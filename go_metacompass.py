@@ -24,7 +24,7 @@ group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?
 group5.add_argument("-s",'--refsel', help='reference selection [tax/all]',default="tax",nargs='?')
 group5.add_argument("-p",'--pickref', help='depth or breadth',default="breadth",nargs='?')
 group5.add_argument("-m",'--mincov', help='min coverage to assemble',default="3",nargs='?',type=int)
-group5.add_argument("-g",'--minctglen', help='min contig length',default="300",nargs='?',type=int)
+group5.add_argument("-g",'--minctglen', help='min contig length',default="1",nargs='?',type=int)
 group5.add_argument("-l",'--readlen', help='max read length',default="100",nargs='?',type=int)
 
 group2 = parser.add_argument_group('output')

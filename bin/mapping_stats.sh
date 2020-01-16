@@ -34,5 +34,5 @@ IFS=$'\n'
 for i in $assembled_reads;do
 	id=$(echo $i|cut -f1)
 	reads=$(echo $i|cut -f2)
-	echo $id $reads ${total_reads} ${mapped_reads} | awk '{print $1"\t"$2"\t"$2/$3"\t"$2/$4}'>>$output2
+	echo $id $reads ${total_reads} ${mapped_reads} | awk '{printf $1"\t"$2"\t";if($3>0)printf $2/$3"\t";else printf "0\t";if($4>0)printf $2/$4;else printf "0";}'>>$output2
 done
