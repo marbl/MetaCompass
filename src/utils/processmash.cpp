@@ -192,8 +192,8 @@ void extracttax(const string taxpairfile, const string outprefix,set <string> & 
   set <string> min;
   string tempmax;
   string tempmin;
-  double maxmash;
-  double minmash;
+  double maxmash=0;
+  double minmash=1;
   
   for (MI2D2S2S::iterator it= taxinfo.begin(); it != taxinfo.end(); ++it){
 	  //vector of 4
