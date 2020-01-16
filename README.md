@@ -82,8 +82,11 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
 
 -- Download and extract metagenomic sample:
 
-    ftp://public-ftp.hmpdacc.org/Illumina/posterior_fornix/SRS044742.tar.bz2
-   
+    wget http://downloads.hmpdacc.org/dacc/hhs/genome/microbiome/wgs/analysis/hmwgsqc/v2/SRS044742.tar.bz2
+    tar -xvf SRS044742.tar.bz2
+
+-- The metagenomic sample contains:
+
     SRS044742/
         SRS044742.denovo_duplicates_marked.trimmed.1.fastq
         SRS044742.denovo_duplicates_marked.trimmed.2.fastq
