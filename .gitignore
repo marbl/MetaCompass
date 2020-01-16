@@ -29,3 +29,11 @@ samples
 scratch
 .snakemake
 todo
+bin/breadth
+bin/buildcontig
+bin/extractContigs
+bin/extractSeq
+bin/formatFASTA
+bin/fq2fa
+bin/processmash
+example2_output/
