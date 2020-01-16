@@ -4,80 +4,79 @@ DESCRIPTION
 #__author__ = "Victoria Cepeda
 
 #configfile: expand("config.json",
+ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_selection
 
-#include_prefix="https://"
-#include_prefix + "rules"
+if config['reads'] != "" and config['reference'] != "%s"%expand('{outdir}/reference_selection/mc.refseq.fna',outdir=config["outdir"][0]):
+     #print("%s"%(config["outdir"]))
+     #print("%s"%(config["reads"]))
+     #print("%s"%(config["reference"]))
+     os.system("mkdir -p %s"%expand('{outdir}/intermediate_files',outdir=config['outdir'])[0])
+     os.system("mkdir -p %s"%expand('{outdir}/reference_selection',outdir=config['outdir'])[0])
+     os.system("mkdir -p %s"%expand('{outdir}/logs',outdir=config['outdir'])[0])
 
-
-ruleorder: merge_reads > kmer_mask > fastq2fasta > reference_recruitment 
-
-#code to skip initial steps if reference genomes provided 
-if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
-     os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
-     os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
-     os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
-     os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
 rule all:
-    input:expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])
+     input:
+         first=expand('{outdir}/reference_selection/mc.refseq.fna',outdir=config["outdir"])
 
 rule merge_reads:
     input:
         reads=config['reads'].split(",")[0]
     message: """---merge fastq reads"""
     output:
-        merged='%s/%s.merged.fq'%(config['prefix'],config['sample'])
+        merged='%s/intermediate_files/merged.fq'%(config['outdir'])
+    params:
+        retry='%s/intermediate_files/run.ok'%(config['outdir'])
     run:
 
         for read in config['reads'].split(','):
             if read != "" and len(read) != 0:
-                os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
-        if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
-             os.system("touch %s"%expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0])
-             os.system("touch %s"%expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])[0])
-             os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
-             os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
-             os.system("touch %s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample'])[0])
+                os.system("cat %s >> %s/intermediate_files/merged.fq && touch %s/intermediate_files/run.ok"%(read,config['outdir'],config['outdir']))
 
 
 rule kmer_mask:
     input:
         r1=rules.merge_reads.output.merged
     output:
-        fastq1=expand('{prefix}/{sample}.marker.match.1.fastq',prefix=config['prefix'],sample=config['sample'])[0],
+        fastq1=expand('{outdir}/reference_selection/marker.match.1.fastq',outdir=config['outdir'])[0],
     message: """---kmer-mask fastq"""
     params:
-        out=expand('{prefix}/{sample}.marker',prefix=config['prefix'],sample=config['sample'])[0],
-        len=str(int(config["length"])+3)
+        out=expand('{outdir}/reference_selection/marker',outdir=config['outdir'])[0],
+        len=str(int(config["length"])+3),
+        retry='%s/reference_selection/run1.ok'%(config['outdir'])
     threads:int(config['nthreads'])
-    log:'%s/%s.%s.kmermask.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1"%(config["mcdir"])
+    log:'%s/logs/kmermask.log'%(config['outdir'])
+    shell:"kmer-mask -ms 28 -mdb %s/refseq/kmer-mask_db/markers.mdb -1 {input.r1} -clean 0.0 -match 0.01 -nomasking -t {threads} -l {params.len} -o {params.out} 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"])
 
 
 rule fastq2fasta:
     input: rules.kmer_mask.output.fastq1
-    output:expand('{prefix}/{sample}.fasta',prefix=config['prefix'],sample=config['sample'])
+    output:expand('{outdir}/reference_selection/masked_reads.fasta',outdir=config['outdir'],sample=config['sample'])
     message: """---Converting fastq to fasta."""
-    shell : "perl %s/bin/fq2fa.pl -i {input} -o {output}"%(config["mcdir"])
-    log:'%s/%s.%s.fastq2fasta.log'%(config['prefix'],config['sample'],config['iter'])
+    params:
+        retry='%s/reference_selection/run2.ok'%(config['outdir'])
+    log:'%s/logs/fastq2fasta.log'%(config['outdir'])
+    shell : "%s/bin/fq2fa -i {input} -o {output} && touch {params.retry}"%(config["mcdir"])
 
-#    benchmark:
-#       "%s/benchmarks/reference_recruitment/%s.txt"%(config['prefix'],config['sample'])
 
-#fqfile =expand('{prefix}/{sample}.0.assembly.out/{sample}.fq',prefix=config['prefix'],sample=config['sample'])
-#'{prefix}/{sample}.{iter}.assembly.out/mc.refseq.fna'
-rule reference_recruitment:
+rule reference_selection:
     input:
         fasta = rules.fastq2fasta.output,
         fastq = rules.merge_reads.output
     params:
         cogcov = "%d"%(int(config['cogcov'])),
+        identity = "%s"%(config['ani']),
         readlen = "%d"%(int(config['length'])),
-        refsel = "%s"%(config['refsel'])
+        refsel = "%s"%(config['refsel']),
+        out =expand('{outdir}/reference_selection',outdir=config['outdir']),
+        retry='%s/reference_selection/run3.ok'%(config['outdir'])
     output:
-        out =expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter']),
-        reffile =expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',prefix=config['prefix'],sample=config['sample']),
-        refids=expand('{prefix}/{sample}.0.assembly.out/mc.refseq.ids',prefix=config['prefix'],sample=config['sample'])
-    message: """---reference recruitment."""
+        reffile =expand('{outdir}/reference_selection/mc.refseq.fna',outdir=config['outdir']),
+        refids=expand('{outdir}/reference_selection/mc.refseq.ids',outdir=config['outdir'])
+    message: """---reference selection."""
     threads:int(config['nthreads'])
-    log:'%s/%s.%s.reference_recruitement.log'%(config['prefix'],config['sample'],config['iter'])
-    shell:"mkdir -p {output.out}; python3 %s/bin/select_references.py {params.refsel} {input.fasta} {input.fastq} {output.out} {threads} {params.cogcov}  1>> {log} 2>&1"%(config["mcdir"])
+    log:'%s/logs/reference_selection.log'%(config['outdir'])
+    shell:"python3 %s/bin/select_references.py {params.refsel} {input.fasta} {input.fastq} {params.out} {threads} {params.cogcov} {params.identity} 1>> {log} 2>&1 && touch {params.retry}"%(config["mcdir"])
+    
+onsuccess:
+    print("MetaCompass finished successfully!")
+    os.system("touch %s/run.ok"%(config['outdir']))

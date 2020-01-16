@@ -20,19 +20,12 @@ rule merge_reads:
 
         for read in config['reads'].split(','):
             if read != "" and len(read) != 0:
-                os.system("ln -s %s  %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
-                #if len(read) == 1:
-                #    os.system("ln -s %s  %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
-                #else:
-                #    os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
+                os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
         if config['reads'] != "" and config['reference'] != "%s"%expand('{prefix}/{sample}.0.assembly.out/mc.refseq.fna',sample=config['sample'],prefix=config["prefix"])[0]:
              os.system("mkdir -p %s"%expand('{prefix}/{sample}.0.assembly.out',prefix=config['prefix'],sample=config['sample'])[0])
              os.system("mkdir -p %s"%expand('{prefix}/{sample}.{iter}.assembly.out',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
              os.system("touch %s"%expand('{prefix}/{sample}.{iter}.assembly.out/contigs.fasta',prefix=config['prefix'],sample=config['sample'],iter=config['iter'])[0])
-#if len(read) == 1:
-                #    os.system("ln -s %s  %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
-                #elif len(read) > 1:
-                #    os.system("cat %s >> %s/%s.merged.fq"%(read,config['prefix'],config['sample']))
+
 rule bowtie2_map:
     input:
        ref=config['reference'],

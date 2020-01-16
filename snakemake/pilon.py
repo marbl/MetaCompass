@@ -44,7 +44,7 @@ rule pilon_map:
     threads:int(config["nthreads"])
     message: """---Map reads for pilon polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {log} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.ru}  -S {output.sam2} >> {log} 2>&1"
-#"echo hola;cp /fs/cbcb-lab/mpop/Metacompass/metacompass/hmp/hmp1/SRS016585_stool_pilon-megahitk_biorxiv2/SRS016585.0.assembly.out//SRS016585.mc.* /fs/cbcb-lab/mpop/Metacompass/metacompass/hmp/hmp1/SRS016585.0.assembly.out/SRS016585_stool_pilon-megahitk_biorxiv3
+
 rule sam_to_bam:
     input:
         sam=rules.pilon_map.output.sam,
@@ -79,7 +79,7 @@ rule pilon_contigs:
     log:'%s/%s.%s.assembly.out/%s.pilon.log'%(config['prefix'],config['sample'],config['iter'],config['sample'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx19G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
+    shell:"java -Xmx19G -jar %s/bin/pilon-1.22.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/%s.%s.assembly.out/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1"%(config["mcdir"],config['prefix'],config['sample'],config['iter'])
 
 rule assemble_unmapped:
     input:
