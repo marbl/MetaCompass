@@ -1,5 +1,5 @@
 # MetaCompass v1.3
-Last updated: April 6th, 2019
+Last updated: January 15th, 2020
 
 
 # Publication
