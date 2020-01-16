@@ -6,6 +6,13 @@ bin/meryl-r2013
 src/scratch
 src/buildcontig/*
 !src/buildcontig/*pp
+*.sh
+*.log
+*.out
+SRS*
+*shakya*
+*hmp*
+!install.sh
 .dir_bash_history
 .
 ..
