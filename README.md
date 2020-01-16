@@ -9,7 +9,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 # Required software:
 
 * Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
-* snakemake v3.7.1 - v3.11.x: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
+* snakemake (>=) v3.7.1: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
 * BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
 * bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9
 * kmer-mask (May 13th, 2015): https://sourceforge.net/projects/kmer/files/meryl-r2013.tar.xz
@@ -17,7 +17,6 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 * samtools (>=) 1.x: http://samtools.sourceforge.net/ 
 * MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
 * Java runtime (>=) 1.7 
-* Perl5 (>=) 5.16
 
 # Memory and Disk Space Requirements.
 You must have at least 90GB of hard disk space to perform a normal installation.
