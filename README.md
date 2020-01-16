@@ -40,30 +40,30 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
 
 -- I have a set of metagenomic reads, and want to perform reference-guided assembly. 
 
-    python3 go_metacompass.py -1 [read1.fq] -2 [read2.fq] -l [max read length]-o [output_folder] -m [min coverage] -t [ncpu] -y [memory]
+    python3 go_metacompass.py -1 [read1.fq] -2 [read2.fq] -l [max read length] -o [output_folder] -m [min coverage] -t [ncpu] -y [memory GB]
 
 -- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
 
-    python3 go_metacompass.py -r [references.fasta] -1 [read1.fq] -2 [read2.fq] -o [output_folder] -m [min coverage] -t [ncpu] -y [memory]
+    python3 go_metacompass.py -r [references.fasta] -1 [read1.fq] -2 [read2.fq] -o [output_folder] -m [min coverage] -t [ncpu] -y [memory GB]
 
 
 # OUTPUT
 
---Output folder contains the following files:
-    
-    1) metacompass_output folder:
-         - Assembled contigs:
-                metacompass_output/metacompass.final.ctg.fa
-         - Selected Reference genomes sequences:
-                metacompass_output/metacompass.recruited.fa  
-         - Selected Reference genomes ids and taxonomy ids
-                metacompass_output/metacompass.recruited.ids
-    2) metacompass.tsv file with the following information: 
-         - contig ID
-         - contig size
-         - reference genome used (only reference-guided assembled contigs)
-         - name of the genome  
-       
+-- metacompass_output folder contains the following files:
+
+
+| File  | Description |
+| ------------- | ------------- |
+| metacompass.final.ctg.fa  | Assembled contigs  |
+| metacompass_mapping_stats.tsv | Mapped reads general stats  | 
+| metacompass_mapping_pergenome_stats.tsv | Mapped reads stats per genome  | 
+| metacompass.genomes_coverage.txt | Breadth of coverage per genome  | 
+| metacompass_assembly_stats.tsv | Assembly general stats  | 
+| metacompass_assembly_pergenome_stats | Assembly stats per genome | 
+| metacompass_summary.tsv | Metadata |
+
+
+
 
 # EXAMPLES
 
