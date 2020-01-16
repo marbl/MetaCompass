@@ -20,7 +20,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 * Perl5 (>=) 5.16
 
 # Memory and Disk Space Requirements.
-You must have at least 13GB of hard disk space to perform a normal installation.
+You must have at least 90GB of hard disk space to perform a normal installation.
 You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
 # INSTALLATION From Source (RECOMMENDED):
