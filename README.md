@@ -22,7 +22,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 You must have at least 90GB of hard disk space to perform a normal installation.
 You must have 8GB or more memory to allocate to the JVM (used by pilon).
 
-# INSTALLATION From Source (RECOMMENDED):
+# INSTALLATION From Source:
 Get the Latest release from https://github.com/marbl/MetaCompass/releases:
 
     wget https://github.com/marbl/MetaCompass/archive/1.xx.tar.gz
