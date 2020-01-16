@@ -36,12 +36,12 @@ rule kmer_mask:
         out=expand('{outdir}/reference_selection/markertmp',outdir=config['outdir'])[0],
         tmp=expand('{outdir}/reference_selection/markertmp.match.1.fastq',outdir=config['outdir'])[0],
         len=str(int(config["length"])+3),
-        retry='%s/reference_selection/run1.ok'%(config['outdir'])
+        retry='%s/reference_selection/.run1.ok'%(config['outdir'])
     threads:int(config['nthreads'])
     log:'%s/logs/kmermask.log'%(config['outdir'])
     run:
 
-        if os.path.exists('%s/reference_selection/run1.ok'%(config['outdir'])):
+        if os.path.exists('%s/reference_selection/.run1.ok'%(config['outdir'])):
             print("Previous kmer_mask rule finished successfully. Skipping kmer_mask.")
         else:
             for read in config['reads'].split(','):
@@ -55,7 +55,7 @@ rule fastq2fasta:
     output:expand('{outdir}/reference_selection/masked_reads.fasta',outdir=config['outdir'],sample=config['sample'])
     message: """---Converting fastq to fasta."""
     params:
-        retry='%s/reference_selection/run2.ok'%(config['outdir'])
+        retry='%s/reference_selection/.run2.ok'%(config['outdir'])
     log:'%s/logs/fastq2fasta.log'%(config['outdir'])
     shell : "if [[ -f {params.retry} ]]; then echo 'Previous fastq2fasta rule finished successfully. Skipping fastq2fasta.'; else %s/bin/fq2fa -i {input} -o {output} && touch {params.retry} ;fi"%(config["mcdir"])
 
@@ -71,7 +71,7 @@ rule reference_selection:
         readlen = "%d"%(int(config['length'])),
         refsel = "%s"%(config['refsel']),
         out =expand('{outdir}/reference_selection',outdir=config['outdir']),
-        retry='%s/reference_selection/run3.ok'%(config['outdir'])
+        retry='%s/reference_selection/.run3.ok'%(config['outdir'])
     output:
         reffile =expand('{outdir}/reference_selection/mc.refseq.fna',outdir=config['outdir']),
         refids=expand('{outdir}/reference_selection/mc.refseq.ids',outdir=config['outdir'])
@@ -91,7 +91,7 @@ rule bowtie2_map:
        log= '%s/logs/bowtie2map.log'%(config['outdir'])
     params:
         r1=config['reads'],
-        retry='%s/assembly/run1.ok'%(config['outdir'])   
+        retry='%s/assembly/.run1.ok'%(config['outdir'])   
     threads:int(config["nthreads"])
     message: """---Build index ."""
     shell:"bowtie2-build -o 3 --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 -a --end-to-end --sensitive --no-unal -p {threads} -x {output.pref} -q -U {params.r1} -S {output.sam}.all > {output.log} 2>&1; python3 %s/bin/best_strata.py {output.sam}.all {output.sam}; rm {output.sam}.all && touch {params.retry}"%(config["mcdir"])
@@ -105,7 +105,7 @@ rule build_contigs:
         mincov="%d"%(int(config['mincov'])),
         minlen="%d"%(int(config['minlen'])),
         outputdir='%s/assembly'%(config['outdir']),
-        retry='%s/assembly/run2.ok'%(config['outdir'])   
+        retry='%s/assembly/.run2.ok'%(config['outdir'])   
     output:
         contigs='%s/assembly/contigs.fasta'%(config['outdir']),
         mapped_reads='%s/assembly/selected_maps.sam'%(config['outdir'])
@@ -122,7 +122,7 @@ rule assembled_references:
         fna='%s/assembly/metacompass.assembled.fna'%(config['outdir']),
         ids='%s/assembly/metacompass.assembled.ids'%(config['outdir'])
     params:
-        retry='%s/assembly/run3.ok'%(config['outdir'])
+        retry='%s/assembly/.run3.ok'%(config['outdir'])
     #log:'%s/logs/assembled_references.log'%(config['outdir'])
     threads:1
     message: """---Assembled references ."""
@@ -144,7 +144,7 @@ rule pilon_map:
        unmappedru='%s/error_correction/mc.sam.unmapped.u.fq'%(config['outdir']),
        log='%s/logs/pilonmap.log'%(config['outdir'])
     params:
-        retry='%s/error_correction/run1.ok'%(config['outdir'])
+        retry='%s/error_correction/.run1.ok'%(config['outdir'])
     threads:int(config["nthreads"])
     message: """---Map reads for pilon polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {output.log} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.ru}  -S {output.sam2} --un {output.sam}.unmapped.u.fq >> {output.log} 2>&1 && touch {params.retry}"
@@ -157,7 +157,7 @@ rule sam_to_bam:
         bam = "%s.bam"%(rules.pilon_map.output.sam),
         bam2= "%s.bam"%(rules.pilon_map.output.sam2)
     params:
-        retry='%s/error_correction/run2.ok'%(config['outdir'])
+        retry='%s/error_correction/.run2.ok'%(config['outdir'])
     log:'%s/logs/samtools_sam2bam.log'%(config['outdir'])
     threads:1
     message: """---Convert sam to bam ."""
@@ -171,7 +171,7 @@ rule bam_sort:
         bam_sorted = "%s/error_correction/sorted.bam"%(config['outdir']),
         bam_sorted2 = "%s/error_correction/sorted2.bam"%(config['outdir'])
     params:
-        retry='%s/error_correction/run3.ok'%(config['outdir'])
+        retry='%s/error_correction/.run3.ok'%(config['outdir'])
     log:'%s/logs/samtools_bamsort.log'%(config['outdir'])
     threads:int(config['nthreads'])
     message: """---Sort bam ."""
@@ -186,7 +186,7 @@ rule pilon_contigs:
         pilonctg='%s/error_correction/contigs.pilon.fasta'%(config['outdir'])
     params:
         memory="%d"%(int(config['memory'])),
-        retry='%s/error_correction/run4.ok'%(config['outdir'])
+        retry='%s/error_correction/.run4.ok'%(config['outdir'])
     log:'%s/logs/pilon.log'%(config['outdir'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
@@ -200,7 +200,7 @@ rule assemble_unmapped:
     output:
         megahit_contigs='%s/assembly/megahit/final.contigs.fa'%(config['outdir'])
     params:
-        retry='%s/assembly/run4.ok'%(config['outdir'])
+        retry='%s/assembly/.run4.ok'%(config['outdir'])
     threads:int(config["nthreads"])
     log: '%s/logs/megahit.log'%(config['outdir'])
     message: """---Assemble unmapped reads ."""
@@ -214,7 +214,7 @@ rule join_contigs:
     output:
         final_contigs="%s/metacompass_output/metacompass.final.ctg.fa"%(config['outdir'])
     params:
-        retry='%s/assembly/run5.ok'%(config['outdir'])
+        retry='%s/assembly/.run5.ok'%(config['outdir'])
     shell:"cat {input.mh_contigs} {input.mc_contigs} > {output.final_contigs} && touch {params.retry}"
 
 rule create_tsv:
@@ -227,7 +227,7 @@ rule create_tsv:
         ref=rules.reference_selection.output.reffile
     params:    
         minlen="%d"%(int(config['minlen'])),
-        retry='%s/metacompass_output/run1.ok'%(config['outdir'])
+        retry='%s/metacompass_output/.run1.ok'%(config['outdir'])
     message: """---information reference-guided and de novo contigs"""
     output:
         summary="%s/metacompass_output/metacompass_summary.tsv"%(config['outdir']),
@@ -243,7 +243,7 @@ rule stats_all:
     params:    
         minlen="%d"%(int(config['minlen'])),
         out='%s/assembly'%(config['outdir']),
-        retry='%s/metacompass_output/run2.ok'%(config['outdir'])
+        retry='%s/metacompass_output/.run2.ok'%(config['outdir'])
     message: """---assembly stats reference-guided contigs"""
     output:
         stats="%s/metacompass_output/metacompass_assembly_stats.tsv"%(config['outdir']),
@@ -261,7 +261,7 @@ rule stats_genome:
         assembly="assembly",
         minlen="%d"%(int(config['minlen'])),
         log='%s/logs/statspercontig.log'%(config['outdir']),
-        retry='%s/metacompass_output/run3.ok'%(config['outdir'])
+        retry='%s/metacompass_output/.run3.ok'%(config['outdir'])
     message: """---assembly stats per genome in reference-guided contigs"""
     output:
         statspercontig="%s/metacompass_output/metacompass_assembly_pergenome_stats.tsv"%(config['outdir'])
@@ -280,12 +280,12 @@ rule mapping_stats:
         mapping="%s/metacompass_output/metacompass_mapping_stats.tsv"%(config['outdir']),
         mappingpergenome="%s/metacompass_output/metacompass_mapping_pergenome_stats.tsv"%(config['outdir'])
     params:
-        retry='%s/metacompass_output/run4.ok'%(config['outdir'])
+        retry='%s/metacompass_output/.run4.ok'%(config['outdir'])
     shell:"sh %s/bin/mapping_stats.sh {input.references} {input.assembled_references} {input.bowtie2reads} {input.bowtie2contigs} {input.bowtie2sam} {output.mapping} {output.mappingpergenome} && touch {params.retry}"%(config["mcdir"])
 
 onsuccess:
     print("MetaCompass finished successfully!")
-    os.system("touch %s/run.ok"%(config['outdir']))
+    os.system("touch %s/.run.ok"%(config['outdir']))
 
 #onerror:
 #    print("One or more errors occurred. See MetaCompass Log files for more info")
