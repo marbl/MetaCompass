@@ -58,6 +58,7 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
 | metacompass_mapping_stats.tsv | Mapped reads general stats  | 
 | metacompass_mapping_pergenome_stats.tsv | Mapped reads stats per genome  | 
 | metacompass.genomes_coverage.txt | Breadth of coverage per genome  | 
+| metacompass.references.fna | References used to guide assembly | 
 | metacompass_assembly_stats.tsv | Assembly general stats  | 
 | metacompass_assembly_pergenome_stats | Assembly stats per genome | 
 | metacompass_summary.tsv | Metadata |
