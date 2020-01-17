@@ -3,40 +3,44 @@ import os,sys,string,subprocess,signal,shutil,argparse
 from subprocess import PIPE, run
 #psutil
 
-print("MetaCompass metagenome assembler version 2.0.0 by Victoria Cepeda (vcepeda@cs.umd.edu)\n")
-
 mcdir = sys.path[0]
 #1 READ/PARSE COMMAND LINE ARGUMENTS
 #1.1 PROCESS COMMAND LINE ARGUMENTS
 
-parser = argparse.ArgumentParser(description='snakemake and metacompass params')
+parser = argparse.ArgumentParser(description="MetaCompass metagenome assembler version 2.0.0 by Victoria Cepeda (vcepeda@cs.umd.edu)")
+#parser = argparse.ArgumentParser(description='Options')
 
 group1 = parser.add_argument_group('required')
 #group1.add_argument("-s",'--snakefile', help='metacompass rules file',default="",nargs='?',required=1,type=str)
-group1.add_argument("-c",'--config', help='config (json) file, set read length etc',default="",nargs='?',required=0,type=str)
 #group1.add_argument("-S",'--Samples', help='Provide file with fq reads (1 file per line)',default="", nargs='?',required=0,type=str)
-group1.add_argument("-1",'--forward', help='Provide comma separated list of forward paired-end reads',default="", nargs='?',required=0,type=str)
-group1.add_argument("-2",'--reverse', help='Provide comma separated list of reverse paired-end reads',default="", nargs='?',required=0,type=str)
-group1.add_argument("-U",'--unpaired', help='Provide comma separated list of unpaired reads (r1.fq,r2.fq,r3.fq)',default="", nargs='?',required=0,type=str)
 
-group5 = parser.add_argument_group("metacompass")
+group1.add_argument("-1",'--forward', help='comma separated list of forward paired-end fastq or fastq.gz',default="", nargs='?',required=0,type=str)
+group1.add_argument("-2",'--reverse', help='comma separated list of reverse paired-end fastq or fastq.gz',default="", nargs='?',required=0,type=str)
+group1.add_argument("-U",'--unpaired', help='comma separated list of unpaired fastq or fastq.gz',default="", nargs='?',required=0,type=str)
+group1.add_argument("-o",'--outdir', help='output directory',default="metacompass_assembly", nargs='?',required=0,type=str)
+group1.add_argument("-y",'--memory', help='memory',default=8, nargs='?',required=0,type=int)
+group1.add_argument("-t",'--threads', type=int,help='num threads',default=1, nargs='?')
+
+group5 = parser.add_argument_group("reference selection")
 group5.add_argument("-r",'--ref', help='reference genomes',default="NA",nargs='?')
 group5.add_argument("-s",'--refsel', help='reference selection [tax/all]',default="tax",nargs='?')
 group5.add_argument("-p",'--pickref', help='depth or breadth',default="breadth",nargs='?')
-group5.add_argument("-m",'--mincov', help='min coverage to assemble',default="3",nargs='?',type=int)
-group5.add_argument("-g",'--minctglen', help='min contig length',default="1",nargs='?',type=int)
-group5.add_argument("-l",'--readlen', help='max read length',default="100",nargs='?',type=int)
+group5.add_argument("-l",'--readlen', help='max read length (needed by kmer-mask)',default="100",nargs='?',type=int)
+
+group6 = parser.add_argument_group("assembly")
+#group6 = parser.add_mutually_exclusive_group()
+group6.add_argument("-m",'--mincov', help='min coverage to assemble',default="1",nargs='?',type=int)
+group6.add_argument("-g",'--minctglen', help='min contig length',default="1",nargs='?',type=int)
 
 group2 = parser.add_argument_group('output')
 group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
-group2.add_argument("-o",'--outdir', help='output directory? (cwd default)',default="metacompass_output", nargs='?',type=str,required=1)
 group2.add_argument("-k",'--keepoutput', help='keep all output generated (default is to delete all but final fasta files)',default=False,required=0,action='store_true')
 
-group3 = parser.add_argument_group('performance')
-group3.add_argument("-t",'--threads', type=int,help='num threads',default=1, nargs='?')
-group3.add_argument("-y",'--memory', type=int,help='memory',default=8, nargs='?',required=1)
+#group3 = parser.add_argument_group('performance')
+#group3.add_argument("-t",'--threads', type=int,help='num threads',default=1, nargs='?')
 
 group4 = parser.add_argument_group('snakemake')
+group4.add_argument("-c",'--config', help='config (json) file, set read length etc',default="",nargs='?',required=0,type=str)
 group4.add_argument('--Force', help='force snakemake to rerun',default=False,required=0,action='store_true')
 group4.add_argument('--unlock',help='unlock snakemake locks',default=False, required=0,action='store_true')
 group4.add_argument('--nolock', help='remove stale locks',default=False,required=0,action='store_true')
@@ -73,6 +77,15 @@ force = args.Force
 verbose = args.verbose
 reason = args.reason
 dryrun = args.dryrun
+
+
+if not (args.unpaired or (args.forward and args.reverse)):
+    parser.error('\nRequired: \
+{-1 FORDWARD -2 REVERSE [-U UNPAIRED ]| -U UNPAIRED} [-o OUTDIR] -y MEMORY -t THREADS')
+
+if not (args.ref or (args.forward and args.reverse)):
+    parser.error('\nRequired: \
+{-1 FORDWARD -2 REVERSE [-U UNPAIRED ]| -U UNPAIRED} [-o OUTDIR] -y MEMORY -t THREADS')
 
 #4. Check for existence output file:        
 if os.path.exists(outdir):
@@ -325,6 +338,9 @@ else:
     #5 CLEANING output files
     if os.path.exists("%s/assembly/coverage.txt"%(outdir)):
         os.system("mv %s/assembly/coverage.txt %s/metacompass_output/metacompass.genomes_coverage.txt"%(outdir,outdir))
+    if os.path.exists("%s/assembly/metacompass.assembled.fna"%(outdir)):
+        os.system("mv %s/assembly/metacompass.assembled.fna %s/metacompass_output/metacompass.references.fna"%(outdir,outdir))
+            
     print("Cleaning up files..")
     if os.path.exists("%s/intermediate_files"%(outdir)):
         os.system("rm -rf %s/intermediate_files"%(outdir))
