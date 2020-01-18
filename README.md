@@ -77,7 +77,7 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
                             thao2000.2.fq	
 -- Run:
    
-     python3 go_metacompass.py -r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -1 tutorial/thao2000.1.fq -2 tutorial/thao2000.2.fq -l 150 -o example1_output -m 1 -t 4 -y 8
+     python3 go_metacompass.py -r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -1 tutorial/thao2000.1.fq -2 tutorial/thao2000.2.fq -l 150 -o example1_output -t 4 -y 8
 
 # Reference-guided assembly with reference selection.
 
@@ -94,7 +94,7 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
         SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq
 -- Run:
    
-     python3 go_metacompass.py -1 SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq -2 SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -l 100 -o example2_output -y 8
+     python3 go_metacompass.py -1 SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq -2 SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -l 100 -o example2_output -t 1 -y 8
 
   
 Contact:
