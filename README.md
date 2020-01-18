@@ -20,7 +20,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 
 # Memory and Disk Space Requirements.
 90GB or more hard disk space to perform a normal installation.
-8GB or more memory to allocate to the JVM (used by pilon (https://github.com/broadinstitute/pilon/wiki/Requirements-&-Usage) error correction step). The amount of memory required depends on the genome, the read data, and how many fixes Pilon needs to make. Generally, bacterial genomes with ~200x of Illumina coverage will require at least 8GB, though 16GB is recommended.
+8GB or more memory to allocate to the JVM (needed for pilon error correction step (https://github.com/broadinstitute/pilon/wiki/Requirements-&-Usage ). The amount of memory required depends on the genome, the read data, and how many fixes Pilon needs to make. Generally, bacterial genomes with ~200x of Illumina coverage will require at least 8GB, though 16GB is recommended.
 
 # INSTALLATION From Source:
 Get the Latest release from https://github.com/marbl/MetaCompass/releases:
