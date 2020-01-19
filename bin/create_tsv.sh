@@ -31,16 +31,15 @@ if [ -s ${output} ] ; then
 	rm $output
 fi
 #processing reference ids
+printf "contig_ID\tcontig_size\treference_genome\tposition_start\tposition_end\tgenome_name\n" > $output
 if [ -s ${recruited_ids} ] ; then
     for i in $(cat .tmp${tmp}_genome_id);do
         grep $i $assembled_fna |cut -f2- -d ' ' >>.tmp${tmp}_name
-    done
-    printf "contig ID\tcontig size\treference genome\tposition start\tposition end\tgenome name\n" > $output
+    done	
     paste .tmp${tmp}_mc_ids .tmp${tmp}_mc_ln .tmp${tmp}_genome_id .tmp${tmp}_coords .tmp${tmp}_name >> $output
 #	rm .tmp${tmp}_genome_id .tmp${tmp}_coords .tmp${tmp}_name
 elif [ -s ${mc_contigs_pilon} ] ; then
-    	printf "contig ID\tcontig size\treference genome\tposition start\tposition end\n" > $output
-    	paste .tmp${tmp}_mc_ids .tmp${tmp}_mc_ln >> $output
+    paste .tmp${tmp}_mc_ids .tmp${tmp}_mc_ln >> $output
 fi
 
 #if [ -s .tmp${tmp}_mc_ids ];then

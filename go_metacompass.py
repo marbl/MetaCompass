@@ -336,8 +336,8 @@ else:
     if dryrun:
         sys.exit(0)
     #5 CLEANING output files
-    if os.path.exists("%s/assembly/coverage.txt"%(outdir)):
-        os.system("mv %s/assembly/coverage.txt %s/metacompass_output/metacompass.genomes_coverage.txt"%(outdir,outdir))
+    if os.path.exists("%s/assembly/metacompass.genomes_coverage.txt"%(outdir)):
+        os.system("mv %s/assembly/metacompass.genomes_coverage.txt %s/metacompass_output/"%(outdir,outdir))
     if os.path.exists("%s/assembly/metacompass.assembled.fna"%(outdir)):
         os.system("mv %s/assembly/metacompass.assembled.fna %s/metacompass_output/metacompass.references.fna"%(outdir,outdir))
             

@@ -170,12 +170,13 @@ static void compute_breadth_sam(const Cmdopt &cmdopt, ifstream &ifs, S2D &ref2br
     
     S2VB ref2cov;
     init(ref2seq, ref2cov, 1);
-    ofstream ofs(string(cmdopt.outprefix + "/coverage.txt").c_str());
+    ofstream ofs(string(cmdopt.outprefix + "/metacompass.genomes_coverage.txt").c_str());
  
     string eachline, refid;
     size_t pos1, pos2, len;
     Uint start, end;
-    ofs <<  "Ref_id\tbases\tRef_length\tcoverage" << endl;
+    ofs <<  "ref_ID\talign_length\tref_length\tbreadth_coverage" << endl;
+
     while (getline(ifs, eachline)) {
         if ( eachline[0] == '@') continue;
         pos1 = eachline.find("\t");           // 1

@@ -1,4 +1,5 @@
 .tmux.conf
+example*
 bin/ignore
 bin/select_gfc_references_noblast2.py
 bin/scratch

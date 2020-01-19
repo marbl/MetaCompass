@@ -9,7 +9,7 @@
 
    Usage: python assembly_stats.py <assembly.fasta> <minimum contig size>
 
-  modified code from Nicolas Schmelling
+   Modified code from Nicolas Schmelling
 
 '''
 
@@ -92,23 +92,10 @@ def assembly_stats(contigsMultifasta, minContigSize):
     	    s4m = contiglen
         if totalSum >= 10000000 and n10m == 0:
     	    n10m = contigcount
-    	    s10m = contiglen      
- #   print ('N50 Length [bp]: ' + str(N50))
- #   print ('# N50 Contig: ' + str(N50con))
- #   print ('Size   @1Mbp [bp]: ' + str(s1m))
- #   print ('Number @1Mbp: ' + str(n1m))  
- #   print ('Size   @2Mbp [bp]: ' + str(s2m))
- #   print ('Number @2Mbp: ' + str(n2m))
- #   print ('Size   @4Mbp [bp]: ' + str(s4m))
- #   print ('Number @4Mbp: ' + str(n4m))
- #   print ('Size   @10Mbp [bp]: ' + str(s10m))
- #   print ('Number @10Mbp: ' + str(n10m)) 
- #   print '# of trimmed contigs: ' + str(len(trimmedLength))
- #   print 'trimmed size [bp]: ' + str( sum_trimmed)
- #   print ('trimmed total size [bp]: ' + str(sum_trimmed))
- #   print ('trimmed total size [bp] divided by 2: ' + str(sum_trimmed/2.0))
+    	    s10m = contiglen
     
-    print ("File\t# Contigs\tTotal Size(Kbp)\tMin Size\tMax Size(Kbp)\tAverage Size\tMedian Size\tN50\t# N50 contigs\tSize at 1Mbp (Kbp)\tNumber @ 1Mbp\tSize at 2Mbp (Kbp)\tNumber @ 2Mbp\tSize at 4Mbp (Kbp)\tNumber @ 4Mbp\tSize at 10Mbp (Kbp)\tNumber @ 10Mbp\tGC content [%]")
+    #print ("File\t# Contigs\tTotal Size(Kbp)\tMin Size\tMax Size(Kbp)\tAverage Size\tMedian Size\tN50\t# N50 contigs\tSize at 1Mbp (Kbp)\tNumber @ 1Mbp\tSize at 2Mbp (Kbp)\tNumber @ 2Mbp\tSize at 4Mbp (Kbp)\tNumber @ 4Mbp\tSize at 10Mbp (Kbp)\tNumber @ 10Mbp\tGC content [%]")
+    print("sample_name\tnum_contigs\ttotal_size_Kbp\tmin_size_bp\tmax_size_Kbp\taverage_size\tmedian_size\tN50\tmum_N50\tsize_1Mbp_Kbp\tnum_1Mbp\tsize_2Mbp_Kbp\tnum_2Mbp\tsize_4Mbp_Kbp\tnum_4Mbp\tsize_10Mbp_Kbp\tmum_10Mbp\tGC_content%\t")
     print ("%s\t%d" % (os.path.basename(contigsMultifasta.replace(".fasta", "")),len(trimmedLength)) + '\t' \
     + "%d" % (sum_trimmed) + '\t' \
     + "%d\t%d\t%.2f\t%.2f" % (min(trimmedLength),max(trimmedLength),meancontig,mediancontig) + '\t' \

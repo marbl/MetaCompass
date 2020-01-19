@@ -28,7 +28,7 @@ then
 	python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen #> $out/metacompass_assembly_pergenome_stats.tsv
 else
 	#echo "python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen |grep -v File"
-	python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen |grep -v File #>> $out/metacompass_assembly_pergenome_stats.tsv
+	python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen |grep -v sample_name #>> $out/metacompass_assembly_pergenome_stats.tsv
 fi
 count=$((count +1))
 done
