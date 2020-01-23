@@ -4,7 +4,7 @@ DESCRIPTION
 #__author__ = "Victoria Cepeda
 
 import os
-ruleorder: kmer_mask > fastq2fasta > reference_selection > bowtie2_map > build_contigs > assembled_references >pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv >stats_all >stats_genome >mapping_stats
+ruleorder: kmer_mask > fastq2fasta > reference_selection > bowtie2_map > build_contigs > assembled_references >pilon_map_index > pilon_map >pilon_map_unpaired > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv >stats_all >stats_genome >mapping_stats
 
 if config['reads'] != "" and config['reference'] != "%s"%expand('{outdir}/reference_selection/mc.refseq.fna',outdir=config["outdir"][0]):
      #print("%s"%(config["outdir"]))
@@ -128,34 +128,63 @@ rule assembled_references:
     message: """---Assembled references ."""
     shell:"grep '>' {input.assembly} |rev| cut -f2- -d '_'|rev|tr -d '>'|uniq > {output.ids};%s/bin/extractSeq {input.genomes} {output.ids} > {output.fna} && touch {params.retry}"%(config["mcdir"])
 
+
+rule pilon_map_index:
+    input:
+       ref=rules.build_contigs.output.contigs
+    output:
+       index=expand('{outdir}/error_correction/mc.index',outdir=config['outdir']),#pref='%s/error_correction/mc.index'%(config['outdir']),
+    params:
+       retry='%s/error_correction/.run1.ok'%(config['outdir'])#log='%s/logs/pilonmap-index.log'%(config['outdir'])
+    threads:int(config["nthreads"])
+    message: """---Indexing contigs.fasta for pilon polishing."""
+    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.index} 1> {output.index} 2>&1 && touch {params.retry}"
+    #shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1> {output.index} 2>&1 && touch {params.retry}"
+
 rule pilon_map:
     input:
        ref=rules.build_contigs.output.contigs,
        r1=config['r1'],
        r2=config['r2'],
-       ru=config['ru']
+       pref=rules.pilon_map_index.output.index
     output:
-       index=expand('{outdir}/error_correction/mc.index',outdir=config['outdir']),
-       pref='%s/error_correction/mc.index'%(config['outdir']),
        sam='%s/error_correction/mc.sam'%(config['outdir']),
-       sam2='%s/error_correction/mc_unpaired.sam'%(config['outdir']),
        unmappedr1='%s/error_correction/mc.sam.unmapped.1.fq'%(config['outdir']),
        unmappedr2='%s/error_correction/mc.sam.unmapped.2.fq'%(config['outdir']),
-       unmappedru='%s/error_correction/mc.sam.unmapped.u.fq'%(config['outdir']),
        log='%s/logs/pilonmap.log'%(config['outdir'])
     params:
         retry='%s/error_correction/.run1.ok'%(config['outdir'])
     threads:int(config["nthreads"])
-    message: """---Map reads for pilon polishing."""
-    shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {output.log} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.ru}  -S {output.sam2} --un {output.sam}.unmapped.u.fq >> {output.log} 2>&1 && touch {params.retry}"
+    message: """---Map paired-end reads for pilon polishing."""
+    shell:"bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {input.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {output.log} 2>&1 && touch {params.retry}"
 
+rule pilon_map_unpaired:
+    input:
+       ref=rules.build_contigs.output.contigs,
+       ru=config['ru'],
+       pref=rules.pilon_map_index.output.index
+    output:
+       sam2='%s/error_correction/mc_unpaired.sam'%(config['outdir']) if config['ru']!='' else '%s/logs/pilonmap.log',
+       unmappedru='%s/error_correction/mc.sam.unmapped.u.fq'%(config['outdir']) if config['ru']!='' else '%s/logs/pilonmap.log'
+    params:
+        retry='%s/error_correction/.run1.ok'%(config['outdir'])
+    log:'%s/logs/pilonmap.log'%(config['outdir'])
+    threads:int(config["nthreads"])
+    message: """---Map unpaired reads for pilon polishing."""
+    #shell:"bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {input.pref} -q -U {input.ru} -S {output.sam2} --un {output.unmappedru} >> {log} 2>&1 && touch {params.retry}"
+    run:
+        if config['ru'] != '':
+            shell("bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {input.pref} -q -U {input.ru} -S {output.sam2} --un {output.unmappedru} >> {log} 2>&1 && touch {params.retry}")
+        else:
+            shell("echo 'No Unpaired-reads'> {log}> && tocuh {params.retry}"%(config["mcdir"],config['outdir']))
+    
 rule sam_to_bam:
     input:
         sam=rules.pilon_map.output.sam,
-        sam2=rules.pilon_map.output.sam2
+        sam2=rules.pilon_map_unpaired.output.sam2
     output:
         bam = "%s.bam"%(rules.pilon_map.output.sam),
-        bam2= "%s.bam"%(rules.pilon_map.output.sam2)
+        bam2= "%s.bam"%(rules.pilon_map_unpaired.output.sam2)
     params:
         retry='%s/error_correction/.run2.ok'%(config['outdir'])
     log:'%s/logs/samtools_sam2bam.log'%(config['outdir'])
@@ -186,25 +215,42 @@ rule pilon_contigs:
         pilonctg='%s/error_correction/contigs.pilon.fasta'%(config['outdir'])
     params:
         memory="%d"%(int(config['memory'])),
-        retry='%s/error_correction/.run4.ok'%(config['outdir'])
+        retry='%s/error_correction/.run4.ok'%(config['outdir']),
+        tracks=config['tracks']
     log:'%s/logs/pilon.log'%(config['outdir'])
-    threads:int(config['nthreads'])
+    threads:int(config['nthreads'])    
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir'])
-
+    run:
+        if config['tracks']  == "True":
+            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
+        else:
+            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/error_correction/contigs.pilon --fix bases,amb  --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
+            
 rule assemble_unmapped:
     input:
         r1=rules.pilon_map.output.unmappedr1,
         r2=rules.pilon_map.output.unmappedr2,
-        ru=rules.pilon_map.output.unmappedru
+        ru=rules.pilon_map_unpaired.output.unmappedru
     output:
         megahit_contigs='%s/assembly/megahit/final.contigs.fa'%(config['outdir'])
     params:
-        retry='%s/assembly/.run4.ok'%(config['outdir'])
+        retry='%s/assembly/.run4.ok'%(config['outdir']),
+        minlen=int(config['minlen'])
     threads:int(config["nthreads"])
     log: '%s/logs/megahit.log'%(config['outdir'])
     message: """---Assemble unmapped reads ."""
-    shell:"if [[ -s {input.r1} || -s {input.r2} || -s {input.ru}  ]]; then rm -rf %s/assembly/megahit; megahit -o %s/assembly/megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2} -r {input.ru} 1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}"%(config['outdir'],config['outdir'],int(config['minlen']))
+    run:
+        if os.path.exists("%s/assembly/megahit"%(config['outdir'])):
+            shell("rm -rf %s/assembly/megahit"%(config['outdir']))
+        if os.path.exists("%s/error_correction/mc.sam.unmapped.1.fq"%(config['outdir'])) \
+        and os.path.exists("%s/error_correction/mc.sam.unmapped.2.fq"%(config['outdir'])) \
+        and os.path.exists("%s/error_correction/mc.sam.unmapped.u.fq"%(config['outdir'])):
+            if os.path.getsize("%s/error_correction/mc.sam.unmapped.1.fq"%(config['outdir'])) > 0 :#({input.r1}) > 0 :#or os.path.getsize({input.r2}) >0  or os.path.getsize({input.ru}) >0:
+                shell("megahit -o %s/assembly/megahit --min-count 3 --min-contig-len {params.minlen} --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2} -r {input.ru} 1>> {log} 2>&1"%(config['outdir']))
+        else:
+            shell("touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}")
+    
+    #shell:"if [[ -s {input.r1} || -s {input.r2} || -s {input.ru}  ]]; then rm -rf %s/assembly/megahit; megahit -o %s/assembly/megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2} -r {input.ru} 1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}"%(config['outdir'],config['outdir'],int(config['minlen']))
 
 rule join_contigs:
     input:

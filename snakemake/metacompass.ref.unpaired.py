@@ -121,12 +121,18 @@ rule pilon_contigs:
         pilonctg='%s/error_correction/contigs.pilon.fasta'%(config['outdir'])
     params:
         memory="%d"%(int(config['memory'])),
-        retry='%s/error_correction/.run4.ok'%(config['outdir'])
+        retry='%s/error_correction/.run4.ok'%(config['outdir']),
+        tracks=config['tracks']
     log:'%s/logs/pilon.log'%(config['outdir'])
     threads:int(config['nthreads'])
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir'])
- 
+#    shell:"java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir'])
+    run:
+        if config['tracks']  == "True":
+            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
+        else:
+            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/error_correction/contigs.pilon --fix bases,amb  --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
+  
 rule assemble_unmapped:
     input:
         ru=rules.pilon_map.output.unmappedru

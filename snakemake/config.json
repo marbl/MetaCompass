@@ -10,13 +10,13 @@
     "outdir":"metacompass_output",
     "memory": 20,
     "nthreads": 12,
-    "iter": 1,
     "mincov" : 1,
     "minlen" : 1,
     "ani" : 0.9,
     "mcdir": ".",
     "cogcov": 1,
     "refsel":"tax",
+	"tracks":false,
     "assembly": "[]"
 }
 

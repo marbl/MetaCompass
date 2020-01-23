@@ -131,12 +131,17 @@ rule pilon_contigs:
         pilonctg='%s/error_correction/contigs.pilon.fasta'%(config['outdir'])
     params:
         memory="%d"%(int(config['memory'])),
-        retry='%s/error_correction/.run4.ok'%(config['outdir'])
+        retry='%s/error_correction/.run4.ok'%(config['outdir']),
+        tracks=config['tracks']
     log:'%s/logs/pilon.log'%(config['outdir'])
-    threads:int(config['nthreads'])
+    threads:int(config['nthreads'])    
     message: """---Pilon polish contigs ."""
-    shell:"java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir'])
-
+    run:
+        if config['tracks']  == "True":
+            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
+        else:
+            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --frags {input.sam} --unpaired {input.sam2} --output %s/error_correction/contigs.pilon --fix bases,amb  --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
+  
 rule assemble_unmapped:
     input:
         r1=rules.pilon_map.output.unmappedr1,
@@ -145,11 +150,20 @@ rule assemble_unmapped:
     output:
         megahit_contigs='%s/assembly/megahit/final.contigs.fa'%(config['outdir'])
     params:
-        retry='%s/assembly/.run4.ok'%(config['outdir'])
-    threads:int(config["nthreads"])
+        retry='%s/assembly/.run4.ok'%(config['outdir']),
+        minlen=int(config['minlen'])
+    threads:int(config['nthreads'])
     log: '%s/logs/megahit.log'%(config['outdir'])
     message: """---Assemble unmapped reads ."""
-    shell:"if [[ -s {input.r1} || -s {input.r2} || -s {input.ru}  ]]; then rm -rf %s/assembly/megahit; megahit -o %s/assembly/megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2} -r {input.ru} 1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}"%(config['outdir'],config['outdir'],int(config['minlen']))
+    run:
+        if os.path.exists("%s/assembly/megahit"%(config['outdir'])):
+            shell("rm -rf %s/assembly/megahit"%(config['outdir']))
+        if os.path.exists("%s/error_correction/mc.sam.unmapped.1.fq"%(config['outdir'])) \
+        and os.path.exists("%s/error_correction/mc.sam.unmapped.2.fq"%(config['outdir'])):
+            if os.path.getsize("%s/error_correction/mc.sam.unmapped.1.fq"%(config['outdir'])) > 0 :#({input.r1}) > 0 :#or os.path.getsize({input.r2}) >0  or os.path.getsize({input.ru}) >0:
+                shell("megahit -o %s/assembly/megahit --min-count 3 --min-contig-len {params.minlen} --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2} -r {input.ru} 1>> {log} 2>&1"%(config['outdir']))
+        else:
+            shell("touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}")
 
 rule join_contigs:
     input:

@@ -31,6 +31,8 @@ group6 = parser.add_argument_group("assembly")
 #group6 = parser.add_mutually_exclusive_group()
 group6.add_argument("-m",'--mincov', help='min coverage to assemble',default="1",nargs='?',type=int)
 group6.add_argument("-g",'--minctglen', help='min contig length',default="1",nargs='?',type=int)
+group6.add_argument('--tracks', help='run pilon with --tracks option',default=False, required=0,action='store_true')
+
 
 group2 = parser.add_argument_group('output')
 group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
@@ -62,6 +64,7 @@ threads = args.threads
 memory = args.memory
 ref = args.ref
 keepoutput = args.keepoutput
+tracks=args.tracks
 #snakefile = args.snakefile
 config = args.config
 #samples = args.Samples.replace(" ","")
@@ -115,7 +118,8 @@ print ( "refsel: %s" % (refsel), file= outfile)
 print ( "threads: %s" % (threads), file= outfile)       
 print ( "memory: %s" % (memory), file= outfile)       
 print ( "ref: %s" % (ref), file= outfile)       
-print ( "keepoutput: %s" % (keepoutput), file= outfile)       
+print ( "keepoutput: %s" % (keepoutput), file= outfile)  
+print ( "tracks: %s" % (tracks), file= outfile)     
 print ( "unpaired: %s" % (unpaired), file= outfile)       
 print ( "fpaired: %s" % (fpaired), file= outfile)       
 print ( "rpaired: %s" % (rpaired), file= outfile)       
@@ -263,7 +267,7 @@ if unpaired != "":
 ##########################################################################
 #reference_selection vs assembly only
 
-cmd += " --cores %d -a --configfile %s --config outdir=%s pickref=%s mcdir=%s length=%d mincov=%d minlen=%d nthreads=%d memory=%d refsel=%s"%(threads,config,outdir,pickref,mcdir,readlen,mincov,minctglen,threads,memory,refsel)
+cmd += " --cores %d -a --configfile %s --config outdir=%s pickref=%s mcdir=%s length=%d mincov=%d minlen=%d nthreads=%d memory=%d refsel=%s tracks=%s"%(threads,config,outdir,pickref,mcdir,readlen,mincov,minctglen,threads,memory,refsel,tracks)
 
 cmd += " reads="
 print("ALL READS found:",file=outfile)
