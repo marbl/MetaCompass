@@ -143,7 +143,7 @@ rule assemble_unmapped:
     threads:int(config["nthreads"])
     log: '%s/logs/megahit.log'%(config['outdir'])
     message: """---Assemble unmapped reads ."""
-    shell:"if [[ -s {input.ru} ]]; then rm -rf %s/assembly/megahit; megahit -o %s/assembly/megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -r {input.ru} 1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}"%(config['outdir'],config['outdir'],int(config['minlen']))
+    shell:"if [[ %d == 0 ]]; then touch {output.megahit_contigs} {log} {params.retry}; echo 'User has chose to not run de novo assembly' >{log} ; exit 0; fi; if [[ -s {input.ru} ]]; then rm -rf %s/assembly/megahit; megahit -o %s/assembly/megahit --min-count 3 --min-contig-len %d --presets meta-sensitive -t {threads} -r {input.ru} 1>> {log} 2>&1; else touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}"%(int(config['denovo']),config['outdir'],config['outdir'],int(config['minlen']))
 
 rule join_contigs:
     input:

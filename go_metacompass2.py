@@ -29,6 +29,7 @@ group5.add_argument("-l",'--readlen', help='max read length (needed by kmer-mask
 
 group6 = parser.add_argument_group("assembly")
 #group6 = parser.add_mutually_exclusive_group()
+group6.add_argument("-d", "--denovo", help='perform de novo assembly', default="1", nargs='?', required=0, type=int)
 group6.add_argument("-m",'--mincov', help='min coverage to assemble',default="1",nargs='?',type=int)
 group6.add_argument("-g",'--minctglen', help='min contig length',default="1",nargs='?',type=int)
 group6.add_argument('--tracks', help='run pilon with --tracks option',default=False, required=0,action='store_true')
@@ -57,6 +58,7 @@ args = parser.parse_args()
 #1.2 PROCESS COMMAND LINE ARGUMENTS
 
 minctglen = args.minctglen
+denovo = args.denovo
 mincov = args.mincov
 readlen=args.readlen
 refsel=args.refsel
@@ -280,6 +282,8 @@ if fpaired != "" and rpaired !="":
     cmd += " r1=%s r2=%s"%(fpaired,rpaired)
 if unpaired != "":
     cmd += " ru=%s"%(unpaired)
+if denovo != "":
+    cmd += " denovo=%d"%(denovo)
   
 if ref != "NA":
     print("REFERENCE genome file provided. Reference Selection step will be skipped.")

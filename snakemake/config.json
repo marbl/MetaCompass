@@ -17,6 +17,7 @@
     "cogcov": 1,
     "refsel":"tax",
 	"tracks":false,
-    "assembly": "[]"
+    "assembly": "[]",
+    "denovo": 1
 }
 

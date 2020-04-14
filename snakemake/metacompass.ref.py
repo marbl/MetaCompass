@@ -161,7 +161,7 @@ rule assemble_unmapped:
         if os.path.exists("%s/error_correction/mc.sam.unmapped.1.fq"%(config['outdir'])) \
         and os.path.exists("%s/error_correction/mc.sam.unmapped.2.fq"%(config['outdir'])):
             if os.path.getsize("%s/error_correction/mc.sam.unmapped.1.fq"%(config['outdir'])) > 0 :#({input.r1}) > 0 :#or os.path.getsize({input.r2}) >0  or os.path.getsize({input.ru}) >0:
-                shell("megahit -o %s/assembly/megahit --min-count 3 --min-contig-len {params.minlen} --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2} -r {input.ru} 1>> {log} 2>&1"%(config['outdir']))
+                shell("if [[ %d == 0 ]]; then touch {output.megahit_contigs} {log} {params.retry}; echo 'User has chosen to not run de novo assembly' >{log} ; exit 0; fi; megahit -o %s/assembly/megahit --min-count 3 --min-contig-len {params.minlen} --presets meta-sensitive -t {threads} -1 {input.r1} -2 {input.r2} -r {input.ru} 1>> {log} 2>&1"%(int(config['denovo']),config['outdir']))
         else:
             shell("touch {output.megahit_contigs} {log}; echo 'No unmapped reads to run de novo assembly' >{log} ;fi && touch {params.retry}")
 
