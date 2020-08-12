@@ -16,7 +16,7 @@
     "mcdir": ".",
     "cogcov": 1,
     "refsel":"tax",
-	"tracks":false,
+    "tracks":false,
     "assembly": "[]"
 }
 
