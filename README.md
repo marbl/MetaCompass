@@ -98,4 +98,4 @@ Get the Latest release from https://github.com/marbl/MetaCompass/releases:
 
   
 Contact:
-vcepeda@cs.umd.edu
+vcepeda@umd.edu
