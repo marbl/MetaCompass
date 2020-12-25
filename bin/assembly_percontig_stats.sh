@@ -25,10 +25,10 @@ for contig in $(ls $out/$assembly/contigs|sed 's/.fasta//g');do
 if [ $count -eq 1 ]
 then
 	#echo "python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen" #> $out/metacompass_assembly_pergenome_stats.tsv	
-	python3 $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen #> $out/metacompass_assembly_pergenome_stats.tsv
+	python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen #> $out/metacompass_assembly_pergenome_stats.tsv
 else
 	#echo "python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen |grep -v File"
-	python3 $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen |grep -v sample_name #>> $out/metacompass_assembly_pergenome_stats.tsv
+	python $path/bin/assembly_stats.py $out/$assembly/contigs/${contig}.fasta $minlen |grep -v sample_name #>> $out/metacompass_assembly_pergenome_stats.tsv
 fi
 count=$((count +1))
 done

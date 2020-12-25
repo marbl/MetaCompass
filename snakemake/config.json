@@ -14,9 +14,9 @@
     "minlen" : 1,
     "ani" : 0.9,
     "mcdir": ".",
-    "cogcov": 1,
+    "cogcov": 0.333,
     "refsel":"tax",
-	"tracks":false,
+    "tracks":false,
     "assembly": "[]"
 }
 

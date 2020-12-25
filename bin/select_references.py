@@ -132,10 +132,10 @@ def main():
    print ("%s" % (cmd))
    os.system(cmd) 
    #run mash screen
-   screen=outdir+"/mc.mashscreenw.tab"
-   cmd="mash screen -w -i 0.8 -p %s %s/%s.assembly.msh  %s >%s 2>>%s/%s.mash.log"%(nump,outdir,prefix,reads,screen,outdir,prefix)
-   print ("%s" % (cmd))
-   os.system(cmd)
+#   screen=outdir+"/mc.mashscreenw.tab"
+#   cmd="mash screen -w -i 0.8 -p %s %s/%s.assembly.msh  %s >%s 2>>%s/%s.mash.log"%(nump,outdir,prefix,reads,screen,outdir,prefix)
+#   print ("%s" % (cmd))
+#   os.system(cmd)
    allhashes=outdir+"/mc.mashscreen.tab"
    
    cmd="mash screen -i 0.9 -p %s %s/%s.assembly.msh  %s >%s 2>>%s/%s.mash.log"%(nump,outdir,prefix,reads,allhashes,outdir,prefix)

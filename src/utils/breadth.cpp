@@ -280,7 +280,45 @@ void process_marker_ln(S2I & marker2length){
 		marker2length.insert(pair<string,int>(marker, length));			
 	    //cout << "process_marker_ln:\t" << marker <<"\t"<< length << endl;
 	}
+	
 }
+void process_genome_marker_ln(S2I & genome_marker2length){
+	string inputfile=pathbin+"/refseq/markers/genome2markers.length";
+	ifstream file(inputfile);
+	if (!file.is_open()) {
+		cerr << "Could not open reference sequences file " << inputfile << endl;
+		exit(1);
+	}
+	size_t  pos1 = 0, length;
+	string line,genome;	
+	while (getline(file, line)){
+		pos1 = line.find("\t");
+		genome = line.substr(0, pos1);
+		length = stoi(line.substr(pos1+1, line.size()-pos1-1));
+		genome_marker2length.insert(pair<string,int>(genome, length));			
+	    //cout << "process_marker_ln:\t" << marker <<"\t"<< length << endl;
+	}
+	
+}
+void process_assembly_marker_ln(S2I & assembly_marker2length){
+	string inputfile=pathbin+"/refseq/markers/assembly2markers.length";
+	ifstream file(inputfile);
+	if (!file.is_open()) {
+		cerr << "Could not open reference sequences file " << inputfile << endl;
+		exit(1);
+	}
+	size_t  pos1 = 0, length;
+	string line,assembly;	
+	while (getline(file, line)){
+		pos1 = line.find("\t");
+		assembly = line.substr(0, pos1);
+		length = stoi(line.substr(pos1+1, line.size()-pos1-1));
+		assembly_marker2length.insert(pair<string,int>(assembly, length));			
+	    //cout << "process_marker_ln:\t" << marker <<"\t"<< length << endl;
+	}
+	
+}
+
 void process_marker_cog(S2I &marker2numcog){
 	string inputfile=pathbin+"/refseq/markers/markers.count";	
 	ifstream file(inputfile);
@@ -392,7 +430,7 @@ void create_interval_arrays(S2Interval & marker2interval,S2I & marker2bases,set 
 	}
 
 }	
-void marker_breadth_cov(S2F & marker2cov,S2F2F & genome2cov, S2S genome2assembly, S2I & marker2bases, S2I & marker2lenght, float covthreshold,string outprefix){
+void marker_breadth_cov(S2F & marker2cov,S2F & genome2cov, S2F2F & assembly2cov, S2S & genome2assembly, S2I & marker2bases, S2I & marker2lenght, S2I & genome_marker2length, S2I & assembly_marker2length, float covthreshold,string outprefix){
 	//calculate breadth of coverage per marker gene
 	pair <string,float> cogcoverage;
 	string genome,assembly, cog;
@@ -418,28 +456,46 @@ void marker_breadth_cov(S2F & marker2cov,S2F2F & genome2cov, S2S genome2assembly
 		//end process each marker separately
 			//insert marker2cov
 			marker2cov.insert(pair<string,float>(it->first, coverage));
+			//DOOOOOOOOO only if marker coverage is more than this!!!1/3 default
+			if(coverage>=covthreshold){
 			//insert genome maps:genome2assembly 
 			genome2assembly.insert(pair<string,string>(genome, assembly));//good <3
-			cogcoverage = make_pair(cog,coverage);
+			//no sirve de naaa 
+			//cogcoverage = make_pair(cog,coverage);
+			
 			//create maps:genome2cov
-			S2F2F::iterator it4 = genome2cov.find(genome+"\t"+assembly);
+			S2F::iterator it4 = genome2cov.find(genome+"\t"+assembly);
 			if(it4!=genome2cov.end()){
-				float num=(it4->second).first;
-				float den=(it4->second).second;
-				(it4->second).first=num+coverage2_num;
-				(it4->second).second=den+coverage2_den;
+				it4->second=it4->second + coverage2_num;
+			}
+			else{
+				genome2cov.insert(pair<string,float>(genome+"\t"+assembly, coverage2_num));
+			}			
+			//end create maps:genome2cov
+
+			//create maps:assembly2cov
+			S2F2F::iterator it5 = assembly2cov.find(assembly);
+			if(it5!=assembly2cov.end()){
+				float num=(it5->second).first;
+				(it5->second).first=num + coverage2_num;
 			}
 			else{
 				pair <float,float> bases2length;
-				//marker2bases.insert(pair<string,int>(marker, total_bases));
-				bases2length = make_pair(coverage2_num,coverage2_den);
-				genome2cov.insert(pair<string,pair<float,float> >(genome+"\t"+assembly, bases2length));
-			}
-			//end create maps:genome2cov
+								
+				S2I::iterator itlen = assembly_marker2length.find(assembly);
+				if(itlen!=assembly_marker2length.end()){
+					float total_ln=itlen->second;
+					bases2length = make_pair(coverage2_num,total_ln);//coverage2_den);
+					//if (coverage2_num/total_ln>=0.0){//potentially useful
+					assembly2cov.insert(pair<string,pair<float,float> >(assembly, bases2length));
+					//}
+				}//endif
+			}//endelse			
+			//end create maps:assembly2cov
+		}//DOOOOOOOOO
 		}//end if
 	}//end for
-
-}
+}//end void
 
 int main(int argc, char *argv[])
 { 
@@ -481,6 +537,7 @@ int main(int argc, char *argv[])
 	S2I marker2length;
 	S2I marker2numcog;
 	
+	
     nowtime = time(NULL);
     cerr << "# process_marker_ln ... ";
 	process_marker_ln(marker2length);
@@ -492,13 +549,20 @@ int main(int argc, char *argv[])
     cerr << "success!" << " (" << time(NULL) - nowtime << " seconds)" << endl;
 	////////////////////////////////
 	
+	
+	S2I genome_marker2length;
+	S2I assembly_marker2length;
+	process_genome_marker_ln(genome_marker2length);
+	process_assembly_marker_ln(assembly_marker2length);
+	
 	S2F marker2cov;
-	S2F2F genome2cov;	
+	S2F genome2cov;
+	S2F2F assembly2cov;
 	S2LS2F genomecogcoverage;
 	S2S genome2assembly;
     nowtime = time(NULL);
     cerr << "# marker_breadth_cov ... ";
-	marker_breadth_cov(marker2cov,genome2cov,genome2assembly,marker2bases,marker2length,covthreshold,outprefix);
+	marker_breadth_cov(marker2cov,genome2cov,assembly2cov,genome2assembly,marker2bases,marker2length,genome_marker2length,assembly_marker2length,covthreshold,outprefix);
     cerr << "success!" << " (" << time(NULL) - nowtime << " seconds)" << endl;
 
 //////////////////////create intervalfile marker_intervals. File contains all marker coordinates found in blastn results
@@ -699,42 +763,47 @@ int main(int argc, char *argv[])
 
 	ofstream myfile6 (string(outprefix + "/breadth_genome_bases_cov").c_str());
 	if (myfile6.is_open()){
-		for(S2F2F ::iterator it =  genome2cov.begin(); it != genome2cov.end(); ++it){
-			
-			myfile6 << it->first<<"\t"<< (it->second).first <<"\t"<< (it->second).second<<"\t"<< (it->second).first/(it->second).second <<endl;
+		for(S2F ::iterator it =  genome2cov.begin(); it != genome2cov.end(); ++it){
+			myfile6 << it->first<<"\t"<< it->second <<endl;
 		}
 		myfile6.close();
 	}
 	else cout << "Unable to open file breadth_genome_bases_cov";
 	
 	
-	S2F2F assembly2cov;
 
-	for(S2F2F ::iterator it =  genome2cov.begin(); it != genome2cov.end(); ++it){
+	/*for(S2F ::iterator it =  genome2cov.begin(); it != genome2cov.end(); ++it){
 			float coverage2_num,coverage2_den;//breadth of coverage
 			size_t pos1;
 			pos1 = it->first.find("\t");
 			pos2 = it->first.find("\t", pos1+1);
 			assembly = it->first.substr(pos1+1, pos2-pos1-1);
-			
-			coverage2_num=(it->second).first;
-			coverage2_den=(it->second).second;
+			coverage2_num=it->second;
 			
 			S2F2F::iterator it2 = assembly2cov.find(assembly);
 			if(it2!=assembly2cov.end()){
 				float num=(it2->second).first;
-				float den=(it2->second).second;
 				(it2->second).first=num+coverage2_num;
-				(it2->second).second=den+coverage2_den;
 			}
 			else{
 				pair <float,float> bases2length;
-				//marker2bases.insert(pair<string,int>(marker, total_bases));
-				bases2length = make_pair(coverage2_num,coverage2_den);
-				assembly2cov.insert(pair<string,pair<float,float> >(assembly, bases2length));
-			}
-			
-	}
+								
+				S2I::iterator itlen = assembly_marker2length.find(assembly);
+				if(itlen!=assembly_marker2length.end()){
+					int total_ln=itlen->second;
+					bases2length = make_pair(coverage2_num,total_ln);//coverage2_den);
+					//if (coverage2_num/total_ln>=0.0){//potentially useful
+					assembly2cov.insert(pair<string,pair<float,float> >(assembly, bases2length));
+					cout <<  assembly << endl;
+					//}
+				}//endif
+			}//endelse			
+	}//endfor
+	
+	*/
+	
+	
+	
 		
 	ofstream file6 (string(outprefix + "/breadth_assembly_bases_cov").c_str());
 	if (file6.is_open()){

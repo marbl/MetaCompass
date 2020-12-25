@@ -4,7 +4,7 @@ DESCRIPTION
 #__author__ = "Victoria Cepeda
 
 import os
-ruleorder: bowtie2_map > build_contigs > assembled_references >pilon_map > sam_to_bam > bam_sort > pilon_contigs >  assemble_unmapped > join_contigs > create_tsv >stats_all >stats_genome >mapping_stats
+ruleorder: bowtie2_map > build_contigs > assembled_references >polish_map > polish_contigs >  assemble_unmapped > join_contigs > create_tsv >stats_all >stats_genome >mapping_stats
 
 if config['reads'] != "" and config['reference'] != "%s"%expand('{outdir}/reference_selection/mc.refseq.fna',outdir=config["outdir"][0]):
      #print("%s"%(config["outdir"]))
@@ -73,7 +73,7 @@ rule assembled_references:
     message: """---Assembled references ."""
     shell:"grep '>' {input.assembly} |rev| cut -f2- -d '_'|rev|tr -d '>'|uniq > {output.ids};%s/bin/extractSeq {input.genomes} {output.ids} > {output.fna} && touch {params.retry}"%(config["mcdir"])
 
-rule pilon_map:
+rule polish_map:
     input:
        ref=rules.build_contigs.output.contigs,
        ru=config['ru']
@@ -82,18 +82,18 @@ rule pilon_map:
        pref='%s/error_correction/mc.index'%(config['outdir']),
        sam='%s/error_correction/mc.sam'%(config['outdir']),
        unmappedru='%s/error_correction/mc.sam.unmapped.u.fq'%(config['outdir']),
-       log='%s/logs/pilonmap.log'%(config['outdir'])
+       log='%s/logs/polishmap.log'%(config['outdir'])
     params:
         retry='%s/error_correction/.run1.ok'%(config['outdir'])
     threads:int(config["nthreads"])
-    message: """---Map reads for pilon polishing."""
+    message: """---Map reads for polish polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -U {input.ru} -S {output.sam} --un {output.unmappedru} >> {output.log} 2>&1 && touch {params.retry}"
 
 rule sam_to_bam:
     input:
-        sam=rules.pilon_map.output.sam
+        sam=rules.polish_map.output.sam
     output:
-        bam = "%s.bam"%(rules.pilon_map.output.sam)
+        bam = "%s.bam"%(rules.polish_map.output.sam)
     params:
         retry='%s/error_correction/.run2.ok'%(config['outdir'])
     log:'%s/logs/samtools_sam2bam.log'%(config['outdir'])
@@ -113,29 +113,27 @@ rule bam_sort:
     message: """---Sort bam ."""
     shell: "samtools sort -@ {threads} {input.bam} -o %s/error_correction/sorted.bam -O bam -T $RANDOM 1>> {log} 2>&1; samtools index {output.bam_sorted} 1>> {log} 2>&1 && touch {params.retry} "%(config['outdir'])
     
-rule pilon_contigs:
+rule polish_contigs:
     input:
         contigs=rules.build_contigs.output.contigs,
-        sam = rules.bam_sort.output.bam_sorted
+        ru=config['ru'],
     output:
-        pilonctg='%s/error_correction/contigs.pilon.fasta'%(config['outdir'])
+        polishctg='%s/error_correction/contigs_edited.fa'%(config['outdir'])
     params:
         memory="%d"%(int(config['memory'])),
-        retry='%s/error_correction/.run4.ok'%(config['outdir']),
-        tracks=config['tracks']
-    log:'%s/logs/pilon.log'%(config['outdir'])
+        bf='%s/error_correction/solidBF_c1'%(config['outdir']),
+        fld='%s/error_correction/contigs'%(config['outdir'])
+    log:'%s/logs/polish.log'%(config['outdir'])
     threads:int(config['nthreads'])
-    message: """---Pilon polish contigs ."""
-#    shell:"java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir'])
+    message: """---ntEDit polish contigs ."""
     run:
-        if config['tracks']  == "True":
-            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/error_correction/contigs.pilon --fix bases,amb --tracks --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
-        else:
-            shell("java -Xmx{params.memory}G -jar %s/bin/pilon-1.23.jar --flank 5 --threads {threads} --mindepth 3 --genome {input.contigs} --unpaired {input.sam} --output %s/error_correction/contigs.pilon --fix bases,amb  --changes 1>> {log} 2>&1  && touch {params.retry}"%(config["mcdir"],config['outdir']))
-  
+        shell("touch {output}")
+        shell("/usr/bin/time -v -o {params.bf}.time nthits -c1 -b 36 -k 25 -t16 --outbloom {input.ru} -p {params.bf}> {log} 2>&1")
+        shell("/usr/bin/time -v -o {params.fld}.time ntedit -f {input.contigs} -r {params.bf}_k25.bf -b {params.fld} -m 1 >> {log} 2>&1")
+     
 rule assemble_unmapped:
     input:
-        ru=rules.pilon_map.output.unmappedru
+        ru=rules.polish_map.output.unmappedru
     output:
         megahit_contigs='%s/assembly/megahit/final.contigs.fa'%(config['outdir'])
     params:
@@ -147,7 +145,7 @@ rule assemble_unmapped:
 
 rule join_contigs:
     input:
-        mc_contigs=rules.pilon_contigs.output.pilonctg,
+        mc_contigs=rules.polish_contigs.output.polishctg,
         mh_contigs=rules.assemble_unmapped.output.megahit_contigs
     message: """---concanenate reference-guided and de novo contigs"""
     output:
@@ -160,7 +158,7 @@ rule create_tsv:
     input:
         contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
-        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mc_contigs_polish=rules.polish_contigs.output.polishctg,
         mg_contigs=rules.assemble_unmapped.output.megahit_contigs,
         asm_contigs=rules.assembled_references.output.fna,
         ref=config['reference']
@@ -170,13 +168,13 @@ rule create_tsv:
     message: """---information reference-guided and de novo contigs"""
     output:
         summary="%s/metacompass_output/metacompass_summary.tsv"%(config['outdir']),
-    shell:"sh %s/bin/create_tsv.sh {input.mc_contigs_pilon} {input.mc_contigs} {input.mg_contigs} {input.asm_contigs} {input.ref} {output.summary} && touch {params.retry}"%(config["mcdir"])
+    shell:"sh %s/bin/create_tsv.sh {input.mc_contigs_polish} {input.mc_contigs} {input.mg_contigs} {input.asm_contigs} {input.ref} {output.summary} && touch {params.retry}"%(config["mcdir"])
         
 rule stats_all:
     input:
         contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
-        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mc_contigs_polish=rules.polish_contigs.output.polishctg,
         mg_contigs=rules.assemble_unmapped.output.megahit_contigs,
         ref=config['reference']
     params:    
@@ -186,13 +184,13 @@ rule stats_all:
     message: """---assembly stats reference-guided contigs"""
     output:
         stats="%s/metacompass_output/metacompass_assembly_stats.tsv"%(config['outdir']),
-    shell:"python3 %s/bin/assembly_stats.py {input.contigs} {params.minlen} > {output.stats} && touch {params.retry}"%(config["mcdir"])
+    shell:"python %s/bin/assembly_stats.py {input.contigs} {params.minlen} > {output.stats} && touch {params.retry}"%(config["mcdir"])
     
 rule stats_genome:
     input:
         contigs=rules.join_contigs.output.final_contigs,
         mc_contigs=rules.build_contigs.output.contigs,
-        mc_contigs_pilon=rules.pilon_contigs.output.pilonctg,
+        mc_contigs_polish=rules.polish_contigs.output.polishctg,
         mg_contigs=rules.assemble_unmapped.output.megahit_contigs
     params:
         path="%s"%(config["mcdir"]),
@@ -204,13 +202,13 @@ rule stats_genome:
     message: """---assembly stats per genome in reference-guided contigs"""
     output:
         statspercontig="%s/metacompass_output/metacompass_assembly_pergenome_stats.tsv"%(config['outdir'])
-    shell:"sh %s/bin/assembly_percontig_stats.sh {params.path} {params.out} {params.assembly} {input.mc_contigs_pilon} {params.minlen}  > {output.statspercontig} && touch {params.retry}"%(config["mcdir"])
+    shell:"sh %s/bin/assembly_percontig_stats.sh {params.path} {params.out} {params.assembly} {input.mc_contigs_polish} {params.minlen}  > {output.statspercontig} && touch {params.retry}"%(config["mcdir"])
 
 rule mapping_stats:
     input:
         assembled_references=rules.assembled_references.output.ids,
         bowtie2reads= rules.bowtie2_map.output.log,# '%s/bowtie2map.log'%(config['outdir']),
-        bowtie2contigs=rules.pilon_map.output.log,#'%s/pilonmap.log'%(config['outdir']),
+        bowtie2contigs=rules.polish_map.output.log,#'%s/polishmap.log'%(config['outdir']),
         bowtie2sam=rules.build_contigs.output.mapped_reads#'%s/assembly/selected_maps.sam'%(config['outdir'])
     message: """---mapping stats per genome in reference-guided contigs"""
     log: '%s/mapping_stats.log'%(config['outdir'])

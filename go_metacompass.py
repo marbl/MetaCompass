@@ -1,8 +1,24 @@
 #!/usr/bin/env python3
-import os,sys,string,subprocess,signal,shutil,argparse
+import os,sys,string,subprocess,signal,shutil,argparse,glob
 from subprocess import PIPE, run
 #psutil
 
+
+def delete_files(file_names):
+    '''
+    delete temporary files
+    '''
+    for file in glob.glob(file_names):
+        if os.path.exists(file):
+            os.system("rm %s "%(file))
+
+def move_files(file_names,outdir):
+    '''
+    delete temporary files
+    '''
+    for file in glob.glob(file_names):
+        if os.path.exists(file):
+            os.system("mv %s %s"%(file,outdir))      
 mcdir = sys.path[0]
 #1 READ/PARSE COMMAND LINE ARGUMENTS
 #1.1 PROCESS COMMAND LINE ARGUMENTS
@@ -31,16 +47,13 @@ group6 = parser.add_argument_group("assembly")
 #group6 = parser.add_mutually_exclusive_group()
 group6.add_argument("-m",'--mincov', help='min coverage to assemble',default="1",nargs='?',type=int)
 group6.add_argument("-g",'--minctglen', help='min contig length',default="1",nargs='?',type=int)
-group6.add_argument('--tracks', help='run pilon with --tracks option',default=False, required=0,action='store_true')
 
 
 group2 = parser.add_argument_group('output')
 group2.add_argument("-b",'--clobber', help='clobber output directory (if exists?)',default=False,required=0,action='store_true')
 group2.add_argument("-k",'--keepoutput', help='keep all output generated (default is to delete all but final fasta files)',default=False,required=0,action='store_true')
-
 #group3 = parser.add_argument_group('performance')
 #group3.add_argument("-t",'--threads', type=int,help='num threads',default=1, nargs='?')
-
 group4 = parser.add_argument_group('snakemake')
 group4.add_argument("-c",'--config', help='config (json) file, set read length etc',default="",nargs='?',required=0,type=str)
 group4.add_argument('--Force', help='force snakemake to rerun',default=False,required=0,action='store_true')
@@ -50,7 +63,7 @@ group4.add_argument('--verbose', help='verbose',default=False,required=0,action=
 group4.add_argument('--reason', help='reason',default=False,required=0,action='store_true')
 #--dryrun, -n :Do not execute anything.
 group4.add_argument('--dryrun', help='dryrun',default=False,required=0,action='store_true')
-#-cores
+group4.add_argument('--notimestamps', help='use if snakemake version does not have -T option (print timestamps)',default=False,required=0,action='store_true')
 
 args = parser.parse_args()
 
@@ -64,7 +77,6 @@ threads = args.threads
 memory = args.memory
 ref = args.ref
 keepoutput = args.keepoutput
-tracks=args.tracks
 #snakefile = args.snakefile
 config = args.config
 #samples = args.Samples.replace(" ","")
@@ -80,6 +92,7 @@ force = args.Force
 verbose = args.verbose
 reason = args.reason
 dryrun = args.dryrun
+notimestamps=args.notimestamps
 
 
 if not (args.unpaired or (args.forward and args.reverse)):
@@ -119,7 +132,6 @@ print ( "threads: %s" % (threads), file= outfile)
 print ( "memory: %s" % (memory), file= outfile)       
 print ( "ref: %s" % (ref), file= outfile)       
 print ( "keepoutput: %s" % (keepoutput), file= outfile)  
-print ( "tracks: %s" % (tracks), file= outfile)     
 print ( "unpaired: %s" % (unpaired), file= outfile)       
 print ( "fpaired: %s" % (fpaired), file= outfile)       
 print ( "rpaired: %s" % (rpaired), file= outfile)       
@@ -134,7 +146,10 @@ print ( "reason: %s" % (reason), file= outfile)
 print ( "dryrun: %s" % (dryrun), file= outfile)       
 
 #cmd="snakemake--prioritize join_contigs "
-cmd="snakemake -T --printshellcmds "
+cmd="snakemake --printshellcmds "
+if not notimestamps:
+    cmd += " -T"
+
 
 #--printshellcmds Print out the shell commands that will be executed.
 if verbose:
@@ -264,10 +279,10 @@ if unpaired != "":
         else:
             allsamples.append(file)
 
-##########################################################################
+
 #reference_selection vs assembly only
 
-cmd += " --cores %d -a --configfile %s --config outdir=%s pickref=%s mcdir=%s length=%d mincov=%d minlen=%d nthreads=%d memory=%d refsel=%s tracks=%s"%(threads,config,outdir,pickref,mcdir,readlen,mincov,minctglen,threads,memory,refsel,tracks)
+cmd += " --cores %d -a --configfile %s --config outdir=%s pickref=%s mcdir=%s length=%d mincov=%d minlen=%d nthreads=%d memory=%d refsel=%s"%(threads,config,outdir,pickref,mcdir,readlen,mincov,minctglen,threads,memory,refsel)
 
 cmd += " reads="
 print("ALL READS found:",file=outfile)
@@ -302,29 +317,17 @@ else:
     elif paired != "" and unpaired !="":
         cmd += " --snakefile %s/snakemake/metacompass.py"%(mcdir)
 
-#print("Snakemake command:")
-#print("%s\n"%(cmd))
+#RUN SNAKEMAKE!!    
 print("Snakemake command:",file=outfile)
 print("%s\n"%(cmd),file=outfile)
-#RUN SNAKEMAKE!!    
 try:
     ret = subprocess.Popen(cmd,shell=True)
     ret.communicate()
 except KeyboardInterrupt:
-#    print('Interrupted')
-#    print("ERROR: snakemake command failed; exiting..")
-#    os.system("touch %s/run.fail"%(outdir))
     try:
         sys.exit(1)
     except SystemExit:
-#        print("ERROR: snakemake command failed; exiting..")
-#        os.system("touch %s/run.fail"%(outdir))
         os._exit(1)
-        #os.killpg(ret.pid,signal.SIGKILL)
-        
-    #os.killpg(ret.pid,signal.SIGKILL)
-    #print("ERROR: SIGKILL")
-    #sys.exit(1)  
 except:
     ret.returncode = 1
 if ret.returncode != 0:
@@ -333,13 +336,11 @@ if ret.returncode != 0:
     try:
         sys.exit(1)
     except SystemExit:
-        #print("ERROR: snakemake command failed; exiting..")
-        #os.system("touch %s/run.fail"%(outdir))
         os._exit(1)
 else:
     if dryrun:
         sys.exit(0)
-    #5 CLEANING output files
+#5 CLEANING output files
     if os.path.exists("%s/assembly/metacompass.genomes_coverage.txt"%(outdir)):
         os.system("mv %s/assembly/metacompass.genomes_coverage.txt %s/metacompass_output/"%(outdir,outdir))
     if os.path.exists("%s/assembly/metacompass.assembled.fna"%(outdir)):
@@ -349,12 +350,13 @@ else:
     if os.path.exists("%s/intermediate_files"%(outdir)):
         os.system("rm -rf %s/intermediate_files"%(outdir))
     #reference_Selection
-    if os.path.exists("%s/reference_selection"%(outdir)):
-        os.system("rm %s/reference_selection/*.fastq "%(outdir))
-        os.system("rm %s/reference_selection/mc.blastn* "%(outdir))
-        os.system("rm %s/reference_selection/contigs_clusters "%(outdir))
-        os.system("rm %s/reference_selection/*msh* "%(outdir))
-        os.system("mv %s/reference_selection/*.log %s/logs "%(outdir,outdir))    
+    if os.path.exists("%s/reference_selection/"%(outdir)):
+        delete_files("%s/reference_selection/*.fastq"%(outdir))
+        delete_files("%s/reference_selection/mc.blastn*"%(outdir))
+        delete_files("%s/reference_selection/*msh*"%(outdir)) 
+        delete_files("%s/reference_selection/contigs_clusters"%(outdir)) 
+        move_files("%s/reference_selection/*.log"%(outdir),"%s/logs"%(outdir)) 
+        #os.system("mv %s/reference_selection/*.log %s/logs "%(outdir,outdir))    
     #assembly
     if os.path.exists("%s/assembly/mc.index.1.bt2"%(outdir)):
         os.system("rm %s/assembly/mc.index* "%(outdir))
