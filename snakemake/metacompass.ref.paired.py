@@ -88,7 +88,7 @@ rule polish_map:
     params:
         retry='%s/error_correction/.run1.ok'%(config['outdir'])
     threads:int(config["nthreads"])
-    message: """---Map reads for polish polishing."""
+    message: """---Map reads for polishing."""
     shell:"bowtie2-build --threads {threads} -q {input.ref} {output.pref} 1>> {output.index} 2>&1;bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {output.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {output.log} 2>&1 && touch {params.retry}"
     
 rule sam_to_bam:
