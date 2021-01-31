@@ -177,7 +177,7 @@ rule polish_map:
     params:
         retry='%s/error_correction/.run1.ok'%(config['outdir'])
     threads:int(config["nthreads"])
-    message: """---Map paired-end reads for polish polishing."""
+    message: """---Map paired-end reads for polishing."""
     shell:"bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {input.pref} -q -1 {input.r1} -2 {input.r2} -S {output.sam} --un-conc {output.sam}.unmapped.fq > {output.log} 2>&1 && touch {params.retry}"
 
 rule polish_map_unpaired:
@@ -192,7 +192,7 @@ rule polish_map_unpaired:
         retry='%s/error_correction/.run1.ok'%(config['outdir'])
     log:'%s/logs/polishmap.log'%(config['outdir'])
     threads:int(config["nthreads"])
-    message: """---Map unpaired reads for polish polishing."""
+    message: """---Map unpaired reads for polishing."""
     #shell:"bowtie2 --no-mixed --sensitive --no-unal -p {threads} -x {input.pref} -q -U {input.ru} -S {output.sam2} --un {output.unmappedru} >> {log} 2>&1 && touch {params.retry}"
     run:
         if config['ru'] != '':
