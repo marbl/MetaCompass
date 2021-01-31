@@ -9,6 +9,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 # Required software:
 
 * Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
+* BioPython: https://biopython.org/
 * snakemake (>=) v3.7.1: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
 * BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
 * bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9
@@ -16,7 +17,9 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 * mash (>=) 2.1: https://github.com/marbl/Mash/releases/tag/v2.1
 * samtools (>=) 1.x: http://samtools.sourceforge.net/ 
 * MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
-* Java runtime (>=) 1.7 
+* ntHits: https://github.com/bcgsc/ntHits
+* ntEdit: https://github.com/bcgsc/ntedit
+
 
 # Memory and Disk Space Requirements.
 
