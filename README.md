@@ -1,6 +1,7 @@
 # MetaCompass v2.0-beta
 
-## Publication
+## Publications
+Luan T, Cepeda V, Liu B, Bowen Z, Ayyangar U, Almeida M, Hill CM, Koren S, Treangen TJ, Porter A, Pop M. MetaCompass: Reference-guided Assembly of Metagenomes. ArXiv [Preprint]. 2024 Mar 3:arXiv:2403.01578v1. PMID: 38903742; PMCID: PMC11188144.
 
 Victoria Cepeda, Bo Liu, Mathieu Almeida, Christopher M. Hill, Sergey Koren, Todd J. Treangen, Mihai Pop.
 bioRxiv 212506; doi: https://doi.org/10.1101/212506
@@ -20,7 +21,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
     conda env create -f metacompass_environment.yml
     ```
 
-4. Setup reference database.
+4. Set up reference database.
 
     You have the option to either generate a reference database on your own or utilize the one provided by us. Please refer to the instructions [here](docs/installation_and_requirements.md#3-setup-reference-database) for guidance on how to proceed.
 
@@ -31,15 +32,19 @@ Detailed installation instructions are [here](docs/installation_and_requirements
 
 This provides a quick overview of running the Metacompass.
 
-1. Set up your input data and reference database paths.
+0. Ensure that the overall parameters mentioned in nextflow.config are correctly set for  your environment. In the very least, you should make sure that the parameters for the executor are set correctly. As distributed, the assumption is the code will be run with the local executor and a queue size of 2 (number of "parallel" processes spawned by Nextflow).
 
-2. Create an output directory.
+Note that this file also contains the key parameters used by MetaCompass for different parts of the pipeline. Detailed documentation of these parameters is forthcoming.
 
-3. Run Metacompass Nextflow script using appropriate parameters.
+2. Set up your input data and reference database paths.
+
+3. Create an output directory.
+
+4. Run Metacompass Nextflow script using appropriate parameters.
 
 ```bash
     
-    NXF_OPTS="-Dleveldb.mmap=false -Xmx500g" nextflow run metacompass.nf \
+    nextflow run metacompass2.nf \
     --reference_db "${ref_db_path}" \ # [required]
     --forward "$forward_read" \ # [required]
     --reverse "$reverse_read" \ # [required]
