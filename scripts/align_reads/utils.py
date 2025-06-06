@@ -142,7 +142,9 @@ def extract_read_ids(sam_file: str, outfile: str, threads: str = "1"):
     cmd1 = ["samtools", "fastq", "-@", str(threads), sam_file]
 
     # Process with awk to extract read IDs
-    cmd2 = ["awk", 'NR%4==1 {$0=gensub(/^@(.*)\/.*/, "\\1", 1); print}']
+    cmd2 = ["awk", 'NR%4==1 {print gensub(/^@(.*)\\/.*/, "\\\\1", 1)}']
+
+    print("DEBUG: awk cmd is " + " ".join(cmd2))
 
     run_shell_cmd([cmd1, cmd2], outfile)
 
