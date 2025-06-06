@@ -1,0 +1,132 @@
+
+GCA_000010605.1
+GCA_000023145.1
+GCA_000024225.1
+GCA_000026765.1
+GCA_000092405.1
+GCA_000092425.1
+GCA_000092505.1
+GCA_000092825.1
+GCA_000145215.1
+GCA_000145235.1
+GCA_000147695.3
+GCA_000152145.1
+GCA_000160695.1
+GCA_000166335.1
+GCA_000166355.1
+GCA_000177235.2
+GCA_000177375.1
+GCA_000177535.2
+GCA_000178835.2
+GCA_000179615.1
+GCA_000183545.3
+GCA_000183745.1
+GCA_000184685.1
+GCA_000184705.1
+GCA_000185725.2
+GCA_000186385.1
+GCA_000187125.1
+GCA_000188015.3
+GCA_000189775.3
+GCA_000190555.1
+GCA_000190635.1
+GCA_000194115.1
+GCA_000195315.1
+GCA_000195335.1
+GCA_000196675.2
+GCA_000203215.1
+GCA_000210095.1
+GCA_000212395.1
+GCA_000213255.1
+GCA_000215085.1
+GCA_000225705.1
+GCA_000234095.1
+GCA_000234135.1
+GCA_000235445.1
+GCA_000238135.1
+GCA_000242435.1
+GCA_000296445.1
+GCA_000297115.1
+GCA_000371485.1
+GCA_000407285.1
+GCA_000454025.1
+GCA_000724775.3
+GCA_000742675.1
+GCA_001042675.1
+GCA_001042695.1
+GCA_001050115.1
+GCA_001412635.1
+GCA_001543175.1
+GCA_001543285.1
+GCA_001558775.1
+GCA_001700985.1
+GCA_001865765.1
+GCA_002250945.2
+GCA_002834225.1
+GCA_003340385.1
+GCA_003959475.1
+GCA_006539825.1
+GCA_009496975.1
+GCA_009556455.1
+GCA_009730315.1
+GCA_012317185.1
+GCA_013046825.1
+GCA_013127755.1
+GCA_013267695.1
+GCA_016127475.1
+GCA_019734885.1
+GCA_019931005.1
+GCA_019974115.1
+GCA_900129945.1
+GCA_900186885.1
+GCA_900187035.1
+GCA_900450505.1
+GCA_900459125.1
+GCA_900459175.1
+GCA_900459485.1
+GCA_900475915.1
+GCA_900476175.1
+GCA_900636885.1
+GCA_900637025.1
+GCA_900637725.1
+GCA_900637975.1
+==> RefSeq_V2_db/marker_index/ArgS_COG0018/ArgS_COG0018_genome.tsv <==
+==> RefSeq_V2_db/marker_index/CysS_COG0215/CysS_COG0215_genome.tsv <==
+==> RefSeq_V2_db/marker_index/Ffh_COG0541/Ffh_COG0541_genome.tsv <==
+==> RefSeq_V2_db/marker_index/FtsY_COG0552/FtsY_COG0552_genome.tsv <==
+==> RefSeq_V2_db/marker_index/Gtp1_COG0012/Gtp1_COG0012_genome.tsv <==
+==> RefSeq_V2_db/marker_index/HisS_COG0124/HisS_COG0124_genome.tsv <==
+==> RefSeq_V2_db/marker_index/LeuS_COG0495/LeuS_COG0495_genome.tsv <==
+==> RefSeq_V2_db/marker_index/PheS_COG0016/PheS_COG0016_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplA_COG0081/RplA_COG0081_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplB_COG0090/RplB_COG0090_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplC_COG0087/RplC_COG0087_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplD_COG0088/RplD_COG0088_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplE_COG0094/RplE_COG0094_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplF_COG0097/RplF_COG0097_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplK_COG0080/RplK_COG0080_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplM_COG0102/RplM_COG0102_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplN_COG0093/RplN_COG0093_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplO_COG0200/RplO_COG0200_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplP_COG0197/RplP_COG0197_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplR_COG0256/RplR_COG0256_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RplV_COG0091/RplV_COG0091_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpoA_COG0202/RpoA_COG0202_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpoB_COG0085/RpoB_COG0085_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsB_COG0052/RpsB_COG0052_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsC_COG0092/RpsC_COG0092_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsD_COG0522/RpsD_COG0522_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsE_COG0098/RpsE_COG0098_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsG_COG0049/RpsG_COG0049_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsH_COG0096/RpsH_COG0096_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsI_COG0103/RpsI_COG0103_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsK_COG0100/RpsK_COG0100_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsL_COG0048/RpsL_COG0048_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsM_COG0099/RpsM_COG0099_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsO_COG0184/RpsO_COG0184_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsQ_COG0186/RpsQ_COG0186_genome.tsv <==
+==> RefSeq_V2_db/marker_index/RpsS_COG0185/RpsS_COG0185_genome.tsv <==
+==> RefSeq_V2_db/marker_index/SecY_COG0201/SecY_COG0201_genome.tsv <==
+==> RefSeq_V2_db/marker_index/SerS_COG0172/SerS_COG0172_genome.tsv <==
+==> RefSeq_V2_db/marker_index/TsaD_COG0533/TsaD_COG0533_genome.tsv <==
+==> RefSeq_V2_db/marker_index/ValS_COG0525/ValS_COG0525_genome.tsv <==

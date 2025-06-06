@@ -1,0 +1,17 @@
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /fs/cbcb-lab/mpop/mpop/devel/metacompass/conda2.env
+
+  added / updated specs:
+    - mash
+
+
+The following NEW packages will be INSTALLED:
+
+  mash               bioconda/linux-64::mash-1.1-0 
+
+
+Proceed ([y]/n)? 

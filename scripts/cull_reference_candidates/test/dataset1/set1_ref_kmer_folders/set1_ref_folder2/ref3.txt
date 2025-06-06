@@ -1,0 +1,14 @@
+>1
+GTTGG
+>2
+GGGGG
+>1
+GGTTG
+>1
+TGGGG
+>2
+GGGTT
+>1
+TTGGG
+>2
+GGGGT

@@ -1,0 +1,10 @@
+>1
+AAAAA
+>1
+AAAAT
+>1
+TAAAA
+>1
+AAATT
+>1
+TTAAA

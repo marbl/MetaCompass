@@ -1,0 +1,1 @@
+/fs/cbcb-scratch/ayyangar/metacompass_new_version/tests/test_data/ref_db/GCA_009556455.1/GCA_009556455.1_ASM955645v1_genomic.fna

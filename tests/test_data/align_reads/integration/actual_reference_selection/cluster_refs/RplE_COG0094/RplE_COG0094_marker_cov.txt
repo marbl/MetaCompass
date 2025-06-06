@@ -1,0 +1,2 @@
+seq	coverage
+GCA_009556455.1_CP045664.1_cds_QGA00524.1_933	1

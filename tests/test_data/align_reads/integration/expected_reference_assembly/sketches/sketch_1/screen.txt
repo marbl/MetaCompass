@@ -1,0 +1,1 @@
+0.989548	802/1000	3	0	/fs/cbcb-lab/mpop/Fraunhofer_metagenomics/marker_gene_ref_pkg/ref_pkg_generation_decontaminated_filtered/RefSeq_V2_db/collect_refs/ncbi_dataset/data/GCA_009556455.1/GCA_009556455.1_ASM955645v1_genomic.fna	CP045664.1 Lactobacillus iners strain LI335 chromosome

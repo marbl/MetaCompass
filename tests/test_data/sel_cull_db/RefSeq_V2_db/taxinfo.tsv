@@ -1,0 +1,92 @@
+#accession	num_genes	refseq_taxid	species_taxid	organism_name	Kingdom	Phylum	Class	Order	Family	Genus	Species	assembly_level
+GCA_009556455.1	40	147802	Lactobacillus iners	Bacteria	Bacillota	Bacilli	Lactobacillales	Lactobacillaceae	Lactobacillus	Lactobacillus iners	Chromosome
+GCA_000234135.1	40	702437	Selenomonas noxia F0398	Bacteria	Bacillota	Negativicutes	Selenomonadales	Selenomonadaceae	Selenomonas	Selenomonas noxia	Scaffold
+GCA_019931005.1	40	46124	Granulicatella adiacens	Bacteria	Bacillota	Bacilli	Lactobacillales	Carnobacteriaceae	Granulicatella	Granulicatella adiacens	Complete Genome
+GCA_000160695.1	40	638302	Selenomonas flueggei ATCC 43531	Bacteria	Bacillota	Negativicutes	Selenomonadales	Selenomonadaceae	Selenomonas	Selenomonas flueggei	Scaffold
+GCA_000742675.1	40	1529886	Bacillus atrophaeus subsp. globigii	Bacteria	Bacillota	Bacilli	Bacillales	Bacillaceae	Bacillus	Bacillus atrophaeus	Chromosome
+GCA_000092825.1	40	640132	Segniliparus rotundus DSM 44985	Bacteria	Actinomycetota	Actinomycetes	Mycobacteriales	Segniliparaceae	Segniliparus	Segniliparus rotundus	Complete Genome
+GCA_000092405.1	40	643648	Syntrophothermus lipocalidus DSM 12680	Bacteria	Bacillota	Clostridia	Eubacteriales	Syntrophomonadaceae	Syntrophothermus	Syntrophothermus lipocalidus	Complete Genome
+GCA_900475915.1	40	28264	Arcanobacterium haemolyticum	Bacteria	Actinomycetota	Actinomycetes	Actinomycetales	Actinomycetaceae	Arcanobacterium	Arcanobacterium haemolyticum	Complete Genome
+GCA_000145235.1	40	644283	Micromonospora aurantiaca ATCC 27029	Bacteria	Actinomycetota	Actinomycetes	Micromonosporales	Micromonosporaceae	Micromonospora	Micromonospora aurantiaca	Complete Genome
+GCA_000023145.1	40	645127	Corynebacterium kroppenstedtii DSM 44385	Bacteria	Actinomycetota	Actinomycetes	Mycobacteriales	Corynebacteriaceae	Corynebacterium	Corynebacterium kroppenstedtii	Complete Genome
+GCA_000184705.1	40	644966	Thermaerobacter marianensis DSM 12885	Bacteria	Bacillota	Clostridia	Eubacteriales	Clostridiales Family XVII. Incertae Sedis	Thermaerobacter	Thermaerobacter marianensis	Complete Genome
+GCA_000190635.1	40	645991	Syntrophobotulus glycolicus DSM 8271	Bacteria	Bacillota	Clostridia	Eubacteriales	Desulfitobacteriaceae	Syntrophobotulus	Syntrophobotulus glycolicus	Complete Genome
+GCA_000092425.1	40	649638	Truepera radiovictrix DSM 17093	Bacteria	Deinococcota	Deinococci	Trueperales	Trueperaceae	Truepera	Truepera radiovictrix	Complete Genome
+GCA_000177235.2	40	649639	Evansella cellulosilytica DSM 2522	Bacteria	Bacillota	Bacilli	Bacillales	Bacillaceae	Evansella	Evansella cellulosilytica	Complete Genome
+GCA_000010605.1	40	455632	Streptomyces griseus subsp. griseus NBRC 13350	Bacteria	Actinomycetota	Actinomycetes	Kitasatosporales	Streptomycetaceae	Streptomyces	Streptomyces griseus	Complete Genome
+GCA_000026765.1	40	45361	Mesomycoplasma conjunctivae	Bacteria	Mycoplasmatota	NA	Mycoplasmoidales	Metamycoplasmataceae	Mesomycoplasma	Mesomycoplasma conjunctivae	Chromosome
+GCA_016127475.1	39	33037	Anaerococcus vaginalis	Bacteria	Bacillota	Tissierellia	Tissierellales	Peptoniphilaceae	Anaerococcus	Anaerococcus vaginalis	Complete Genome
+GCA_001543285.1	40	1377	Aerococcus viridans	Bacteria	Bacillota	Bacilli	Lactobacillales	Aerococcaceae	Aerococcus	Aerococcus viridans	Complete Genome
+GCA_900637025.1	40	655813	Streptococcus oralis ATCC 35037	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus oralis	Complete Genome
+GCA_900637975.1	40	1656	Actinomyces viscosus	Bacteria	Actinomycetota	Actinomycetes	Actinomycetales	Actinomycetaceae	Actinomyces	Actinomyces viscosus	Complete Genome
+GCA_000024225.1	40	521095	Lancefieldella parvulum DSM 20469	Bacteria	Actinomycetota	Coriobacteriia	Coriobacteriales	Atopobiaceae	Lancefieldella	Lancefieldella parvula	Complete Genome
+GCA_009730315.1	40	29391	Gemella morbillorum	Bacteria	Bacillota	Bacilli	Bacillales	Gemellaceae	Gemella	Gemella morbillorum	Complete Genome
+GCA_900129945.1	40	1121131	Butyrivibrio fibrisolvens DSM 3071	Bacteria	Bacillota	Clostridia	Eubacteriales	Lachnospiraceae	Butyrivibrio	Butyrivibrio fibrisolvens	Contig
+GCA_002834225.1	40	40518	Ruminococcus bromii	Bacteria	Bacillota	Clostridia	Eubacteriales	Oscillospiraceae	Ruminococcus	Ruminococcus bromii	Contig
+GCA_900187035.1	40	158847	Megamonas hypermegale	Bacteria	Bacillota	Negativicutes	Selenomonadales	Selenomonadaceae	Megamonas	Megamonas hypermegale	Complete Genome
+GCA_000210095.1	36	213810	Ruminococcus champanellensis 18P13 = JCM 17042	Bacteria	Bacillota	Clostridia	Eubacteriales	Oscillospiraceae	Ruminococcus	Ruminococcus champanellensis	Chromosome
+GCA_003340385.1	40	471189	Gordonibacter pamelaeae	Bacteria	Actinomycetota	Coriobacteriia	Eggerthellales	Eggerthellaceae	Gordonibacter	Gordonibacter pamelaeae	Scaffold
+GCA_900450505.1	39	84109	Slackia exigua	Bacteria	Actinomycetota	Coriobacteriia	Eggerthellales	Eggerthellaceae	Slackia	Slackia exigua	Contig
+GCA_000177535.2	40	662755	Corynebacterium resistens DSM 45100	Bacteria	Actinomycetota	Actinomycetes	Mycobacteriales	Corynebacteriaceae	Corynebacterium	Corynebacterium resistens	Complete Genome
+GCA_012317185.1	40	1522	[Clostridium] innocuum	Bacteria	Bacillota	Erysipelotrichia	Erysipelotrichales	Coprobacillaceae	Thomasclavelia	[Clostridium] innocuum	Complete Genome
+GCA_001050115.1	40	1479	Bacillus smithii	Bacteria	Bacillota	Bacilli	Bacillales	Bacillaceae	Bacillus	Bacillus smithii	Complete Genome
+GCA_000183745.1	40	670487	Oceanithermus profundus DSM 14977	Bacteria	Deinococcota	Deinococci	Thermales	Thermaceae	Oceanithermus	Oceanithermus profundus	Complete Genome
+GCA_000145215.1	40	608506	Caldicellulosiruptor obsidiansis OB47	Bacteria	Bacillota	Clostridia	Caldicellulosiruptorales	Caldicellulosiruptoraceae	Caldicellulosiruptor	Caldicellulosiruptor obsidiansis	Complete Genome
+GCA_013127755.1	40	1254	Pediococcus acidilactici	Bacteria	Bacillota	Bacilli	Lactobacillales	Lactobacillaceae	Pediococcus	Pediococcus acidilactici	Complete Genome
+GCA_000196675.2	40	675635	Pseudonocardia dioxanivorans CB1190	Bacteria	Actinomycetota	Actinomycetes	Pseudonocardiales	Pseudonocardiaceae	Pseudonocardia	Pseudonocardia dioxanivorans	Chromosome
+GCA_000185725.2	40	679197	Segniliparus rugosus ATCC BAA-974	Bacteria	Actinomycetota	Actinomycetes	Mycobacteriales	Segniliparaceae	Segniliparus	Segniliparus rugosus	Scaffold
+GCA_000235445.1	40	679200	Johnsonella ignava ATCC 51276	Bacteria	Bacillota	Clostridia	Eubacteriales	Lachnospiraceae	Johnsonella	Johnsonella ignava	Scaffold
+GCA_000234095.1	40	679201	Selenomonas infelix ATCC 43532	Bacteria	Bacillota	Negativicutes	Selenomonadales	Selenomonadaceae	Selenomonas	Selenomonas infelix	Scaffold
+GCA_000177375.1	40	679192	Bulleidia extructa W1219	Bacteria	Bacillota	Erysipelotrichia	Erysipelotrichales	Erysipelotrichaceae	Bulleidia	Bulleidia extructa	Contig
+GCA_001700985.1	40	1426	Parageobacillus thermoglucosidasius	Bacteria	Bacillota	Bacilli	Bacillales	Bacillaceae	Parageobacillus	Parageobacillus thermoglucosidasius	Complete Genome
+GCA_000166355.1	40	632292	Caldicellulosiruptor hydrothermalis 108	Bacteria	Bacillota	Clostridia	Caldicellulosiruptorales	Caldicellulosiruptoraceae	Caldicellulosiruptor	Caldicellulosiruptor hydrothermalis	Complete Genome
+GCA_000166335.1	40	632518	Caldicellulosiruptor owensensis OL	Bacteria	Bacillota	Clostridia	Caldicellulosiruptorales	Caldicellulosiruptoraceae	Caldicellulosiruptor	Caldicellulosiruptor owensensis	Complete Genome
+GCA_000092505.1	40	762051	Leuconostoc kimchii IMSNU 11154	Bacteria	Bacillota	Bacilli	Lactobacillales	Lactobacillaceae	Leuconostoc	Leuconostoc kimchii	Complete Genome
+GCA_001865765.1	40	1719	Corynebacterium pseudotuberculosis	Bacteria	Actinomycetota	Actinomycetes	Mycobacteriales	Corynebacteriaceae	Corynebacterium	Corynebacterium pseudotuberculosis	Complete Genome
+GCA_000178835.2	40	642492	Cellulosilyticum lentocellum DSM 5427	Bacteria	Bacillota	Clostridia	Eubacteriales	Cellulosilyticaceae	Cellulosilyticum	Cellulosilyticum lentocellum	Complete Genome
+GCA_900186885.1	40	29466	Veillonella parvula	Bacteria	Bacillota	Negativicutes	Veillonellales	Veillonellaceae	Veillonella	Veillonella parvula	Complete Genome
+GCA_002250945.2	40	580165	Bacillus cytotoxicus	Bacteria	Bacillota	Bacilli	Bacillales	Bacillaceae	Bacillus	Bacillus cytotoxicus	Complete Genome
+GCA_000190555.1	40	693977	Deinococcus proteolyticus MRP	Bacteria	Deinococcota	Deinococci	Deinococcales	Deinococcaceae	Deinococcus	Deinococcus proteolyticus	Complete Genome
+GCA_001042695.1	40	1150468	Scardovia inopinata JCM 12537	Bacteria	Actinomycetota	Actinomycetes	Bifidobacteriales	Bifidobacteriaceae	Scardovia	Scardovia inopinata	Complete Genome
+GCA_000194115.1	40	695562	Lactobacillus amylovorus GRL1118	Bacteria	Bacillota	Bacilli	Lactobacillales	Lactobacillaceae	Lactobacillus	Lactobacillus amylovorus	Complete Genome
+GCA_900459125.1	40	76860	Streptococcus constellatus	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus constellatus	Contig
+GCA_000213255.1	40	697281	Mahella australiensis 50-1 BON	Bacteria	Bacillota	Clostridia	Thermoanaerobacterales	Thermoanaerobacterales Family IV. Incertae Sedis	Mahella	Mahella australiensis	Complete Genome
+GCA_000147695.3	40	697303	Thermoanaerobacter wiegelii Rt8.B1	Bacteria	Bacillota	Clostridia	Thermoanaerobacterales	Thermoanaerobacteraceae	Thermoanaerobacter	Thermoanaerobacter wiegelii	Complete Genome
+GCA_001558775.1	40	28035	Staphylococcus lugdunensis	Bacteria	Bacillota	Bacilli	Bacillales	Staphylococcaceae	Staphylococcus	Staphylococcus lugdunensis	Complete Genome
+GCA_001042675.1	40	864564	Parascardovia denticolens DSM 10105 = JCM 12538	Bacteria	Actinomycetota	Actinomycetes	Bifidobacteriales	Bifidobacteriaceae	Parascardovia	Parascardovia denticolens	Complete Genome
+GCA_000195315.1	40	700015	Coriobacterium glomerans PW2	Bacteria	Actinomycetota	Coriobacteriia	Coriobacteriales	Coriobacteriaceae	Coriobacterium	Coriobacterium glomerans	Complete Genome
+GCA_013046825.1	40	154288	Turicibacter sanguinis	Bacteria	Bacillota	Erysipelotrichia	Erysipelotrichales	Turicibacteraceae	Turicibacter	Turicibacter sanguinis	Complete Genome
+GCA_001412635.1	40	1328	Streptococcus anginosus	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus anginosus	Complete Genome
+GCA_000203215.1	33	708248	Mycoplasma suis KI3806	Bacteria	Mycoplasmatota	Mollicutes	Mycoplasmatales	Mycoplasmataceae	Mycoplasma	Mycoplasma suis	Complete Genome
+GCA_000186385.1	40	709986	Deinococcus maricopensis DSM 21211	Bacteria	Deinococcota	Deinococci	Deinococcales	Deinococcaceae	Deinococcus	Deinococcus maricopensis	Complete Genome
+GCA_000454025.1	40	1221524	Amycolatopsis mediterranei RB	Bacteria	Actinomycetota	Actinomycetes	Pseudonocardiales	Pseudonocardiaceae	Amycolatopsis	Amycolatopsis mediterranei	Complete Genome
+GCA_009496975.1	40	1625	Fructilactobacillus sanfranciscensis	Bacteria	Bacillota	Bacilli	Lactobacillales	Lactobacillaceae	Fructilactobacillus	Fructilactobacillus sanfranciscensis	Complete Genome
+GCA_000724775.3	40	28031	Lysinibacillus fusiformis	Bacteria	Bacillota	Bacilli	Bacillales	Bacillaceae	Lysinibacillus	Lysinibacillus fusiformis	Complete Genome
+GCA_013267695.1	40	315405	Streptococcus gallolyticus	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus gallolyticus	Complete Genome
+GCA_019734885.1	40	116085	Coprococcus catus	Bacteria	Bacillota	Clostridia	Eubacteriales	Lachnospiraceae	Coprococcus	Coprococcus catus	Scaffold
+GCA_000184685.1	40	710696	Intrasporangium calvum DSM 43043	Bacteria	Actinomycetota	Actinomycetes	Micrococcales	Intrasporangiaceae	Intrasporangium	Intrasporangium calvum	Complete Genome
+GCA_003959475.1	39	37636	Thermus scotoductus	Bacteria	Deinococcota	Deinococci	Thermales	Thermaceae	Thermus	Thermus scotoductus	Contig
+GCA_900476175.1	27	2123	Mycoplasma putrefaciens	Bacteria	Mycoplasmatota	Mollicutes	Mycoplasmatales	Mycoplasmataceae	Mycoplasma	Mycoplasma putrefaciens	Complete Genome
+GCA_000212395.1	40	747365	Thermodesulfobium narugense DSM 14796	Bacteria	Thermodesulfobiota	Thermodesulfobiia	Thermodesulfobiales	Thermodesulfobiaceae	Thermodesulfobium	Thermodesulfobium narugense	Complete Genome
+GCA_000215085.1	40	696281	Desulforamulus ruminis DSM 2154	Bacteria	Bacillota	Clostridia	Eubacteriales	Peptococcaceae	Desulforamulus	Desulforamulus ruminis	Complete Genome
+GCA_000187125.1	40	749551	Selenomonas artemidis F0399	Bacteria	Bacillota	Negativicutes	Selenomonadales	Selenomonadaceae	Selenomonas	Selenomonas artemidis	Scaffold
+GCA_000371485.1	40	999409	[Clostridium] clostridioforme 90B1	Bacteria	Bacillota	Clostridia	Eubacteriales	Lachnospiraceae	Enterocloster	Enterocloster clostridioformis	Scaffold
+GCA_000296445.1	40	742818	Slackia piriformis YIT 12062	Bacteria	Actinomycetota	Coriobacteriia	Eggerthellales	Eggerthellaceae	Slackia	Slackia piriformis	Scaffold
+GCA_019974115.1	40	437897	Megamonas funiformis	Bacteria	Bacillota	Negativicutes	Selenomonadales	Selenomonadaceae	Megamonas	Megamonas funiformis	Complete Genome
+GCA_000407285.1	40	1139996	Enterococcus saccharolyticus subsp. saccharolyticus ATCC 43076	Bacteria	Bacillota	Bacilli	Lactobacillales	Enterococcaceae	Enterococcus	Enterococcus saccharolyticus	Scaffold
+GCA_000242435.1	40	742743	Dialister succinatiphilus YIT 11850	Bacteria	Bacillota	Negativicutes	Veillonellales	Veillonellaceae	Dialister	Dialister succinatiphilus	Scaffold
+GCA_000225705.1	40	742742	Collinsella tanakaei YIT 12063	Bacteria	Actinomycetota	Coriobacteriia	Coriobacteriales	Coriobacteriaceae	Collinsella	Collinsella tanakaei	Scaffold
+GCA_900459175.1	40	764290	Streptococcus downei MFe28	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus downei	Contig
+GCA_900636885.1	40	149016	Streptococcus urinalis	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus urinalis	Complete Genome
+GCA_900459485.1	40	764298	Streptococcus macacae NCTC 11558	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus macacae	Contig
+GCA_000188015.3	40	764299	Streptococcus ictaluri 707-05	Bacteria	Bacillota	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	Streptococcus ictaluri	Contig
+GCA_000152145.1	39	765420	Oscillochloris trichoides DG-6	Bacteria	Chloroflexota	Chloroflexia	Chloroflexales	Oscillochloridaceae	Oscillochloris	Oscillochloris trichoides	Scaffold
+GCA_000179615.1	40	717606	Paenibacillus curdlanolyticus YK9	Bacteria	Bacillota	Bacilli	Bacillales	Paenibacillaceae	Paenibacillus	Paenibacillus curdlanolyticus	Scaffold
+GCA_900637725.1	40	1750	Arachnia propionica	Bacteria	Actinomycetota	Actinomycetes	Propionibacteriales	Propionibacteriaceae	Arachnia	Arachnia propionica	Complete Genome
+GCA_000238135.1	40	796937	Peptoanaerobacter stomatis	Bacteria	Bacillota	Clostridia	Eubacteriales	Peptostreptococcaceae	Peptoanaerobacter	Peptoanaerobacter stomatis	Scaffold
+GCA_000297115.1	40	857293	Caloramator australicus RC3	Bacteria	Bacillota	Clostridia	Eubacteriales	Clostridiaceae	Caloramator	Caloramator australicus	Contig
+GCA_006539825.1	40	1727	Corynebacterium variabile	Bacteria	Actinomycetota	Actinomycetes	Mycobacteriales	Corynebacteriaceae	Corynebacterium	Corynebacterium variabile	Contig
+GCA_000189775.3	40	858215	Thermoanaerobacterium xylanolyticum LX-11	Bacteria	Bacillota	Clostridia	Thermoanaerobacterales	Thermoanaerobacteraceae	Thermoanaerobacterium	Thermoanaerobacterium xylanolyticum	Complete Genome
+GCA_000183545.3	40	867903	Thermaerobacter subterraneus DSM 13965	Bacteria	Bacillota	Clostridia	Eubacteriales	Clostridiales Family XVII. Incertae Sedis	Thermaerobacter	Thermaerobacter subterraneus	Scaffold
+GCA_000195335.1	40	869210	Marinithermus hydrothermalis DSM 14884	Bacteria	Deinococcota	Deinococci	Thermales	Thermaceae	Marinithermus	Marinithermus hydrothermalis	Complete Genome
+GCA_001543175.1	40	1376	Aerococcus urinae	Bacteria	Bacillota	Bacilli	Lactobacillales	Aerococcaceae	Aerococcus	Aerococcus urinae	Complete Genome

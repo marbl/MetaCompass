@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
+
+    <title>Document</title>
+</head>
+
+<body>
+
+    <!-- JavaScript for datatables -->
+    <!-- IMPORTANT: jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- DataTables: https://datatables.net/examples/data_sources/js_array.html -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Main js script to update html after loading data file. -->
+    <script type="text/javascript" src="controller.js"></script>
+
+    <div class="container">
+        <div class="jumbotron">
+            <h1>MetaCompass Results</h1>
+            <strong class="text-primary">Forward:</strong> <strong id="forward"></strong><br>
+            <strong class="text-primary">Reverse:</strong> <strong id="reverse"></strong><br>
+            <strong class="text-primary">Unpaired:</strong> <strong id="unpaired"></strong><br>
+
+            <h3>Summary:</h3>
+            <div class="info btn badge-warning">
+                # Forward Reads:
+                <span id="num_forward" class="badge"></span>
+            </div>
+            <div class="info btn badge-warning">
+                # Reverse Reads:
+                <span id="num_reverse" class="badge"></span>
+            </div>
+            <div class="info btn badge-warning">
+                # Unpaired Reads:
+                <span id="num_unpaired" class="badge"></span>
+            </div>
+
+            <h3>Parameters:</h3>
+            <div class="info btn badge-primary">
+                Reference DB:
+                <span id="ref_db" class="badge"></span>
+            </div>
+            <div class="info btn badge-primary">
+                Reference Filtering:
+                <span id="ref_filtering" class="badge"></span>
+            </div>
+            <div class="info btn badge-primary">
+                Reference Filtering Kmer-Size:
+                <span id="ref_filtering_kmer_size" class="badge"></span>
+            </div>
+            <div class="info btn badge-info">
+                Depth of Cov. Cutoff:
+                <span id="depth_of_cov" class="badge"></span>
+            </div>
+            <div class="info btn badge-info">
+                Breadth of Cov. Cutoff:
+                <span id="breadth_of_cov" class="badge"></span>
+            </div>
+            <div class="info btn badge-success">
+                Reference Culling Kmer-Size:
+                <span id="ref_culling_kmer_size" class="badge"></span>
+            </div>
+
+            <h5> Input Files: </h5>
+            <input type="file" multiple id="inputfile" />
+            <div id="upload_msg" class="btn"></div>
+        </div>
+
+        <!-- Resource Usage Metrics -->
+
+        <h2>Resource Usage Metrics</h2>
+        <div id="accordion0">
+
+            <div class="card">
+                <div class="card-header" id="headingZero">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseZero"
+                            aria-expanded="false" aria-controls="collapseZero">
+                            Metrics
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseZero" class="collapse" aria-labelledby="headingZero" data-parent="#accordion0">
+                    <div class="card-body">
+                        <div class="container">
+                            <ul>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/metacompass.html">Summary</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/initialize.html">Initialization</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/ref_selection.html">Reference Selection</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/ref_culling.html">Reference Culling</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/ref_assembly.html">Reference-Guided Assembly</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/de_novo_assembly.html">Denovo Assembly</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/assembly_merge.html">Assembly Merge</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/scaffolding.html">Scaffolding</a></li>
+                                <li><a target="_blank" rel="noopener noreferrer"
+                                        href="../timeline/report_generation.html">Report Generation</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Reference Selection -->
+
+        <h2>Reference Selection</h2>
+        <div id="accordion1">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne"
+                            aria-expanded="false" aria-controls="collapseOne">
+                            Selected References
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion1">
+                    <div class="card-body">
+                        <strong id="reference_selection-info" class="text-info"></strong>
+                        <div class="container">
+                            <table id="referenceSelection" class="table table-striped table-sm" width="100%"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reference Culling -->
+
+        <h2>Reference Culling</h2>
+        <div id="accordion2">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
+                            aria-expanded="false" aria-controls="collapseTwo">
+                            Culled References
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingOne" data-parent="#accordion2">
+                    <div class="card-body">
+                        <strong id="reference_culling-info" class="text-info"></strong>
+                        <div class="container">
+                            <table id="referenceCulling" class="table table-striped" width="100%"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reference Guided Assembly -->
+
+        <h2>Reference-Guided Assembly</h2>
+        <div id="accordion3">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree"
+                            aria-expanded="false" aria-controls="collapseThree">
+                            Summary
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseThree" class="collapse" aria-labelledby="headingOne" data-parent="#accordion3">
+                    <div class="card-body">
+
+                        <div class="container">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Number of References</th>
+                                        <th>Total Number of Contigs</th>
+                                        <th>Total Length of Assembly</th>
+                                        <th>Max Contig Length</th>
+                                        <th>Min Contig Length</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="num_refs"></td>
+                                        <td id="total_num_contigs"></td>
+                                        <td id="total_length_of_assembly"></td>
+                                        <td id="max_contig_length"></td>
+                                        <td id="min_contig_length"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- <figure class="figure">
+                                <img src="../frc_curve_gen/refguided/Nx_fig.png" class="figure-img img-fluid rounded" alt="Refguided Nx Curve.">
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure> -->
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapse7"
+                            aria-expanded="false" aria-controls="collapse7">
+                            References
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapse7" class="collapse" aria-labelledby="headingOne" data-parent="#accordion3">
+                    <div class="card-body">
+
+                        <div class="container">
+                            <table id="referenceAssembly" class="table table-striped" width="100%"></table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Denovo Assembly -->
+
+        <h2>Denovo Assembly</h2>
+        <div id="accordion4">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFour"
+                            aria-expanded="false" aria-controls="collapseFour">
+                            Summary
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseFour" class="collapse" aria-labelledby="headingOne" data-parent="#accordion4">
+                    <div class="card-body">
+
+
+                        <div class="container">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Total Number of Contigs</th>
+                                        <th>Total Length of Assembly</th>
+                                        <th>Max Contig Length</th>
+                                        <th>Min Contig Length</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="denovo_total_num_contigs"></td>
+                                        <td id="denovo_total_length_of_assembly"></td>
+                                        <td id="denovo_max_contig_length"></td>
+                                        <td id="denovo_min_contig_length"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Nx_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Denovo Nx Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Hi_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Denovo Hi_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Hi_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Denovo Hi_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Lo_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Denovo Lo_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Lo_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Denovo Lo_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Short_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Denovo Short_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Long_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Denovo Long_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Singleton_DOC_fig.png"
+                                    class="figure-img img-fluid rounded" alt="Denovo Singleton_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/denovo/Misoriented_DOC_fig.png"
+                                    class="figure-img img-fluid rounded" alt="Denovo Misoriented_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Merged Assembly -->
+
+        <h2>Merged Assembly</h2>
+        <div id="accordion5">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFive"
+                            aria-expanded="false" aria-controls="collapseFive">
+                            Summary
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="collapseFive" class="collapse" aria-labelledby="headingOne" data-parent="#accordion5">
+                    <div class="card-body">
+
+
+                        <div class="container">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Total Number of Contigs</th>
+                                        <th>Total Length of Assembly</th>
+                                        <th>Max Contig Length</th>
+                                        <th>Min Contig Length</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="merged_total_num_contigs"></td>
+                                        <td id="merged_total_length_of_assembly"></td>
+                                        <td id="merged_max_contig_length"></td>
+                                        <td id="merged_min_contig_length"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Nx_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Merged Nx Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Hi_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Merged Hi_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Hi_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Merged Hi_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Lo_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Merged Lo_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Lo_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Merged Lo_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Short_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Merged Short_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Long_MP_DOC_fig.png" class="figure-img img-fluid rounded"
+                                    alt="Merged Long_MP_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Singleton_DOC_fig.png"
+                                    class="figure-img img-fluid rounded" alt="Merged Singleton_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                            <figure class="figure">
+                                <img src="../frc_curve_gen/merged/Misoriented_DOC_fig.png"
+                                    class="figure-img img-fluid rounded" alt="Merged Misoriented_DOC Feature Curve." onerror='this.style.display = "none"'>
+                                <figcaption class="figure-caption"></figcaption>
+                            </figure>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</body>
+
+</html>

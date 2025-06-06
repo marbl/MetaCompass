@@ -1,104 +1,63 @@
 # MetaCompass v2.0-beta
-Last updated: January 31th, 2021
 
+## Publication
 
-# Publication
 Victoria Cepeda, Bo Liu, Mathieu Almeida, Christopher M. Hill, Sergey Koren, Todd J. Treangen, Mihai Pop.
 bioRxiv 212506; doi: https://doi.org/10.1101/212506
 
-# Required software:
+## Installation
 
-* Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
-* BioPython: https://biopython.org/
-* snakemake (>=) v3.7.1: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
-* BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
-* bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9
-* kmer-mask (May 13th, 2015): https://sourceforge.net/projects/kmer/files/meryl-r2013.tar.xz
-* mash (>=) 2.1: https://github.com/marbl/Mash/releases/tag/v2.1
-* samtools (>=) 1.x: http://samtools.sourceforge.net/ 
-* MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
-* ntHits: https://github.com/bcgsc/ntHits
-* ntEdit: https://github.com/bcgsc/ntedit
+1. Check if you have all the [requirements](docs/installation_and_requirements.md#requirements-).
+2. Clone the repository
+    ```shell
+    git clone https://gitlab.umiacs.umd.edu/mpop/metacompass.git
+    ```
 
+3. Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) and
+   create a conda environment using the `metacompass_environment.yml` file
 
-# Memory and Disk Space Requirements.
+    ```shell
+    conda env create -f metacompass_environment.yml
+    ```
 
-* 90GB or more hard disk space to perform a normal installation.
-* 8GB or more memory.
+4. Setup reference database.
 
-# INSTALLATION From Source:
-Get the Latest release from https://github.com/marbl/MetaCompass/releases:
-
-    wget https://github.com/marbl/MetaCompass/archive/1.xx.tar.gz
-    tar -xzvf 1.xx.tar.gz
-    cd MetaCompass-1.xx
-    ./install.sh
-
-# INSTALLATION Using Git:
-
-    git clone https://github.com/marbl/MetaCompass.git
-    cd MetaCompass
-    ./install.sh
-
-# USAGE    
-
--- I have a set of metagenomic reads, and want to perform reference-guided assembly. 
-
-    python3 go_metacompass.py -1 [read1.fq] -2 [read2.fq] -l [max read length] -o [output_folder] -m [min coverage] -t [ncpu] -y [memory GB]
-
--- I know the reference genomes, or I want to perform comparative assembly for a particular genome.
-
-    python3 go_metacompass.py -r [references.fasta] -1 [read1.fq] -2 [read2.fq] -o [output_folder] -m [min coverage] -t [ncpu] -y [memory GB]
+    You have the option to either generate a reference database on your own or utilize the one provided by us. Please refer to the instructions [here](docs/installation_and_requirements.md#3-setup-reference-database) for guidance on how to proceed.
 
 
-# OUTPUT
+Detailed installation instructions are [here](docs/installation_and_requirements.md).
 
--- metacompass_output folder contains the following files:
+## Usage 
 
+This provides a quick overview of running the Metacompass.
 
-| File  | Description |
-| ------------- | ------------- |
-| metacompass.final.ctg.fa  | Assembled contigs  |
-| metacompass_mapping_stats.tsv | Mapped reads general stats  | 
-| metacompass_mapping_pergenome_stats.tsv | Mapped reads stats per genome  | 
-| metacompass.genomes_coverage.txt | Breadth of coverage per genome  | 
-| metacompass.references.fna | References used to guide assembly | 
-| metacompass_assembly_stats.tsv | Assembly general stats  | 
-| metacompass_assembly_pergenome_stats | Assembly stats per genome | 
-| metacompass_summary.tsv | Metadata |
+1. Set up your input data and reference database paths.
 
+2. Create an output directory.
 
+3. Run Metacompass Nextflow script using appropriate parameters.
 
+```bash
+    
+    NXF_OPTS="-Dleveldb.mmap=false -Xmx500g" nextflow run metacompass.nf \
+    --reference_db "${ref_db_path}" \ # [required]
+    --forward "$forward_read" \ # [required]
+    --reverse "$reverse_read" \ # [required]
+    --output "$output_folder" \ # [required]
+    --threads 8 \ # [optional] by default it is 16
+    --trace_file_name "$output_folder/trace.txt" \ # [optional] 
+    -with-timeline "$output_folder/timeline.html" \ # [optional]
+```
 
-# EXAMPLES
+#### Parameter description: <br/>
 
-# Reference-guided assembly with known reference genomes (no reference selection).
--- Input data is available in the tutorial folder:
+- **forward** : Path to the file with forward reads, providing sequence information from one end of the DNA fragment in
+  a specific direction.
+- **reverse** : Path to the file with reverse reads, representing sequence information from the opposite end of the DNA
+  fragment in the reverse direction.
+- **output** : The output directory or file path where the results will be stored.
+- **threads**: The number of threads to use during reference-guided assembly with Pilon.
+  <br/> <br/>
+  Full parameter configuration can be found [here](./docs/parameter_configuration.md)
 
-    Reference genome file:  Candidatus_Carsonella_ruddii_HT_Thao2000.fasta
-    Metagenomic reads:      thao2000.1.fq
-                            thao2000.2.fq	
--- Run:
-   
-     python3 go_metacompass.py -r tutorial/Candidatus_Carsonella_ruddii_HT_Thao2000.fasta -1 tutorial/thao2000.1.fq -2 tutorial/thao2000.2.fq -l 150 -o example1_output -t 4 -y 8
-
-# Reference-guided assembly with reference selection.
-
--- Download and extract metagenomic sample:
-
-    wget http://downloads.hmpdacc.org/dacc/hhs/genome/microbiome/wgs/analysis/hmwgsqc/v2/SRS044742.tar.bz2
-    tar -xvf SRS044742.tar.bz2
-
--- The metagenomic sample contains:
-
-    SRS044742/
-        SRS044742.denovo_duplicates_marked.trimmed.1.fastq
-        SRS044742.denovo_duplicates_marked.trimmed.2.fastq
-        SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq
--- Run:
-   
-     python3 go_metacompass.py -1 SRS044742/SRS044742.denovo_duplicates_marked.trimmed.1.fastq -2 SRS044742/SRS044742.denovo_duplicates_marked.trimmed.2.fastq -U SRS044742/SRS044742.denovo_duplicates_marked.trimmed.singleton.fastq -l 100 -o example2_output -t 1 -y 8
-
-  
-Contact:
-vcepeda@umd.edu
+Detailed usage instructions are [here](docs/usage_guide.md)
