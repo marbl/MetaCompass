@@ -50,7 +50,8 @@ process reduceClusters {
        batch=""
     fi
        
-    minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch concat_refs.fna ${interleaved_reads} | cut -f 1 > aligned_reads.txt
+    minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
+        concat_refs.fna ${interleaved_reads}| cut -d / -f 1 > aligned_reads.txt
     seqkit grep -I -j ${params.threads} -f aligned_reads.txt ${interleaved_reads} > concat_refs_mapped.fq
     """
 }
