@@ -74,6 +74,8 @@ process refAssembly {
         path "*" // cluster index
 
     output:
+        path "unmapped.fq", emit: unmapped_reads
+        path "*.refctgs.fna", emit: genomes
 
 
     script:
@@ -88,6 +90,7 @@ process refAssembly {
         -debug \
         -mcl 2000 \
         -t ${params.threads}
+    python ${projectDir}/scripts/collate_genomes.py
 
     """
 }

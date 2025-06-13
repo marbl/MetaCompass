@@ -2,6 +2,7 @@
 
 // setting variables
 
+nextflow.preview.output = 1
 params.forward = "" // input forward reads
 params.reverse = "" // input reverse reads
 forward_gz = ""  // uncompressed forward reads
@@ -37,6 +38,7 @@ include {interleaveReads} from './pipeline/ref_assembly.nf'
 include {reduceClusters} from './pipeline/ref_assembly.nf'
 include {refAssembly} from './pipeline/ref_assembly.nf'
 include {deNovoAssembly} from './pipeline/denovo_assembly.nf'
+include {createOutputs} from './pipeline/finalize.nf'
 
 // Usage information
 def usage(status) {
@@ -123,6 +125,8 @@ if (paired == false && unpaired == false){
 // Here we define the actual workflow
 
 workflow {
+  main:
+
 // filter the reads aligned to marker genes
   if (paired == true) {
     reads = file(params.forward) + " " + file(params.reverse)
@@ -191,9 +195,23 @@ workflow {
   refAssembly(interleaveReads.out, Cluster.out.clusters, reduceClusters.out, IndexReads.out.collect(), ClusterIndex.out.collect()) 
 
   // de novo assembly (if needed)
-
-  
+  deNovoAssembly(refAssembly.out.unmapped_reads)
  
   // stage results
+  if (params.de_novo > 0) {
+     createOutputs(1, refAssembly.out.genomes)   
+  } else {
+     createOutputs(0, refAssembly.out.genomes)
+  }
 
+  publish:
+  contigs = createOutputs.out
+
+}
+
+output {
+  contigs { 
+    mode 'move'
+    path "."
+  }
 }
