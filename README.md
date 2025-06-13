@@ -38,9 +38,9 @@ Note that this file also contains the key parameters used by MetaCompass for dif
 
 2. Set up your input data and reference database paths.
 
-3. Create an output directory.
+3. Create an output directory. Note: if output directory is not specified, it defaults to "results"
 
-4. Run Metacompass Nextflow script using appropriate parameters.
+5. Run Metacompass Nextflow script using appropriate parameters.
 
 ```bash
     
@@ -48,7 +48,7 @@ Note that this file also contains the key parameters used by MetaCompass for dif
     --reference_db "${ref_db_path}" \ # [required]
     --forward "$forward_read" \ # [required]
     --reverse "$reverse_read" \ # [required]
-    --output "$output_folder" \ # [required]
+    -output-dir "$output_folder" \ # [required]
     --threads 8 \ # [optional] by default it is 16
     --trace_file_name "$output_folder/trace.txt" \ # [optional] 
     -with-timeline "$output_folder/timeline.html" \ # [optional]
@@ -60,7 +60,7 @@ Note that this file also contains the key parameters used by MetaCompass for dif
   a specific direction.
 - **reverse** : Path to the file with reverse reads, representing sequence information from the opposite end of the DNA
   fragment in the reverse direction.
-- **output** : The output directory or file path where the results will be stored.
+- **output_dir** : The output directory or file path where the results will be stored.
 - **threads**: The number of threads to use during reference-guided assembly with Pilon.
   <br/> <br/>
   Full parameter configuration can be found [here](./docs/parameter_configuration.md)
