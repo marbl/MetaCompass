@@ -14,7 +14,7 @@ def usage(status) {
             [[--forward /path/to/forwardReads --reverse /path/to/reverseReads --unpaired /path/to/unpairedReads] | \n\
             [--forward /path/to/forwardReads --reverse /phat/to/reverseReads] | \n\
             [--unpaired /path/to/unpairedReads]] \n\
-            --output /path/to/outputDir"
+            -output-dir /path/to/outputDir"
 
     log.info ""
     log.info "Required:"
@@ -23,7 +23,7 @@ def usage(status) {
     log.info " --forward\n                  Path to forward read."
     log.info " --reverse\n                  Path to reverse read."
     log.info " --unpaired\n                 Paths to unpaired read."
-    log.info " --output\n                   Path to output folder."
+    log.info " -output-dir\n                   Path to output folder."
     log.info " --log\n                      Path to log file."
     log.info " --workdir\n                  Path to working directory. (MetaCompass Folder)"
     log.info " --reference\n                Path to reference file. Default selected by kmer-mask."
@@ -58,12 +58,12 @@ if( params.unpaired != "" ){
     reads += "--unpaired $params.unpaired"
 }
 
-OUTPUT = "$params.output/reference_selection"
+OUTPUT = "${workflow.outputDir}/reference_selection"
 
 // keeps only reads that map to marker genes
 process filter_reads { 
     publishDir {
-        path: file("${params.output}/reference_selection"),
+        path: file("${workflow.outputDir}/reference_selection"),
         mode: 'copy'
     }
 
@@ -85,7 +85,7 @@ process filter_reads {
 // Map reads to each marker gene
 process map_to_gene{
     publishDir { 
-       path: file("${params.output}/reference_selection"), 
+       path: file("${workflow.outputDir}/reference_selection"), 
        mode:'copy'
     }
 
@@ -130,7 +130,7 @@ process map_to_gene{
 // Combine results from all the genes to select genomes with enough coverage
 process select_genomes {
     publishDir { 
-       path: file("${params.output}/reference_selection"), 
+       path: file("${workflow.outputDir}/reference_selection"), 
        mode:'copy'
     }
 

@@ -5,7 +5,7 @@
 */
 process interleaveReads {
     publishDir {
-        path: file("$params.output/reference_assembly"),
+        path: file("$workflow.outputDir/reference_assembly"),
         mode: 'copy'
     }
 
@@ -28,7 +28,7 @@ process interleaveReads {
 */ 
 process reduceClusters {
     publishDir {
-        path: file("$params.output/reference_assembly"),
+        path: file("$workflow.outputDir/reference_assembly"),
         mode: 'copy'
     }
     input:
@@ -61,7 +61,7 @@ process reduceClusters {
 */
 process refAssembly {
     publishDir {
-        path: file("$params.output/reference_assembly"),
+        path: file("$workflow.outputDir/reference_assembly"),
         mode: 'copy'
     }
     

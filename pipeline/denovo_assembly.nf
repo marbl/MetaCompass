@@ -10,24 +10,20 @@ params.minlen=500  // default minimum contig size
 
 process deNovoAssembly {
     publishDir {
-        path: file("$params.output/denovo_assembly"),
+        path: file("$workflow.outputDir/denovo_assembly"),
         mode: 'copy'
     }
-
-    when:
-        params.de_novo == 1
 
     input:
         path reads
 
     output:
+        val 1, emit: flag
         path "megahit_out"
-        val flag
 
     script:
     """
     megahit --min-count 3 --min-contig-len ${params.minlen} -t ${params.threads} --12 $reads
-    flag=1
     """
 
 }

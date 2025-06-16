@@ -7,12 +7,12 @@
 
 process createOutputs {
     publishDir {
-        path: file("${params.output}/output")
-        mode: 'move'
+        path: file("${workflow.outputDir}/output")
+        mode: 'link'
     }
 
     input:
-    val denovo    
+    val flag
     path "*"  
 
     output:
@@ -23,10 +23,21 @@ process createOutputs {
     mkdir output
     cat *.refctgs.fna > output/all_contigs.fna
     cp -L *.refctgs.fna output
-    if [ $denovo == 1 ] ;then
-        cat $PWD/${params.output}/denovo_assembly/megahit_out/final.contigs.fa >> output/all_contigs.fna
-        cp -L $PWD/${params.output}/denovo_assembly/megahit_out/final.contigs.fa output/denovo.contigs.fna
+    if [ $flag == 1 ] ;then
+       cat ${workflow.outputDir}/denovo_assembly/megahit_out/final.contigs.fa >> output/all_contigs.fna
+       cp -L ${workflow.outputDir}/denovo_assembly/megahit_out/final.contigs.fa output/denovo.contigs.fna 
     fi
     """
-     
 }
+/*
+process createDeNovoOutputs {
+    input:
+    path "megahit_out"  
+
+    script:
+    """
+    cp -L megahit_out/final.contigs.fa ${workflow.outputDir}/output/denovo.contigs.fna
+    cat megathit_out/final.contigs.fa >> ${workflow.outputDir}/output/all_contigs.fna
+    """
+}
+*/

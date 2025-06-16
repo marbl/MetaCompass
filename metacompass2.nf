@@ -2,7 +2,7 @@
 
 // setting variables
 
-nextflow.preview.output = 1
+//nextflow.preview.output = 1
 params.forward = "" // input forward reads
 params.reverse = "" // input reverse reads
 forward_gz = ""  // uncompressed forward reads
@@ -14,7 +14,7 @@ unpaired_gz = ""  // uncompressed unpaired reads
 reads = "" // string containing command line parameters for passing reads along
 
 params.reference_db = "" // location of reference database
-params.output = "" // location for output files
+//params.output = "" // location for output files
 params.skip_rs = false // skip reference selection
 params.skip_rc = false // skip reference culling
 params.clean_uf = false // clean up as we go
@@ -39,6 +39,7 @@ include {reduceClusters} from './pipeline/ref_assembly.nf'
 include {refAssembly} from './pipeline/ref_assembly.nf'
 include {deNovoAssembly} from './pipeline/denovo_assembly.nf'
 include {createOutputs} from './pipeline/finalize.nf'
+//include {createDeNovoOutputs} from './pipeline/finalize.nf'
 
 // Usage information
 def usage(status) {
@@ -85,10 +86,10 @@ if (params.help){
     usage(0)
 }
 // if the path is invalid, throw an error
-if (params.output == "" || ! file(params.output).mkdirs() ){
-    println "ERROR: Need proper output directory path!"
-    usage(1)
-}
+//if (ams.output == "" || ! file(params.output).mkdirs() ){
+//    println "ERROR: Need proper output directory path!"
+//    usage(1)
+//}
 
 // check if reference file exists
 if (params.reference_db != "" && !file(params.reference_db).isDirectory() ){
@@ -126,6 +127,8 @@ if (paired == false && unpaired == false){
 
 workflow {
   main:
+
+  println "Output dir is $workflow.outputDir"
 
 // filter the reads aligned to marker genes
   if (paired == true) {
@@ -194,24 +197,25 @@ workflow {
   // run the cluster-by-cluster assembly
   refAssembly(interleaveReads.out, Cluster.out.clusters, reduceClusters.out, IndexReads.out.collect(), ClusterIndex.out.collect()) 
 
-  // de novo assembly (if needed)
-  deNovoAssembly(refAssembly.out.unmapped_reads)
- 
-  // stage results
+
+  // de novo assembly (if needed) and stage results
   if (params.de_novo > 0) {
-     createOutputs(1, refAssembly.out.genomes)   
+     deNovoAssembly(refAssembly.out.unmapped_reads)
+     createOutputs(deNovoAssembly.out.flag, refAssembly.out.genomes)
   } else {
      createOutputs(0, refAssembly.out.genomes)
   }
 
-  publish:
-  contigs = createOutputs.out
+
+
+//  publish:
+//  contigs = createOutputs.out
 
 }
 
-output {
-  contigs { 
-    mode 'move'
-    path "."
-  }
-}
+//output {
+//  contigs { 
+//    mode 'move'
+//    path "."
+ // }
+//}

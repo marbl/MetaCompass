@@ -2,7 +2,7 @@
 
 process collect_refs {
     publishDir {
-        path: file("$params.output/reference_culling"), 
+        path: file("$outputDir/reference_culling"), 
         mode: 'copy'
     } 	
 
@@ -51,7 +51,7 @@ process collect_refs {
  */
 process SkaniTriangle { 
     publishDir {
-        path: file("$params.output/reference_culling"), 
+        path: file("$workflow.outputDir/reference_culling"), 
         mode: 'copy'
     } 	
 
@@ -84,7 +84,7 @@ process SkaniTriangle {
  */
 process Cluster {
     publishDir {
-        path: file("$params.output/reference_culling"), 
+        path: file("$workflow.outputDir/reference_culling"), 
         mode: 'copy'
     } 	
 
@@ -107,7 +107,7 @@ process Cluster {
  */
 process ConcatFasta {
     publishDir {
-        path: file("$params.output/reference_culling"), 
+        path: file("$workflow.outputDir/reference_culling"), 
         mode: 'copy'
     } 	
 
@@ -130,7 +130,7 @@ process ConcatFasta {
 */
 process IndexReads {
     publishDir {
-        path: file("$params.output/reference_culling"), 
+        path: file("$workflow.outputDir/reference_culling"), 
         mode: 'copy'
     } 	
 
@@ -152,7 +152,7 @@ process IndexReads {
 */
 process ClusterIndex {
     publishDir {
-        path: file("$params.output/reference_culling"), 
+        path: file("$workflow.outputDir/reference_culling"), 
         mode: 'copy'
     } 	
 
