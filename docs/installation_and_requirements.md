@@ -5,18 +5,9 @@
 * 90GB or more hard disk space to perform a normal installation.
 * 8GB or more memory to allocate to the JVM (needed for pilon error correction step (https://github.com/broadinstitute/pilon/wiki/Requirements-&-Usage ). The amount of memory required depends on the genome, the read data, and how many fixes Pilon needs to make. Generally, bacterial genomes with ~200x of Illumina coverage will require at least 8GB, though 16GB is recommended.
 
-### Software requirements [TODO]
+### Software requirements
 
-* Python3 (>=) 3.1: https://www.python.org/download/releases/3.0/
-* snakemake (>=) v3.7.1: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html
-* BLAST+ (>=) 2.4.0: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST
-* bowtie2  (>=) 2.2.9: https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.9
-* kmer-mask (May 13th, 2015): https://sourceforge.net/projects/kmer/files/meryl-r2013.tar.xz
-* mash (>=) 2.1: https://github.com/marbl/Mash/releases/tag/v2.1
-* samtools (>=) 1.x: http://samtools.sourceforge.net/ 
-* MEGAHIT (>=) 1.0.6: https://github.com/voutcn/megahit
-* Java runtime (>=) 1.7 
-
+The file metacompass_environment.yml contains the list of packages needed to run MetaCompass. Currently all these packages are available through conda/bioconda.
 
 ## Installation
 
@@ -25,7 +16,7 @@ Follow these steps to get started with running the MetaCompass software:
 ### 1. Clone the MetaCompass Repository
 
     ```shell
-    git clone https://gitlab.umiacs.umd.edu/mpop/metacompass.git
+    git clone https://github.com/marbl/MetaCompass.git
     ```
 
 ### 2. Install Conda and Create Conda Environment
