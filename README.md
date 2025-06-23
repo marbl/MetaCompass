@@ -11,7 +11,7 @@ bioRxiv 212506; doi: https://doi.org/10.1101/212506
 1. Check if you have all the [requirements](docs/installation_and_requirements.md#requirements-).
 2. Clone the repository
     ```shell
-    git clone https://gitlab.umiacs.umd.edu/mpop/metacompass.git
+    git clone 'https://github.com/marbl/MetaCompass.git'
     ```
 
 3. Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) and
