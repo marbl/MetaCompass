@@ -48,7 +48,7 @@ if [ "$1" == "T" ]; then        # Assuming $1 is like your !{REFS}
   if [ -s ${to_download}/accessions_to_download.txt ]; then
     attempt=1
     while [ $attempt -le 3 ]; do
-        datasets download assembly --inputfile ${to_download}/accessions_to_download.txt --filename refs.zip 2>&1 | tee -a "$LOG"
+        datasets download genome accession --inputfile ${to_download}/accessions_to_download.txt --filename refs.zip 2>&1 | tee -a "$LOG"
         if [ ! -s refs.zip ]; then
 	    echo "Download failed or refs.zip is empty. Retrying..."
   
