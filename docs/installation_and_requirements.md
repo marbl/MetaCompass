@@ -14,10 +14,9 @@ The file metacompass_environment.yml contains the list of packages needed to run
 Follow these steps to get started with running the MetaCompass software:
 
 ### 1. Clone the MetaCompass Repository
-
-    ```console
+```bash
     git clone https://github.com/marbl/MetaCompass.git
-    ```
+```
 
 ### 2. Install Conda and Create Conda Environment
 
