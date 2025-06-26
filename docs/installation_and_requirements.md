@@ -25,7 +25,7 @@ Follow these steps to get started with running the MetaCompass software:
    
    - Create a Conda environment from the `metacompass_environment.yml` file provided in the cloned repository. Use the following command in your terminal:
 
-     ```console
+     ```bash
         conda env create -f metacompass_environment.yml
      ```
 
@@ -38,9 +38,9 @@ Follow these steps to get started with running the MetaCompass software:
       2. Type `nextflow -v` in the command line. If everything is setup correctly you should see an output similar
       to this:
 
-        ```console
-        ()$ conda activate metacompass
-        (metacompass)$ nextflow help -v 
+        ```bash
+        $ conda activate metacompass
+        $ nextflow help -v 
         nextflow version 21.10.6.5660
         ```
 
