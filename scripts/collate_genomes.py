@@ -14,6 +14,7 @@ import os
 
 inFName = "mapped_genomes.txt"
 
+inf = ()
 try: 
     inf = open(inFName, "r")
 except OSError as err:

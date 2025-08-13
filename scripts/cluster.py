@@ -24,7 +24,7 @@ if Path(file).stat().st_size == 0:  # the file is empty then that means we have 
     clusters_name = ref_culling_path / "clusters_name.txt"
     matched_genome_name = matched_genome.split("/")[-1]
     with open(clusters_name, "w") as f:
-        modified_items = re.match("(GCA_[0-9]+\.[0-9]+)", matched_genome_name).group(1)
+        modified_items = re.match("(GCA_[0-9]+\\.[0-9]+)", matched_genome_name).group(1)
         f.write(str('\t'.join(modified_items) + '\n'))
 
 
@@ -100,7 +100,7 @@ else:
     with open(path + "/clusters_name.txt", "w") as f:
         for cluster_id, items in cluster_dict.items():
             items = [item.split('/')[-1] for item in items]
-            modified_items = [re.match("(GCA_[0-9]+\.[0-9]+)", item).group(1) for item in items]
+            modified_items = [re.match("(GCA_[0-9]+\\.[0-9]+)", item).group(1) for item in items]
             print(f"Cluster {cluster_id}:")
             for item in modified_items:
                 print(f"\tItem: {item}")

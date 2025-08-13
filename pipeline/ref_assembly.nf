@@ -41,9 +41,10 @@ process reduceClusters {
     script:
     """
     python ${projectDir}/scripts/combine_clusters.py ${cluster_files} concat_refs.fna
-   # get file size 
-    let sz=`stat -c%s concat_refs.fna`/1024**3
-    if [[ \$sz > 4 ]] ;then
+   # get file size  (the +1 is needed because the exit code is 1 for any
+   # arithmetic operation that yields a result of 0.
+    let sz=`stat -c%s concat_refs.fna`/1024**3+1
+    if [[ \$sz > 5 ]] ;then
        let batchs=sz+4
        batch="-I\${batchs}g"
     else
@@ -51,7 +52,7 @@ process reduceClusters {
     fi
        
     minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
-        concat_refs.fna ${interleaved_reads}| cut -d / -f 1 > aligned_reads.txt
+        concat_refs.fna ${interleaved_reads}| cut -f 1 > aligned_reads.txt
     seqkit grep -I -j ${params.threads} -f aligned_reads.txt ${interleaved_reads} > concat_refs_mapped.fq
     """
 }

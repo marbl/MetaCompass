@@ -33,6 +33,7 @@ def run_shell_cmd(cmds: List, outfile=None, count_lines=False):
     """
 
     try:
+        print("DEBUG: executing: ", cmds) 
         if not isinstance(cmds[0], list):  # If cmds is a single command
             cmds = [cmds]
 
@@ -142,9 +143,11 @@ def extract_read_ids(sam_file: str, outfile: str, threads: str = "1"):
     cmd1 = ["samtools", "fastq", "-@", str(threads), sam_file]
 
     # Process with awk to extract read IDs
-    cmd2 = ["awk", 'NR%4==1 {print gensub(/^@(.*)\\/.*/, "\\\\1", 1)}']
+    cmd2 = ["awk", 'NR%4==1 {print gensub(/^@(.*\\/[12]).*/, "\\\\1", 1)}']
 
-    print("DEBUG: awk cmd is " + " ".join(cmd2))
+    print("DEBUG: extract_read_ids", cmd1)
+    print("DEBUG: awk cmd is ",  cmd2)
+    print("DEBUG: writing into ", outfile)
 
     run_shell_cmd([cmd1, cmd2], outfile)
 
@@ -171,7 +174,9 @@ def extract_reads(mapped_sam: str, mapped_ids: str, interleaved_reads: str, outf
                          threads=threads)
 
     cmd = ["seqkit", "grep", "-I", "-j", str(threads), "-f", mapped_ids, interleaved_reads]
-    print("DEBUG: running:" + " ".join(cmd))
+
+    print("DEBUG: extract_reads running:" + " ".join(cmd))
+    print("DEBUG: writing into", outfile)
 
     if not mapped:
         cmd.insert(5, "-v")

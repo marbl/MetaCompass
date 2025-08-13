@@ -7,8 +7,8 @@
 
 process createOutputs {
     publishDir {
-        path: file("${workflow.outputDir}/output")
-        mode: 'link'
+        path: file("${workflow.outputDir}/"), 
+        mode: 'move'
     }
 
     input:

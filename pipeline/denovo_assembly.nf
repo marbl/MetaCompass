@@ -23,7 +23,7 @@ process deNovoAssembly {
 
     script:
     """
-    megahit --min-count 3 --min-contig-len ${params.minlen} -t ${params.threads} --12 $reads
+    megahit --min-count 3 --min-contig-len ${params.minlen} -t ${params.threads} -r $reads
     """
 
 }
