@@ -1,8 +1,53 @@
 #!/usr/bin/env nextflow
 
+// process collect_refs {
+//     publishDir {
+//         path: file("$outputDir/reference_culling"), 
+//         mode: 'copy'
+//     } 	
+
+//     input: 
+//         path ref_candidates	
+
+//     output: 
+//         path "matching_files.txt"
+
+//     script:
+//     """
+//    bash "${projectDir}/scripts/download.sh" T "${params.reference_db}" "${params.reference_db}/downloaded.txt" "download.log" "${ref_candidates}" .
+//     if [[ \$? -ne 0 ]]; then
+//         echo "Error downloading references."
+//         exit 1
+//     fi
+
+//     # Initialize an empty array to store matching files
+//     matching_files_array=()
+
+//     # Read ref_candidates file line-by-line into an array
+//     ref_candidates_array=()
+//     while read -r line; do
+//         ref_candidates_array+=("\${line}")
+//     done < ${ref_candidates}
+
+//     # Search for matching files in the downloaded directories
+//     for fl in "\${ref_candidates_array[@]}"; do
+//         # Assuming that files are downloaded to a path like downloaded_path/\${fl}/
+//         files=(\$(find ${params.reference_db}/collect_refs/ncbi_dataset/data/\${fl}/ -type f -name "GCA_*_genomic.fna"))
+//         # Add them to the matching_files_array
+//         for file_path in "\${files[@]}"; do
+//             matching_files_array+=("\${file_path}")
+//         done
+//     done
+
+//     # Write the matching files to a text file
+//     printf "%s\n" "\${matching_files_array[@]}" > matching_files.txt
+//     """
+// }
+
+// Moumi: added new version of collect_refs for ref_cache
 process collect_refs {
     publishDir {
-        path: file("$outputDir/reference_culling"), 
+        path: file("${workflow.outputDir}/reference_culling"), 
         mode: 'copy'
     } 	
 
@@ -14,7 +59,7 @@ process collect_refs {
 
     script:
     """
-   bash "${projectDir}/scripts/download.sh" T "${params.reference_db}" "${params.reference_db}/downloaded.txt" "download.log" "${ref_candidates}" .
+    bash "${projectDir}/scripts/download.sh" T "${params.reference_db}" "${params.ref_cache}" "download.log" "${ref_candidates}" .
     if [[ \$? -ne 0 ]]; then
         echo "Error downloading references."
         exit 1
@@ -27,20 +72,30 @@ process collect_refs {
     ref_candidates_array=()
     while read -r line; do
         ref_candidates_array+=("\${line}")
-    done < ${ref_candidates}
+    done < "${ref_candidates}"
 
-    # Search for matching files in the downloaded directories
+    # Search for matching files in both:
+    # 1) shared reference DB
+    # 2) local writable ref_cache
     for fl in "\${ref_candidates_array[@]}"; do
-        # Assuming that files are downloaded to a path like downloaded_path/\${fl}/
-        files=(\$(find ${params.reference_db}/collect_refs/ncbi_dataset/data/\${fl}/ -type f -name "GCA_*_genomic.fna"))
-        # Add them to the matching_files_array
-        for file_path in "\${files[@]}"; do
-            matching_files_array+=("\${file_path}")
+        fl=\$(echo "\$fl" | tr -d '[:space:]')
+        [[ -z "\$fl" ]] && continue
+
+        for root in \
+            "${params.reference_db}/collect_refs/ncbi_dataset/data" \
+            "${params.ref_cache}/collect_refs/ncbi_dataset/data"
+        do
+            if [[ -d "\${root}/\${fl}" ]]; then
+                files=(\$(find "\${root}/\${fl}" -type f -name "GCA_*_genomic.fna"))
+                for file_path in "\${files[@]}"; do
+                    matching_files_array+=("\${file_path}")
+                done
+            fi
         done
     done
 
     # Write the matching files to a text file
-    printf "%s\n" "\${matching_files_array[@]}" > matching_files.txt
+    printf "%s\n" "\${matching_files_array[@]}" | awk '!seen[\$0]++' > matching_files.txt
     """
 }
 
