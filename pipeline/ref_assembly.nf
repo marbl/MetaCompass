@@ -50,9 +50,9 @@ process reduceClusters {
     else
        batch=""
     fi
-       
+    # MOUMI: made change to remove extra /1 /2 from read names that minimap2 adds when aligning paired-end reads
     minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
-        concat_refs.fna ${interleaved_reads}| cut -f 1 > aligned_reads.txt
+        concat_refs.fna ${interleaved_reads}| cut -f 1 | sed -E 's#/(1|2)\$##' > aligned_reads.txt
     seqkit grep -I -j ${params.threads} -f aligned_reads.txt ${interleaved_reads} > concat_refs_mapped.fq
     """
 }
