@@ -39,7 +39,6 @@ include {reduceClusters} from './pipeline/ref_assembly.nf'
 include {refAssembly} from './pipeline/ref_assembly.nf'
 include {deNovoAssembly} from './pipeline/denovo_assembly.nf'
 include {createOutputs} from './pipeline/finalize.nf'
-//include {createDeNovoOutputs} from './pipeline/finalize.nf'
 
 // Usage information
 def usage(status) {
@@ -85,11 +84,6 @@ def usage(status) {
 if (params.help){
     usage(0)
 }
-// if the path is invalid, throw an error
-//if (ams.output == "" || ! file(params.output).mkdirs() ){
-//    println "ERROR: Need proper output directory path!"
-//    usage(1)
-//}
 
 // check if reference file exists
 if (params.reference_db != "" && !file(params.reference_db).isDirectory() ){
@@ -144,15 +138,9 @@ workflow {
 
   file("${params.reference_db}/marker_index").eachFile {item ->
      if (item.isDirectory()) { 
-       // println "DEBUG: got ${item.getName()}"
         toProcess = toProcess + item.getName()
-     } //else {
-	//println "not dir ${item.getName()}"
-     //}
+     }
   }
-
-
-  // mapped_reads.view() // for debugging
 
   // map reads to each gene and collect info
   marker_covs = map_to_gene(mapped_reads, Channel.fromList(toProcess))
@@ -206,16 +194,4 @@ workflow {
      createOutputs(0, refAssembly.out.genomes)
   }
 
-
-
-//  publish:
-//  contigs = createOutputs.out
-
 }
-
-//output {
-//  contigs { 
-//    mode 'move'
-//    path "."
- // }
-//}
