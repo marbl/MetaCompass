@@ -1,197 +1,294 @@
 #!/usr/bin/env nextflow
+nextflow.enable.dsl = 2
 
-// setting variables
+/*
+ * MetaCompass main pipeline
+ *
+ * Responsibilities:
+ *   1. Validate user inputs
+ *   2. Build read arguments for downstream modules
+ *   3. Orchestrate reference selection, culling, assembly, and final output staging
+ *
+ * Best-practice note:
+ *   Parameter defaults are also in `nextflow.config`.
+ */
 
-//nextflow.preview.output = 1
-params.forward = "" // input forward reads
-params.reverse = "" // input reverse reads
-forward_gz = ""  // uncompressed forward reads
-reverse_gz = ""  // uncompressed reverse reads
+// -----------------------------------------------------------------------------
+// Parameter defaults
+// -----------------------------------------------------------------------------
 
-params.unpaired = "" // input unpaired reads
-unpaired_gz = ""  // uncompressed unpaired reads
+params.help         = params.help ?: false
+params.forward      = params.forward ?: ''
+params.reverse      = params.reverse ?: ''
+params.unpaired     = params.unpaired ?: ''
+params.reference_db = params.reference_db ?: ''
 
-reads = "" // string containing command line parameters for passing reads along
+if (params.skip_rs  == null) params.skip_rs  = false
+if (params.skip_rc  == null) params.skip_rc  = false
+if (params.clean_uf == null) params.clean_uf = false
+if (params.de_novo  == null) params.de_novo  = 1
 
-params.reference_db = "" // location of reference database
-//params.output = "" // location for output files
-params.skip_rs = false // skip reference selection
-params.skip_rc = false // skip reference culling
-params.clean_uf = false // clean up as we go
-params.de_novo = 1 // execute de novo assembly
+// -----------------------------------------------------------------------------
+// Module imports
+// -----------------------------------------------------------------------------
 
-gzip_flag = false  // input files are gziped
-paired = false // input files are paired
-unpaired = false // input files are unpaired
+include { filter_reads  } from './pipeline/ref_selection.nf'
+include { map_to_gene   } from './pipeline/ref_selection.nf'
+include { select_genomes } from './pipeline/ref_selection.nf'
 
-// some modularization
-include {filter_reads} from './pipeline/ref_selection.nf'
-include {map_to_gene} from './pipeline/ref_selection.nf'
-include {select_genomes} from './pipeline/ref_selection.nf'
-include {collect_refs} from './pipeline/ref_culling.nf'
-include {SkaniTriangle} from './pipeline/ref_culling.nf'
-include {Cluster} from './pipeline/ref_culling.nf'
-include {ConcatFasta} from './pipeline/ref_culling.nf'
-include {IndexReads} from './pipeline/ref_culling.nf'
-include {ClusterIndex} from './pipeline/ref_culling.nf'
-include {interleaveReads} from './pipeline/ref_assembly.nf'
-include {reduceClusters} from './pipeline/ref_assembly.nf'
-include {refAssembly} from './pipeline/ref_assembly.nf'
-include {deNovoAssembly} from './pipeline/denovo_assembly.nf'
-include {createOutputs} from './pipeline/finalize.nf'
+include { collect_refs  } from './pipeline/ref_culling.nf'
+include { SkaniTriangle } from './pipeline/ref_culling.nf'
+include { Cluster       } from './pipeline/ref_culling.nf'
+include { ConcatFasta   } from './pipeline/ref_culling.nf'
+include { IndexReads    } from './pipeline/ref_culling.nf'
+include { ClusterIndex  } from './pipeline/ref_culling.nf'
 
-// Usage information
-def usage(status) {
-    log.info "Usage: \nnextflow run metacompass.nf \n\
-            [[--forward /path/to/forwardReads --reverse /path/to/reverseReads --unpaired /path/to/unpairedReads] | \n\
-            [--forward /path/to/forwardReads --reverse /path/to/reverseReads] | \n\
-            [--unpaired /path/to/unpairedReads]] \n\
-            --output /path/to/outputDir"
-    log.info " --reference_db   Path to reference marker gene database."
-    
-    log.info ""
-    log.info "Required:"
-    log.info ""
+include { interleaveReads } from './pipeline/ref_assembly.nf'
+include { reduceClusters  } from './pipeline/ref_assembly.nf'
+include { refAssembly     } from './pipeline/ref_assembly.nf'
 
-    log.info " --forward        Path to forward paired-end read."
-    log.info " --reverse        Path to reverse paried-end read."
-    log.info " --unpaired       Path to unpaired read fasta file(s)."
-    log.info " --output         Path to output folder."
-    
-    log.info ""
-    log.info "Optional:"
-    log.info ""
-    
-    log.info " --ref_sel        Reference selection method. Default set to 'tax'."
-    log.info " --ref_pick       Pick reference selection method. Default set to 'breadth'."
-    log.info " --readlen        Read length for filtering. Default set to 200."
-    log.info " --mincov         Minimum coverage. Default set to 1."
-    log.info " --minctglen      Minimum contig length. Default set to 1."
-    log.info " --run_valet      Whether or not run VALET during reference-guided assembly."
-    log.info " --de_novo        Set to 0 to skip de_novo assembly. Default set to 1."
-    log.info " --skip_rs        Set to true to skip ref selection process. Default set to false."
-    log.info " --skip_rc        Set to true to skip ref culling process. Default set to false."
-    log.info " --tracks         Tracks. Default set to false."
-    log.info " --threads        Number of threads to use. Default set to 12."
-    log.info " --memory         Amount of memory to use."
-    log.info " --clean_uf       Remove unnecessary files while running the job. Default is false."
-    log.info " --executor       Executor to use."
-    log.info " --help           Print help message."
+include { deNovoAssembly } from './pipeline/denovo_assembly.nf'
+include { createOutputs  } from './pipeline/finalize.nf'
 
-    exit status
+// -----------------------------------------------------------------------------
+// Helper functions
+// -----------------------------------------------------------------------------
+
+/**
+ * Returns CLI usage text.
+ */
+String usageText() {
+    return """
+    Usage:
+      nextflow run metacompass.nf \\
+        [[--forward /path/to/forwardReads --reverse /path/to/reverseReads --unpaired /path/to/unpairedReads] |
+         [--forward /path/to/forwardReads --reverse /path/to/reverseReads] |
+         [--unpaired /path/to/unpairedReads]] \\
+        --reference_db /path/to/reference_db \\
+        --output /path/to/outputDir
+
+    Required:
+      --reference_db   Path to reference marker gene database
+      --output         Path to output folder
+      --forward        Path to forward paired-end read
+      --reverse        Path to reverse paired-end read
+      --unpaired       Path to unpaired read file(s)
+
+    Optional:
+      --ref_sel        Reference selection method (default: tax)
+      --ref_pick       Reference picking method (default: breadth)
+      --readlen        Read length for filtering (default: 200)
+      --mincov         Minimum coverage (default: 1)
+      --minctglen      Minimum contig length (default: 1)
+      --run_valet      Run VALET during reference-guided assembly
+      --de_novo        Set to 0 to skip de novo assembly (default: 1)
+      --skip_rs        Skip reference selection (default: false)
+      --skip_rc        Skip reference culling (default: false)
+      --tracks         Tracks output (default: false)
+      --threads        Number of threads to use (default: 12)
+      --memory         Amount of memory to use
+      --clean_uf       Remove unnecessary files while running (default: false)
+      --executor       Executor to use
+      --help           Print this help message
+    """.stripIndent().trim()
 }
 
-if (params.help){
-    usage(0)
+/**
+ * Print usage text and exit.
+ */
+void printUsageAndExit(int status = 0) {
+    log.info usageText()
+    System.exit(status)
 }
 
-// check if reference file exists
-if (params.reference_db != "" && !file(params.reference_db).isDirectory() ){
-    println "ERROR: Reference genome files not found!"
-    usage(1)
+/**
+ * Log an error, show usage, and exit.
+ */
+void failWithUsage(String message) {
+    log.error message
+    printUsageAndExit(1)
 }
 
-// check input reads
-if (params.forward != "" && params.reverse != ""){
-        if(!file(params.forward).isFile() ||
-       !file(params.reverse).isFile()){
-        println "ERROR: Incorrect filepath to paired reads!"
-        usage(1)
+/**
+ * Ensure a file exists and is a regular file.
+ */
+void requireFile(String path, String flagName) {
+    def f = file(path)
+    if (!f.exists() || !f.isFile()) {
+        failWithUsage("Invalid path for ${flagName}: ${path}")
+    }
+}
+
+/**
+ * Ensure a directory exists.
+ */
+void requireDirectory(String path, String flagName) {
+    def d = file(path)
+    if (!d.exists() || !d.isDirectory()) {
+        failWithUsage("Invalid directory for ${flagName}: ${path}")
+    }
+}
+
+/**
+ * Validate CLI inputs and infer read mode.
+ *
+ * Returns:
+ *   [paired: boolean, unpaired: boolean]
+ */
+Map validateInputs() {
+    if (params.help) {
+        printUsageAndExit(0)
     }
 
-    paired = true
-}
+    final boolean hasForward  = params.forward as boolean
+    final boolean hasReverse  = params.reverse as boolean
+    final boolean hasUnpaired = params.unpaired as boolean
+    final boolean hasPaired   = hasForward && hasReverse
+    final boolean hasPartialPair = (hasForward && !hasReverse) || (!hasForward && hasReverse)
 
-// Dealing with unpaired reads
-if (params.unpaired != ""){
-    if(!file(params.unpaired).isFile()){
-        println "ERROR: Incorrect filepath to unpaired reads!"
-        usage(1)
+    if (!(params.reference_db as boolean)) {
+        failWithUsage("Missing required parameter: --reference_db")
     }
 
-    unpaired = true
+    requireDirectory(params.reference_db, '--reference_db')
+
+    if (hasPartialPair) {
+        failWithUsage("Paired-end input requires both --forward and --reverse.")
+    }
+
+    if (!hasPaired && !hasUnpaired) {
+        failWithUsage("No reads supplied. Provide paired-end reads or unpaired reads.")
+    }
+
+    if (hasPaired) {
+        requireFile(params.forward, '--forward')
+        requireFile(params.reverse, '--reverse')
+    }
+
+    if (hasUnpaired) {
+        requireFile(params.unpaired, '--unpaired')
+    }
+
+    return [
+        paired  : hasPaired,
+        unpaired: hasUnpaired
+    ]
 }
 
-if (paired == false && unpaired == false){
-    println "ERROR: Incorrect combination of reads given!"
-    usage(1)
+/**
+ * Discover marker-index subdirectories under the reference database.
+ */
+List<String> discoverMarkerTargets(String referenceDb) {
+    def markerIndexDir = file("${referenceDb}/marker_index")
+
+    if (!markerIndexDir.exists() || !markerIndexDir.isDirectory()) {
+        failWithUsage("Missing marker index directory: ${markerIndexDir}")
+    }
+
+    def targets = []
+    markerIndexDir.eachFile { item ->
+        if (item.isDirectory()) {
+            targets << item.name
+        }
+    }
+
+    if (targets.isEmpty()) {
+        failWithUsage("No marker-index subdirectories found in: ${markerIndexDir}")
+    }
+
+    return targets.sort()
 }
 
-// Here we define the actual workflow
+/**
+ * Build read arguments for downstream modules based on input mode.
+ *
+ * Note:
+ *   This preserves the original behavior:
+ *   - If paired reads are provided, downstream steps use paired input
+ *   - Otherwise, downstream steps use unpaired input
+ */
+Map buildReadArguments(boolean pairedInput) {
+    if (pairedInput) {
+        return [
+            filterArg    : "${file(params.forward)} ${file(params.reverse)}",
+            indexArg     : "${file(params.forward)}\n${file(params.reverse)}",
+            interleaveArg: "-in1=${file(params.forward)} -in2=${file(params.reverse)}"
+        ]
+    }
+
+    return [
+        filterArg    : "${file(params.unpaired)}",
+        indexArg     : "${file(params.unpaired)}",
+        interleaveArg: "-in=${file(params.unpaired)}"
+    ]
+}
+
+// -----------------------------------------------------------------------------
+// Workflow
+// -----------------------------------------------------------------------------
 
 workflow {
-  main:
+    final Map inputMode      = validateInputs()
+    final Map readArgs       = buildReadArguments(inputMode.paired)
+    final List<String> markerTargets = discoverMarkerTargets(params.reference_db)
 
-  println "Output dir is $workflow.outputDir"
+    log.info "Output directory: ${params.output}"
+    log.info "Input mode: ${inputMode.paired ? 'paired-end' : 'unpaired'}"
+    log.info "Discovered ${markerTargets.size()} marker-index partitions"
 
-// filter the reads aligned to marker genes
-  if (paired == true) {
-    reads = file(params.forward) + " " + file(params.reverse)
-  } else {
-    reads = file(params.unpaired)
-  }
+    /*
+     * Step 1: Filter reads aligned to marker genes
+     */
+    def mappedReads = filter_reads(readArgs.filterArg)
 
-// keep only reads aligned to marker genes
-  mapped_reads = filter_reads(reads)
+    /*
+     * Step 2: Map reads to each marker gene partition
+     */
+    def markerCoverages = map_to_gene(mappedReads, Channel.fromList(markerTargets))
 
-  def toProcess = []
+    /*
+     * Step 3: Select candidate genomes
+     */
+    select_genomes(markerCoverages.collect())
 
-  file("${params.reference_db}/marker_index").eachFile {item ->
-     if (item.isDirectory()) { 
-        toProcess = toProcess + item.getName()
-     }
-  }
+    /*
+     * Step 4: Collect and cluster reference genomes
+     */
+    collect_refs(select_genomes.out.candidates)
+    SkaniTriangle(collect_refs.out, select_genomes.out.candidates.countLines())
+    Cluster(SkaniTriangle.out)
+    ConcatFasta(Cluster.out.clusters)
 
-  // map reads to each gene and collect info
-  marker_covs = map_to_gene(mapped_reads, Channel.fromList(toProcess))
-  
-  // generate list of genomes selected
-  select_genomes(marker_covs.collect())  
+    /*
+     * Step 5: Build read and cluster indexes
+     */
+    IndexReads(readArgs.indexArg)
+    ClusterIndex(ConcatFasta.out.cluster_files.flatten())
 
-  // download all the genomes needed
-  collect_refs(select_genomes.out.candidates)
-  // cluster the genomes based on sequence similarity
-  SkaniTriangle(collect_refs.out, select_genomes.out.candidates.countLines())
-  Cluster(SkaniTriangle.out)
-  // create per-cluster FASTA files
-  ConcatFasta(Cluster.out.clusters)
-  
-  // build k-mer index for reads
-  if (paired == true) {
-    toindex = file(params.forward) + "\n" + file(params.reverse)
-  } else {
-    toindex = file(params.unpaired)
-  }
-  IndexReads(toindex)
+    /*
+     * Step 6: Interleave reads and reduce candidate clusters
+     */
+    interleaveReads(readArgs.interleaveArg)
+    reduceClusters(Cluster.out.clusters, interleaveReads.out)
 
-  // build k-mer index from clusters
-  ClusterIndex(ConcatFasta.out.cluster_files.flatten()) 
+    /*
+     * Step 7: Reference-guided assembly
+     */
+    refAssembly(
+        interleaveReads.out,
+        Cluster.out.clusters,
+        reduceClusters.out,
+        IndexReads.out.collect(),
+        ClusterIndex.out.collect()
+    )
 
-  // run alignment/assembly
-
-  // first interleave
-  if (paired == true) {
-    toassemble = "-in1=" + file(params.forward) + " -in2=" + file(params.reverse)
-  } else {
-    toassemble = "-in=" + file(params.unpaired)
-  }
-  interleaveReads(toassemble)
-
-
-  // combine all clusters in a single fasta file
-  // and identify just the reads that map to some of the clusters
-  reduceClusters(Cluster.out.clusters, interleaveReads.out)
-
-  // run the cluster-by-cluster assembly
-  refAssembly(interleaveReads.out, Cluster.out.clusters, reduceClusters.out, IndexReads.out.collect(), ClusterIndex.out.collect()) 
-
-
-  // de novo assembly (if needed) and stage results
-  if (params.de_novo > 0) {
-     deNovoAssembly(refAssembly.out.unmapped_reads)
-     createOutputs(deNovoAssembly.out.flag, refAssembly.out.genomes)
-  } else {
-     createOutputs(0, refAssembly.out.genomes)
-  }
-
+    /*
+     * Step 8: Optional de novo assembly and final output staging
+     */
+    if ((params.de_novo as Integer) > 0) {
+        deNovoAssembly(refAssembly.out.unmapped_reads)
+        createOutputs(deNovoAssembly.out.flag, refAssembly.out.genomes)
+    } else {
+        createOutputs(0, refAssembly.out.genomes)
+    }
 }
