@@ -1,3 +1,0 @@
-ref4.fasta
-ref1.fasta
-ref3.fasta

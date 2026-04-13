@@ -23,26 +23,93 @@ def delete_file(f: [str | Path]):
         raise FileExistsError(f"Unable to delete file with path {Path(f).resolve().as_posix()}")
 
 
-def run_shell_cmd(cmds: List, outfile=None, count_lines=False):
+# def run_shell_cmd(cmds: List, outfile=None, count_lines=False):
+#     """
+#     Run one or more shell commands, optionally piping them together.
+
+#     Args
+#         cmds (List): A single command as a list or multiple commands as a list of lists.
+#         outfile (Path): Optional output file to redirect the final command's output.
+#     """
+
+#     try:
+#         print("DEBUG: executing: ", cmds) 
+#         if not isinstance(cmds[0], list):  # If cmds is a single command
+#             cmds = [cmds]
+
+#         # Start the first process
+#         processes = [subprocess.Popen(cmds[0], stdout=subprocess.PIPE)]
+
+#         # Start the rest of the processes, connecting each one's input to the previous one's output
+#         for cmd in cmds[1:]:
+#             processes.append(subprocess.Popen(cmd, stdin=processes[-1].stdout, stdout=subprocess.PIPE))
+#             processes[-2].stdout.close()  # Allow previous process to receive a SIGPIPE if the next process exits
+
+#         # Wait for the final process to complete and capture its output
+#         final_process = processes[-1]
+#         stdout, stderr = final_process.communicate()
+
+#         # Check for errors
+#         if final_process.returncode != 0:
+#             raise subprocess.CalledProcessError(final_process.returncode, final_process.args)
+
+#         # Write the output to a file if given
+#         if outfile:
+#             with open(outfile, 'a') as f:
+#                 f.write(stdout.decode())
+
+#         if count_lines:
+#             return stdout.decode(), len(stdout.decode().splitlines())
+#         else:
+#             return stdout.decode()
+
+#     except subprocess.CalledProcessError as e:
+#         error_message = e.output.decode() if e.output else "No output"
+#         print(f"Command {e.cmd} failed with return code {e.returncode} - {error_message}. {e}")
+#         traceback.print_exc()
+#     except Exception as e:
+#         print(f"An error occurred - {str(e)}.")
+#         traceback.print_exc()
+
+# MOUMI: modified version to handle OOM
+def run_shell_cmd(cmds: List, outfile=None, count_lines=False, stream_to_file=False):
     """
     Run one or more shell commands, optionally piping them together.
 
     Args
         cmds (List): A single command as a list or multiple commands as a list of lists.
         outfile (Path): Optional output file to redirect the final command's output.
+        stream_to_file (bool): If True, stream final stdout directly to outfile
+                               instead of buffering it in Python memory.
     """
 
+    out_handle = None
     try:
-        print("DEBUG: executing: ", cmds) 
+        print("DEBUG: executing: ", cmds)
+
         if not isinstance(cmds[0], list):  # If cmds is a single command
             cmds = [cmds]
 
         # Start the first process
-        processes = [subprocess.Popen(cmds[0], stdout=subprocess.PIPE)]
+        first_stdout = subprocess.PIPE
+        if len(cmds) == 1 and outfile and stream_to_file:
+            out_handle = open(outfile, "wb")
+            first_stdout = out_handle
+
+        processes = [subprocess.Popen(cmds[0], stdout=first_stdout)]
 
         # Start the rest of the processes, connecting each one's input to the previous one's output
-        for cmd in cmds[1:]:
-            processes.append(subprocess.Popen(cmd, stdin=processes[-1].stdout, stdout=subprocess.PIPE))
+        for i, cmd in enumerate(cmds[1:], start=1):
+            is_last = (i == len(cmds) - 1)
+            stdout_target = subprocess.PIPE
+
+            if is_last and outfile and stream_to_file:
+                out_handle = open(outfile, "wb")
+                stdout_target = out_handle
+
+            processes.append(
+                subprocess.Popen(cmd, stdin=processes[-1].stdout, stdout=stdout_target)
+            )
             processes[-2].stdout.close()  # Allow previous process to receive a SIGPIPE if the next process exits
 
         # Wait for the final process to complete and capture its output
@@ -53,14 +120,24 @@ def run_shell_cmd(cmds: List, outfile=None, count_lines=False):
         if final_process.returncode != 0:
             raise subprocess.CalledProcessError(final_process.returncode, final_process.args)
 
-        # Write the output to a file if given
-        if outfile:
+        if out_handle:
+            out_handle.close()
+
+        # Old behavior stays the same unless streaming is enabled
+        if outfile and not stream_to_file:
             with open(outfile, 'a') as f:
                 f.write(stdout.decode())
 
         if count_lines:
-            return stdout.decode(), len(stdout.decode().splitlines())
+            if stream_to_file and outfile:
+                with open(outfile, "r") as f:
+                    return "", sum(1 for _ in f)
+            else:
+                decoded = stdout.decode()
+                return decoded, len(decoded.splitlines())
         else:
+            if stream_to_file:
+                return ""
             return stdout.decode()
 
     except subprocess.CalledProcessError as e:
@@ -70,6 +147,9 @@ def run_shell_cmd(cmds: List, outfile=None, count_lines=False):
     except Exception as e:
         print(f"An error occurred - {str(e)}.")
         traceback.print_exc()
+    finally:
+        if out_handle and not out_handle.closed:
+            out_handle.close()
 
 
 def align_with_minimap2(ref_genome_path: str, interleaved_reads_path: str,
@@ -112,8 +192,9 @@ def align_with_minimap2(ref_genome_path: str, interleaved_reads_path: str,
 
     print("DEBUG: running: " + " ".join(cmd))
 
-    run_shell_cmd(cmd, outfile)
-
+    # MOUMI: modified version to handle OOM by streaming output directly to file instead of buffering in memory
+    # run_shell_cmd(cmd, outfile)
+    run_shell_cmd(cmd, outfile, stream_to_file=True)
 
 def sam_to_sorted_bam(input_sam: Path, output_bam: Path, threads: str = "1"):
     """Used to generate a sorted bam file from a sam file using samtools
@@ -182,7 +263,8 @@ def extract_reads(mapped_sam: str, mapped_ids: str, interleaved_reads: str, outf
         cmd.insert(5, "-v")
         print("unmapped reads extracted to", outfile)
 
-    _, num_lines = run_shell_cmd(cmd, outfile, count_lines=True)
+    # MOUMI: modified version to handle OOM by streaming output directly to file instead of buffering in memory
+    _, num_lines = run_shell_cmd(cmd, outfile, count_lines=True, stream_to_file=True)
     return num_lines
 
     # Path(interleaved_reads).unlink() # delete the interleaved reads

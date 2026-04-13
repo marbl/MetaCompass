@@ -6,12 +6,13 @@ to_download=$6   # this is a directory location
 download_start=$SECONDS
 if [ "$1" == "T" ]; then        # Assuming $1 is like your !{REFS}
   echo "Debug: reference_db=$2" # $2 is like your !{params.reference_db}
-  out="$2/collect_refs"
+  echo "Debug: ref_cache=$3" # $3 is like your !{params.ref_cache}
+  out="$3/collect_refs"
   mkdir -p "$out"
   cp $5 $out
   cd "$out"
   declare -A downloaded
-  downloadedList=$3 # $3 is like your !{params.downloadedList}
+  downloadedList="$3/downloaded.txt" # $3 is like your !{params.downloadedList}
   script_dir="$(cd "$(dirname "$0")" && pwd)"
   file_access_locker="$script_dir/utils/file_access_locker.sh"
   download_lock_file="$out/download_lock_file"
@@ -38,10 +39,21 @@ if [ "$1" == "T" ]; then        # Assuming $1 is like your !{REFS}
     [ -z "$acc" ] && echo "Error: acc is empty" && continue # Print an error message and skip to the next iteration if acc is empty
     echo acc $acc
     # debug: print out the key and the corresponding value from the array
-    if [[ -z ${downloaded[$acc]+x} ]]; then
+    # if [[ -z ${downloaded[$acc]+x} ]]; then
+    #   echo "Accession $acc is not downloaded. Downloading now."
+    #   echo $acc >>${to_download}/accessions_to_download.txt
+    #   echo $acc >>"$downloadedList"
+    # fi
+
+    # CHANGED: check shared DB first, then local cache/downloaded list
+    shared_ref_dir="$2/collect_refs/ncbi_dataset/data/$acc"
+    local_ref_dir="$out/ncbi_dataset/data/$acc"
+
+    if [[ -d "$shared_ref_dir" || -d "$local_ref_dir" || -n ${downloaded[$acc]+x} ]]; then
+      echo "Accession $acc already available. Skipping download."
+    else
       echo "Accession $acc is not downloaded. Downloading now."
-      echo $acc >>${to_download}/accessions_to_download.txt
-      echo $acc >>"$downloadedList"
+      echo "$acc" >> "${to_download}/accessions_to_download.txt"
     fi
   done <"$5" # Assuming $5 is like your !{params.ref_candidates}
   # The actual downloading part
@@ -50,11 +62,12 @@ if [ "$1" == "T" ]; then        # Assuming $1 is like your !{REFS}
     while [ $attempt -le 3 ]; do
         datasets download genome accession --inputfile ${to_download}/accessions_to_download.txt --filename refs.zip 2>&1 | tee -a "$LOG"
         if [ ! -s refs.zip ]; then
-	    echo "Download failed or refs.zip is empty. Retrying..."
-  
-            continue
+	        echo "Download failed or refs.zip is empty. Retrying..."
+          ((attempt++))
+          continue
         fi
-	unzip -n refs.zip
+
+	      unzip -n refs.zip
         unzip_exit_status=$?
         if [ $unzip_exit_status -eq 0 ]; then
             rm -f refs.zip

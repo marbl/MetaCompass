@@ -38,3 +38,4 @@ bin/formatFASTA
 bin/fq2fa
 bin/processmash
 example2_output/
+run.sh

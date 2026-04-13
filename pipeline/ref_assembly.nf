@@ -1,13 +1,22 @@
 #!/usr/bin/env nextflow
 
-/*
-* Interleave reads so that the next steps have an easier time
-*/
+// -----------------------------------------------------------------------------
+// Default parameters
+// -----------------------------------------------------------------------------
+params.output = params.output ?: ''
+
+// -----------------------------------------------------------------------------
+// Helper values
+// -----------------------------------------------------------------------------
+final String REFERENCE_ASSEMBLY_DIR = params.output ?
+    "${params.output}/reference_assembly" :
+    "reference_assembly"
+
+// -----------------------------------------------------------------------------
+// Interleave reads so downstream steps can consume a single FASTQ
+// -----------------------------------------------------------------------------
 process interleaveReads {
-    publishDir {
-        path: file("$workflow.outputDir/reference_assembly"),
-        mode: 'copy'
-    }
+    publishDir "${REFERENCE_ASSEMBLY_DIR}", mode: 'copy'
 
     input:
     val reads
@@ -21,16 +30,13 @@ process interleaveReads {
     """
 }
 
-/*
-*  Combines all clusters into one single FASTA file
-*  aligns all reads to them and retains just the reads
-*  that align to clusters
-*/ 
+// -----------------------------------------------------------------------------
+// Combine cluster FASTA files, align reads to the combined references,
+// and retain only reads that map to at least one cluster
+// -----------------------------------------------------------------------------
 process reduceClusters {
-    publishDir {
-        path: file("$workflow.outputDir/reference_assembly"),
-        mode: 'copy'
-    }
+    publishDir "${REFERENCE_ASSEMBLY_DIR}", mode: 'copy'
+
     input:
     path cluster_files
     path interleaved_reads
@@ -41,57 +47,61 @@ process reduceClusters {
     script:
     """
     python ${projectDir}/scripts/combine_clusters.py ${cluster_files} concat_refs.fna
-   # get file size  (the +1 is needed because the exit code is 1 for any
-   # arithmetic operation that yields a result of 0.
-    let sz=`stat -c%s concat_refs.fna`/1024**3+1
-    if [[ \$sz > 5 ]] ;then
-       let batchs=sz+4
-       batch="-I\${batchs}g"
+
+    # Get file size in GB.
+    # The +1 is needed because the exit code is 1 for arithmetic operations
+    # that yield a result of 0.
+    size_bytes=\$(stat -c%s concat_refs.fna)
+    let sz=size_bytes/1024**3+1
+
+    if [[ \$sz > 5 ]]; then
+        let batchs=sz+4
+        batch="-I\${batchs}g"
     else
-       batch=""
+        batch=""
     fi
-       
+
+    # Added to remove extra /1 and /2 suffixes from read names that minimap2
+    # may produce when aligning paired-end reads
     minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
-        concat_refs.fna ${interleaved_reads}| cut -f 1 > aligned_reads.txt
+        concat_refs.fna ${interleaved_reads} | cut -f 1 | sed -E 's#/(1|2)\$##' > aligned_reads.txt
+
     seqkit grep -I -j ${params.threads} -f aligned_reads.txt ${interleaved_reads} > concat_refs_mapped.fq
     """
 }
 
-/*
-* 
-*/
+// -----------------------------------------------------------------------------
+// Perform reference-guided assembly
+// -----------------------------------------------------------------------------
 process refAssembly {
-    publishDir {
-        path: file("$workflow.outputDir/reference_assembly"),
-        mode: 'copy'
-    }
-    
+    publishDir "${REFERENCE_ASSEMBLY_DIR}", mode: 'copy'
+
     input:
-        path reads // input reads
-        path cluster_list // clusters.txt from Cluster process
-//        val readIndex // kmer index of reads
-        path reduced_reads // just the reads that align to clusters
-        path "*" // read index
-        path "*" // cluster index
+    path reads
+    path cluster_list
+    path reduced_reads
+    path "*"
+    path "*"
 
     output:
-        path "unmapped.fq", emit: unmapped_reads
-        path "*.refctgs.fna", emit: genomes
-
+    path "unmapped.fq", emit: unmapped_reads
+    path "*.refctgs.fna", emit: genomes
 
     script:
     """
     PYTHONPATH=${projectDir}/scripts
     export PYTHONPATH
+
     python -u -m align_reads \
-        -ir ${reads} -cl ${cluster_list} \
+        -ir ${reads} \
+        -cl ${cluster_list} \
         -rs . \
-        -as reads.base_2.kmers  \
+        -as reads.base_2.kmers \
         -o . \
         -debug \
         -mcl 2000 \
         -t ${params.threads}
-    python ${projectDir}/scripts/collate_genomes.py
 
+    python ${projectDir}/scripts/collate_genomes.py
     """
 }
