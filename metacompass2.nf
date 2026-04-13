@@ -21,12 +21,15 @@ params.help         = params.help ?: false
 params.forward      = params.forward ?: ''
 params.reverse      = params.reverse ?: ''
 params.unpaired     = params.unpaired ?: ''
+params.output = params.output ?: "${launchDir}/results"
+workflow.outputDir = file(params.output)
 params.reference_db = params.reference_db ?: ''
+params.ref_cache    = params.ref_cache ?: params.output
 
 if (params.skip_rs  == null) params.skip_rs  = false
 if (params.skip_rc  == null) params.skip_rc  = false
 if (params.clean_uf == null) params.clean_uf = false
-if (params.de_novo  == null) params.de_novo  = 1
+if (params.denovo  == null) params.denovo  = 1
 
 // -----------------------------------------------------------------------------
 // Module imports
@@ -75,13 +78,14 @@ String usageText() {
       --unpaired       Path to unpaired read file(s)
 
     Optional:
+      --ref_cache      Path to cache reference genomes (default: output directory)
       --ref_sel        Reference selection method (default: tax)
       --ref_pick       Reference picking method (default: breadth)
       --readlen        Read length for filtering (default: 200)
       --mincov         Minimum coverage (default: 1)
       --minctglen      Minimum contig length (default: 1)
       --run_valet      Run VALET during reference-guided assembly
-      --de_novo        Set to 0 to skip de novo assembly (default: 1)
+      --denovo         Set to 0 to skip de novo assembly (default: 1)
       --skip_rs        Skip reference selection (default: false)
       --skip_rc        Skip reference culling (default: false)
       --tracks         Tracks output (default: false)
@@ -285,7 +289,7 @@ workflow {
     /*
      * Step 8: Optional de novo assembly and final output staging
      */
-    if ((params.de_novo as Integer) > 0) {
+    if ((params.denovo as Integer) > 0) {
         deNovoAssembly(refAssembly.out.unmapped_reads)
         createOutputs(deNovoAssembly.out.flag, refAssembly.out.genomes)
     } else {

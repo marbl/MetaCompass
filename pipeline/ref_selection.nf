@@ -1,150 +1,155 @@
 #!/usr/bin/env nextflow
 
-// required
-reads = ""
-params.forward = "" // initialize, so that params.forward != null when modifying "reads"
-params.reverse = ""
-params.unpaired = ""
-params.output = ""
-params.workdir = ""
-params.help = false
-params.filter_refs = false
-def usage(status) {
-    log.info "Usage: \nnextflow run ref_selection.nf \n\
-            [[--forward /path/to/forwardReads --reverse /path/to/reverseReads --unpaired /path/to/unpairedReads] | \n\
-            [--forward /path/to/forwardReads --reverse /phat/to/reverseReads] | \n\
-            [--unpaired /path/to/unpairedReads]] \n\
-            -output-dir /path/to/outputDir"
+// -----------------------------------------------------------------------------
+// Default parameters
+// -----------------------------------------------------------------------------
+params.forward      = params.forward ?: ''
+params.reverse      = params.reverse ?: ''
+params.unpaired     = params.unpaired ?: ''
+params.output       = params.output ?: ''
+params.help         = params.help ?: false
+params.filter_refs  = params.filter_refs ?: false
 
-    log.info ""
-    log.info "Required:"
-    log.info ""
+// -----------------------------------------------------------------------------
+// Helper values
+// -----------------------------------------------------------------------------
+final String REFERENCE_SELECTION_DIR = params.output ?
+    "${params.output}/reference_selection" :
+    "reference_selection"
 
-    log.info " --forward\n                  Path to forward read."
-    log.info " --reverse\n                  Path to reverse read."
-    log.info " --unpaired\n                 Paths to unpaired read."
-    log.info " -output-dir\n                   Path to output folder."
-    log.info " --log\n                      Path to log file."
-    log.info " --workdir\n                  Path to working directory. (MetaCompass Folder)"
-    log.info " --reference\n                Path to reference file. Default selected by kmer-mask."
-    log.info " --ms\n                       Kmer size."
-    log.info " --clean\n                    Kmer clean percentage."
-    log.info " --match\n                    Kmer match percentage."
-    log.info " --readlen\n                  Read length. Default set to 105."
-    log.info " --depth_of_coverage          Deapth of coverge. Default set to 5."
-    log.info " --breadth_of_coverage        Breadth of coverage. Default set to 0.9."
-    log.info " --percent_marker_covered\n   Percentage of marker coverage."
-    log.info " --threads\n                  Number of threads to use. Default set to 12."
+// Build read argument string for standalone use
+String reads = ''
+List<String> readInputs = []
 
-    log.info ""
-    log.info "Optional:"
-    log.info ""
-    
-    log.info " --help\n                     Print help message."
+if (params.forward && params.reverse) {
+    readInputs << params.forward
+    readInputs << params.reverse
+}
+
+if (params.unpaired) {
+    readInputs << params.unpaired
+}
+
+reads = readInputs.join(' ')
+
+// -----------------------------------------------------------------------------
+// Usage
+// -----------------------------------------------------------------------------
+def usage = { int status ->
+    log.info """
+    Usage:
+      nextflow run ref_selection.nf \\
+        [[--forward /path/to/forwardReads --reverse /path/to/reverseReads --unpaired /path/to/unpairedReads] |
+         [--forward /path/to/forwardReads --reverse /path/to/reverseReads] |
+         [--unpaired /path/to/unpairedReads]] \\
+        --output /path/to/outputDir
+
+    Required:
+
+      --forward                  Path to forward read
+      --reverse                  Path to reverse read
+      --unpaired                 Path to unpaired read(s)
+      --output                   Path to output folder
+      --reference_db             Path to reference database
+      --ms                       K-mer size
+      --clean                    K-mer clean percentage
+      --match                    K-mer match percentage
+      --readlen                  Read length (default set elsewhere)
+      --depth_of_coverage        Depth of coverage
+      --breadth_of_coverage      Breadth of coverage
+      --percent_markers_covered  Percentage of marker coverage
+      --threads                  Number of threads to use
+
+    Optional:
+
+      --help                     Print help message
+    """.stripIndent().trim()
 
     exit status
 }
 
-if (params.help){
+if (params.help) {
     usage(0)
 }
 
-if( params.forward != "" && params.reverse != "" ){
+// -----------------------------------------------------------------------------
+// Processes
+// -----------------------------------------------------------------------------
 
-    reads += "--forward $params.forward --reverse $params.reverse "
-}
-
-if( params.unpaired != "" ){
-    reads += "--unpaired $params.unpaired"
-}
-
-OUTPUT = "${workflow.outputDir}/reference_selection"
-
-// keeps only reads that map to marker genes
-process filter_reads { 
-    publishDir {
-        path: file("${workflow.outputDir}/reference_selection"),
-        mode: 'copy'
-    }
+// Keeps only reads that map to marker genes
+process filter_reads {
+    publishDir "${REFERENCE_SELECTION_DIR}", mode: 'copy'
 
     input:
-        val reads
+    val reads
 
     output:
-        path "sorted_mapped_reads.fq"
+    path "sorted_mapped_reads.fq"
 
     script:
     """
-        minimap2 -ax sr -t ${params.threads} ${params.reference_db}/marker_index/marker_clustered.fna $reads | \
-        samtools view -bS -F 4 - | \
-        samtools bam2fq - | \
-        seqkit sort - > sorted_mapped_reads.fq
+    minimap2 -ax sr -t ${params.threads} ${params.reference_db}/marker_index/marker_clustered.fna ${reads} | \
+    samtools view -bS -F 4 - | \
+    samtools bam2fq - | \
+    seqkit sort - > sorted_mapped_reads.fq
     """
 }
 
 // Map reads to each marker gene
-process map_to_gene{
-    publishDir { 
-       path: file("${workflow.outputDir}/reference_selection"), 
-       mode:'copy'
-    }
+process map_to_gene {
+    publishDir "${REFERENCE_SELECTION_DIR}", mode: 'copy'
 
     input:
-       path reads
-       val gene
+    path reads
+    val gene
 
     output:
-       file "${gene}_marker_cov_per_genome.txt"
+    path "${gene}_marker_cov_per_genome.txt"
 
     script:
     """
-        minimap2 -ax sr -t ${params.threads} ${params.reference_db}/marker_index/${gene}/${gene}_clustered.fna ${reads} | \
-        samtools view -b > ${gene}.match.bam
-        samtools sort ${gene}.match.bam -o ${gene}.match.sorted.bam
+    minimap2 -ax sr -t ${params.threads} ${params.reference_db}/marker_index/${gene}/${gene}_clustered.fna ${reads} | \
+    samtools view -b > ${gene}.match.bam
 
-        # capture marker gene lengths
-       # tail -n+2 ${params.reference_db}/marker_index/${gene}/${gene}_genome.tsv | \
-       # cut -f 1,4 > ${gene}_genome.txt
+    samtools sort ${gene}.match.bam -o ${gene}.match.sorted.bam
 
-        # calculate coverage
-        bedtools genomecov -ibam ${gene}.match.sorted.bam \
+    # Calculate coverage
+    bedtools genomecov -ibam ${gene}.match.sorted.bam \
         -max ${params.depth_of_coverage} > ${gene}_genomeCov.txt
-        
-        # select markers with good breadth of coverage at given depth of coverage
-        echo -e "seq\tcoverage" > ${gene}_marker_cov.txt
-        awk -v doc=${params.depth_of_coverage} \
-            -v boc=${params.breadth_of_coverage} \
-            '{if (\$2 == doc && \$5 >= boc){print \$1"\t"\$5}}' ${gene}_genomeCov.txt >> \
-            ${gene}_marker_cov.txt
 
-        # pull out the genomes corresponding to all marker genes covered
-        python3 ${projectDir}/scripts/marker_coverage_per_candidate_genome.py ${gene} \
+    # Select markers with good breadth of coverage at the given depth threshold
+    echo -e "seq\tcoverage" > ${gene}_marker_cov.txt
+    awk -v doc=${params.depth_of_coverage} -v boc=${params.breadth_of_coverage} \
+        '{if (\$2 == doc && \$5 >= boc){print \$1"\\t"\$5}}' \
+        ${gene}_genomeCov.txt >> ${gene}_marker_cov.txt
+
+    # Pull out the genomes corresponding to all covered marker genes
+    python3 ${projectDir}/scripts/marker_coverage_per_candidate_genome.py \
+        ${gene} \
         ${gene}_marker_cov.txt \
         ${gene}_marker_cov_per_genome.txt \
         ${params.reference_db}/marker_index
-
-        # output should now be in ${gene}_marker_cov_per_genome.txt
     """
 }
 
-// Combine results from all the genes to select genomes with enough coverage
+// Combine results from all genes to select genomes with enough coverage
 process select_genomes {
-    publishDir { 
-       path: file("${workflow.outputDir}/reference_selection"), 
-       mode:'copy'
-    }
+    publishDir "${REFERENCE_SELECTION_DIR}", mode: 'copy'
 
     input:
-       path "*_marker_cov_per_genome.txt"
-       
+    path "*_marker_cov_per_genome.txt"
+
     output:
-       path "reference_candidates.txt", emit: candidates
-       path "ref_genome_marker_gene_coverage.tsv"
+    path "reference_candidates.txt", emit: candidates
+    path "ref_genome_marker_gene_coverage.tsv"
 
     script:
     """
-       cat *_marker_cov_per_genome.txt > marker_cov_per_genome.txt
-       python3 ${projectDir}/scripts/identify_candidate_genomes.py ${params.percent_markers_covered} . ${params.reference_db}
+    cat *_marker_cov_per_genome.txt > marker_cov_per_genome.txt
+
+    python3 ${projectDir}/scripts/identify_candidate_genomes.py \
+        ${params.percent_markers_covered} \
+        . \
+        ${params.reference_db}
     """
 }
-
