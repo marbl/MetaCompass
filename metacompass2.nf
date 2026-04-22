@@ -29,7 +29,7 @@ params.ref_cache    = params.ref_cache ?: params.output
 if (params.skip_rs  == null) params.skip_rs  = false
 if (params.skip_rc  == null) params.skip_rc  = false
 if (params.clean_uf == null) params.clean_uf = false
-if (params.denovo  == null) params.denovo  = 1
+if (params.denovo  == null) params.denovo  = 0
 
 // -----------------------------------------------------------------------------
 // Module imports
@@ -49,6 +49,8 @@ include { ClusterIndex  } from './pipeline/ref_culling.nf'
 include { interleaveReads } from './pipeline/ref_assembly.nf'
 include { reduceClusters  } from './pipeline/ref_assembly.nf'
 include { refAssembly     } from './pipeline/ref_assembly.nf'
+include { splitClusters } from './pipeline/ref_assembly.nf'
+include { refAssemblyCluster } from './pipeline/ref_assembly.nf'
 
 include { deNovoAssembly } from './pipeline/denovo_assembly.nf'
 include { createOutputs  } from './pipeline/finalize.nf'
@@ -278,9 +280,18 @@ workflow {
     /*
      * Step 7: Reference-guided assembly
      */
-    refAssembly(
-        interleaveReads.out,
-        Cluster.out.clusters,
+    // refAssembly(
+    //     interleaveReads.out,
+    //     Cluster.out.clusters,
+    //     reduceClusters.out,
+    //     IndexReads.out.collect(),
+    //     ClusterIndex.out.collect()
+    // )
+    // MOUMI: change made for parallelization
+    splitClusters(Cluster.out.clusters)
+
+    refAssemblyCluster(
+        splitClusters.out.cluster_refs.flatten(),
         reduceClusters.out,
         IndexReads.out.collect(),
         ClusterIndex.out.collect()
@@ -289,10 +300,12 @@ workflow {
     /*
      * Step 8: Optional de novo assembly and final output staging
      */
-    if ((params.denovo as Integer) > 0) {
-        deNovoAssembly(refAssembly.out.unmapped_reads)
-        createOutputs(deNovoAssembly.out.flag, refAssembly.out.genomes)
-    } else {
-        createOutputs(0, refAssembly.out.genomes)
-    }
+    // if ((params.denovo as Integer) > 0) {
+    //     deNovoAssembly(refAssembly.out.unmapped_reads)
+    //     createOutputs(deNovoAssembly.out.flag, refAssembly.out.genomes)
+    // } else {
+    //     createOutputs(0, refAssembly.out.genomes)
+    // }
+    // MOUMI: denovo turned off for parallelization
+    createOutputs(0, refAssemblyCluster.out.genomes.collect())
 }

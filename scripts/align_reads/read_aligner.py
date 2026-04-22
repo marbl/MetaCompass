@@ -109,6 +109,10 @@ class ReadAligner(object):
         # Additional arguments
         parser.add_argument("-t", "--threads", type=str, default="2", help="input threads arg to bowtie2")
         parser.add_argument("-debug", "--debug", action='store_true', help="toggle input for debug mode")
+        parser.add_argument("--single-cluster", action="store_true",
+                            help="Process only one cluster file and bypass heap-based cluster selection")
+        parser.add_argument("--cluster-id", required=False, type=int, default=None,
+                            help="Cluster id for single-cluster mode")
 
         args = parser.parse_args()
 
@@ -644,3 +648,41 @@ class ReadAligner(object):
         unmapped_reads_src = self.curr_unmapped["unmapped_fq"]
         unmapped_reads_dst = unmapped_reads_src.parent.parent / "unmapped.fq"
         move_file(unmapped_reads_src, unmapped_reads_dst)
+
+    def read_single_cluster_file(self, cluster_file: Path) -> List[str]:
+        with open(cluster_file, "r") as fh:
+            rows = list(csv.reader(fh))
+
+        if not rows:
+            raise ValueError(f"Empty cluster file: {cluster_file}")
+
+        return rows[0]
+
+    def map_single_cluster(self):
+        """Map reads for a single cluster only, bypassing heap-based scheduling."""
+        os.makedirs(self.sketch_dir.resolve().as_posix(), exist_ok=True)
+
+        if self.inputs["cluster_id"] is None:
+            raise ValueError("--cluster-id is required in --single-cluster mode")
+
+        cluster_refs = self.read_single_cluster_file(self.inputs["cluster_list"])
+
+        # In parallel mode, the cluster task receives concat_refs_mapped.fq directly as -ir.
+        # Make that starting read file explicit and local.
+        self.starting_reads = Path(self.inputs["interleaved_reads"])
+        self.interleaved_reads = self.starting_reads
+
+        # These files are no longer used for scheduling in parallel mode,
+        # but downstream methods still append to them, so create them.
+        self.cluster_mapped_reads = Path(self.inputs["out"]) / "cluster_mapped.fq"
+        self.cluster_mapped_reads.touch(exist_ok=True)
+
+        self.mapped_clusters = Path(self.inputs["out"]) / "mapped_clusters.txt"
+        self.mapped_clusters.touch(exist_ok=True)
+
+        self.map_cluster(cluster_num=self.inputs["cluster_id"], cluster_refs=cluster_refs)
+
+        mapped_genomes_file_path = self.inputs["out"] / "mapped_genomes.txt"
+        write_list_to_file(self.mapped_genomes, mapped_genomes_file_path)
+
+        self.debug_output("Single-cluster mode completed")

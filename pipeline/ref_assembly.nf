@@ -70,6 +70,88 @@ process reduceClusters {
     """
 }
 
+
+// MOUMI: added for parallelization
+// -----------------------------------------------------------------------------
+// Split clusters.csv into one cluster file per row
+// -----------------------------------------------------------------------------
+process splitClusters {
+    publishDir "${REFERENCE_ASSEMBLY_DIR}", mode: 'copy'
+
+    input:
+    path cluster_files
+
+    output:
+    path "split_clusters/cluster_*.csv", emit: cluster_refs
+
+    script:
+    """
+    mkdir -p split_clusters
+
+    python - <<'PY'
+import csv
+from pathlib import Path
+
+cluster_file = Path("${cluster_files}")
+outdir = Path("split_clusters")
+outdir.mkdir(exist_ok=True)
+
+with cluster_file.open() as fh:
+    rows = list(csv.reader(fh))
+
+for i, row in enumerate(rows, start=1):
+    out = outdir / f"cluster_{i}.csv"
+    with out.open("w", newline="") as ofh:
+        writer = csv.writer(ofh)
+        writer.writerow(row)
+PY
+    """
+}
+
+// -----------------------------------------------------------------------------
+// Run one reference-guided assembly task per cluster
+// -----------------------------------------------------------------------------
+process refAssemblyCluster {
+    tag { cluster_list.baseName }
+    publishDir "${REFERENCE_ASSEMBLY_DIR}", mode: 'copy'
+
+    /*
+     * Be conservative at first. Increase later if memory allows.
+     */
+    maxForks 4
+
+    input:
+    path cluster_list
+    path reduced_reads
+    path "*"
+    path "*"
+
+    output:
+    path "*.refctgs.fna", emit: genomes
+
+    script:
+    """
+    PYTHONPATH=${projectDir}/scripts
+    export PYTHONPATH
+
+    cluster_id=\$(basename "${cluster_list}" .csv | sed 's/^cluster_//')
+
+    python -u -m align_reads \
+        -ir ${reduced_reads} \
+        -cl ${cluster_list} \
+        -rs . \
+        -as reads.base_2.kmers \
+        -o . \
+        -debug \
+        -mcl 2000 \
+        -t ${params.threads} \
+        --single-cluster \
+        --cluster-id \${cluster_id}
+
+    python ${projectDir}/scripts/collate_genomes.py
+    """
+}
+
 // -----------------------------------------------------------------------------
 // Perform reference-guided assembly
 // -----------------------------------------------------------------------------

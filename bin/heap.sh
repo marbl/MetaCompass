@@ -47,7 +47,7 @@ function find_best_ref {
     ref_basename=$(basename "$ref_kmc_file" .kmc_pre)
     dir_name=$(realpath $(dirname "$ref_kmc_file"))
     echo ${ref_basename}
-    if ! grep -qF "$ref_basename" $selected_refs; then
+    if ! grep -qxF "$ref_basename" $selected_refs; then
        echo kmc_tools -t8 -hp simple $kmc_file_to_use -ci1 ${dir_name}/${ref_basename} -ci1 intersect ${tmpdir}/${ref_basename}.intersect
        kmc_tools -t8 -hp simple $kmc_file_to_use -ci1 ${dir_name}/${ref_basename}  -ci1 intersect ${tmpdir}/${ref_basename}.intersect
        total_kmers=$(kmc_tools info "${tmpdir}/${ref_basename}.intersect" | grep "total k-mers" | awk -F':' '{print $2}' | tr -d '[:space:]')
