@@ -50,6 +50,7 @@ include { interleaveReads } from './pipeline/ref_assembly.nf'
 include { reduceClusters  } from './pipeline/ref_assembly.nf'
 include { refAssembly     } from './pipeline/ref_assembly.nf'
 include { splitClusters } from './pipeline/ref_assembly.nf'
+include { buildClusterReadSubsets } from './pipeline/ref_assembly.nf'
 include { refAssemblyCluster } from './pipeline/ref_assembly.nf'
 
 include { deNovoAssembly } from './pipeline/denovo_assembly.nf'
@@ -290,9 +291,29 @@ workflow {
     // MOUMI: change made for parallelization
     splitClusters(Cluster.out.clusters)
 
+    // MOUMI: change made for sending subset reads to corresponding cluster from initial global mapping
+    buildClusterReadSubsets(
+        Cluster.out.clusters,
+        reduceClusters.out.mapped_reads,
+        reduceClusters.out.read_to_genome
+    )
+
+    def clusterInputs = splitClusters.out.cluster_refs.flatten()
+        .map { tuple(it.baseName, it) }
+        .join(
+            buildClusterReadSubsets.out.cluster_reads.flatten()
+                .map { tuple(it.baseName, it) }
+        )
+        .map { cluster_name, cluster_csv, cluster_fq -> tuple(cluster_name, cluster_csv, cluster_fq) }
+
+    // refAssemblyCluster(
+    //     splitClusters.out.cluster_refs.flatten(),
+    //     reduceClusters.out,
+    //     IndexReads.out.collect(),
+    //     ClusterIndex.out.collect()
+    // )
     refAssemblyCluster(
-        splitClusters.out.cluster_refs.flatten(),
-        reduceClusters.out,
+        clusterInputs,
         IndexReads.out.collect(),
         ClusterIndex.out.collect()
     )

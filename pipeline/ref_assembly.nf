@@ -42,7 +42,8 @@ process reduceClusters {
     path interleaved_reads
 
     output:
-    path "concat_refs_mapped.fq"
+    path "concat_refs_mapped.fq", emit: mapped_reads
+    path "read_to_genome.tsv", emit: read_to_genome
 
     script:
     """
@@ -63,8 +64,20 @@ process reduceClusters {
 
     # Added to remove extra /1 and /2 suffixes from read names that minimap2
     # may produce when aligning paired-end reads
+    # minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
+    #     concat_refs.fna ${interleaved_reads} | cut -f 1 | sed -E 's#/(1|2)\$##' > aligned_reads.txt
+
     minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
-        concat_refs.fna ${interleaved_reads} | cut -f 1 | sed -E 's#/(1|2)\$##' > aligned_reads.txt
+        concat_refs.fna ${interleaved_reads} | \
+        awk 'BEGIN{OFS="\\t"} {
+            read=\$1;
+            sub(/\\/[12]\$/, "", read);
+            print read >> "aligned_reads.txt";
+            print read, \$6 >> "read_to_genome.tsv";
+        }'
+
+    # sort -u aligned_reads.txt -o aligned_reads.txt
+    # sort -u read_to_genome.tsv -o read_to_genome.tsv
 
     seqkit grep -I -j ${params.threads} -f aligned_reads.txt ${interleaved_reads} > concat_refs_mapped.fq
     """
@@ -108,21 +121,47 @@ PY
     """
 }
 
+
+// MOUMI: added for building cluster read subsets for parallelization
+// -----------------------------------------------------------------------------
+// Build FASTQ files containing only reads that map to each cluster.
+// -----------------------------------------------------------------------------
+process buildClusterReadSubsets {
+    input:
+    path cluster_files
+    path mapped_fq
+    path ref_to_cluster
+
+    output:
+    path "cluster_reads/cluster_*.fq", emit: cluster_reads
+
+    script:
+    """
+    mkdir -p cluster_reads
+
+    python ${projectDir}/scripts/build_cluster_read_subsets.py \
+        --cluster-list ${cluster_files} \
+        --fq ${mapped_fq} \
+        --ref-map ${ref_to_cluster} \
+        --outdir cluster_reads
+    """
+}
+
+// MOUMI: added for parallelization
 // -----------------------------------------------------------------------------
 // Run one reference-guided assembly task per cluster
 // -----------------------------------------------------------------------------
 process refAssemblyCluster {
-    tag { cluster_list.baseName }
+    tag { cluster_name }
     publishDir "${REFERENCE_ASSEMBLY_DIR}", mode: 'copy'
 
-    /*
-     * Be conservative at first. Increase later if memory allows.
-     */
     maxForks 4
 
+    // MOUMI: change made for sending subset reads to corresponding cluster from initial global mapping 
     input:
-    path cluster_list
-    path reduced_reads
+    // path cluster_list
+    // path reduced_reads
+    tuple val(cluster_name), path(cluster_list), path(cluster_reads)
     path "*"
     path "*"
 
@@ -134,10 +173,12 @@ process refAssemblyCluster {
     PYTHONPATH=${projectDir}/scripts
     export PYTHONPATH
 
-    cluster_id=\$(basename "${cluster_list}" .csv | sed 's/^cluster_//')
+    # MOUMI: change made for sending subset reads to corresponding cluster from initial global mapping
 
+    cluster_id=\$(basename "${cluster_list}" .csv | sed 's/^cluster_//')
+    
     python -u -m align_reads \
-        -ir ${reduced_reads} \
+        -ir ${cluster_reads} \
         -cl ${cluster_list} \
         -rs . \
         -as reads.base_2.kmers \
