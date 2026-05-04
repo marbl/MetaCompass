@@ -295,16 +295,32 @@ workflow {
     buildClusterReadSubsets(
         Cluster.out.clusters,
         reduceClusters.out.mapped_reads,
-        reduceClusters.out.read_to_genome
+        reduceClusters.out.read_to_genome,
+        reduceClusters.out.global_sam
     )
 
-    def clusterInputs = splitClusters.out.cluster_refs.flatten()
+    def clusterCsvs = splitClusters.out.cluster_refs.flatten()
         .map { tuple(it.baseName, it) }
-        .join(
-            buildClusterReadSubsets.out.cluster_reads.flatten()
-                .map { tuple(it.baseName, it) }
-        )
-        .map { cluster_name, cluster_csv, cluster_fq -> tuple(cluster_name, cluster_csv, cluster_fq) }
+
+    def clusterReads = buildClusterReadSubsets.out.cluster_reads.flatten()
+        .map { tuple(it.baseName, it) }
+
+    def clusterMaps = buildClusterReadSubsets.out.cluster_maps.flatten()
+        .map { f ->
+            def name = f.baseName.replace('.read_to_genome', '')
+            tuple(name, f)
+        }
+
+    def clusterSams = buildClusterReadSubsets.out.cluster_sams.flatten()
+        .map { tuple(it.baseName, it) }
+
+    def clusterInputs = clusterCsvs
+        .join(clusterReads)
+        .join(clusterMaps)
+        .join(clusterSams)
+        .map { cluster_name, cluster_csv, cluster_fq, cluster_map, cluster_sam ->
+            tuple(cluster_name, cluster_csv, cluster_fq, cluster_map, cluster_sam)
+        }
 
     // refAssemblyCluster(
     //     splitClusters.out.cluster_refs.flatten(),

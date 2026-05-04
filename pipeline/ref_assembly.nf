@@ -44,6 +44,7 @@ process reduceClusters {
     output:
     path "concat_refs_mapped.fq", emit: mapped_reads
     path "read_to_genome.tsv", emit: read_to_genome
+    path "concat_refs_mapped.sam", emit: global_sam
 
     script:
     """
@@ -64,20 +65,29 @@ process reduceClusters {
 
     # Added to remove extra /1 and /2 suffixes from read names that minimap2
     # may produce when aligning paired-end reads
-    # minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
-    #     concat_refs.fna ${interleaved_reads} | cut -f 1 | sed -E 's#/(1|2)\$##' > aligned_reads.txt
+    minimap2 -a -t ${params.threads} --heap-sort=yes -x sr \$batch \
+        concat_refs.fna ${interleaved_reads} > concat_refs_mapped.sam
 
-    minimap2 -t ${params.threads} --heap-sort=yes -x sr \$batch \
-        concat_refs.fna ${interleaved_reads} | \
-        awk 'BEGIN{OFS="\\t"} {
-            read=\$1;
-            sub(/\\/[12]\$/, "", read);
+    awk 'BEGIN{OFS="\t"} !/^@/ {
+        read=\$1;
+        flag=\$2;
+        gsub(/\\/1\\/1\$/, "/1", read);
+        gsub(/\\/2\\/2\$/, "/2", read);
+        ref=\$3;
+
+        if (read !~ /\\/[12]\$/) {
+            if (and(flag, 64)) {
+                read = read "/1";
+            } else if (and(flag, 128)) {
+                read = read "/2";
+            }
+        }
+
+        if (ref != "*") {
             print read >> "aligned_reads.txt";
-            print read, \$6 >> "read_to_genome.tsv";
-        }'
-
-    # sort -u aligned_reads.txt -o aligned_reads.txt
-    # sort -u read_to_genome.tsv -o read_to_genome.tsv
+            print read, ref >> "read_to_genome.tsv";
+        }
+    }' concat_refs_mapped.sam
 
     seqkit grep -I -j ${params.threads} -f aligned_reads.txt ${interleaved_reads} > concat_refs_mapped.fq
     """
@@ -131,19 +141,25 @@ process buildClusterReadSubsets {
     path cluster_files
     path mapped_fq
     path ref_to_cluster
+    path global_sam
 
     output:
     path "cluster_reads/cluster_*.fq", emit: cluster_reads
-
+    path "cluster_maps/cluster_*.read_to_genome.tsv", emit: cluster_maps
+    path "cluster_sams/cluster_*.sam", emit: cluster_sams
+    
     script:
     """
-    mkdir -p cluster_reads
+    mkdir -p cluster_reads cluster_maps cluster_sams
 
     python ${projectDir}/scripts/build_cluster_read_subsets.py \
         --cluster-list ${cluster_files} \
         --fq ${mapped_fq} \
         --ref-map ${ref_to_cluster} \
-        --outdir cluster_reads
+        --outdir cluster_reads \
+        --map-outdir cluster_maps \
+        --sam ${global_sam} \
+        --sam-outdir cluster_sams
     """
 }
 
@@ -161,7 +177,7 @@ process refAssemblyCluster {
     input:
     // path cluster_list
     // path reduced_reads
-    tuple val(cluster_name), path(cluster_list), path(cluster_reads)
+    tuple val(cluster_name), path(cluster_list), path(cluster_reads), path(cluster_map), path(cluster_sam)
     path "*"
     path "*"
 
@@ -180,6 +196,8 @@ process refAssemblyCluster {
     python -u -m align_reads \
         -ir ${cluster_reads} \
         -cl ${cluster_list} \
+        --read-to-genome ${cluster_map} \
+        --global-sam ${cluster_sam} \
         -rs . \
         -as reads.base_2.kmers \
         -o . \

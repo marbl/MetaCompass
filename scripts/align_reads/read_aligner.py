@@ -4,6 +4,7 @@ import csv
 import os
 import shutil
 import sys
+import re
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Optional
@@ -102,7 +103,10 @@ class ReadAligner(object):
                                  help="required breadth of coverage")
         input_group.add_argument("-mcl", "--max-contig-length", required=False, type=float, default=10000,
                                  help="required max contig length")
-
+        input_group.add_argument("--read-to-genome", required=False, type=Path, 
+                                help="TSV file with read_id and genome/reference from the initial global mapping")
+        input_group.add_argument("--global-sam", required=False, type=Path, 
+                                help="Cluster-specific SAM from the initial global mapping")
         # Output Paths
         output_group.add_argument("-o", "--out", required=True, type=Path, help="path to output directory")
 
@@ -249,7 +253,8 @@ class ReadAligner(object):
         # Define the bedtools command and its arguments
         merge_cmd = ["bedtools", "merge", "-i", nz_bed.resolve().as_posix()]
         # Define the awk command and its arguments
-        awk_cmd = ["awk", '{print $1":"($2)+1"-"$3}']
+        # awk_cmd = ["awk", '{print $1":"($2)+1"-"$3}']
+        awk_cmd = ["awk", '{n=$1; sub(/^cluster_[0-9]+\\|GCA_[0-9]+\\.[0-9]+\\|/, "", n); print n":"($2)+1"-"$3}']
         run_shell_cmd([merge_cmd, awk_cmd], cord_file)
 
         # Extract non-zero regions from reference contig
@@ -433,6 +438,9 @@ class ReadAligner(object):
         """
 
         total_iter = len(cluster_refs)
+        genome_to_reads = self.load_genome_to_reads()
+        used_reads = set()
+        self.starting_reads = self.interleaved_reads
         for current_iter, ref_path in enumerate(cluster_refs):
             start_time = time.time()
 
@@ -449,18 +457,43 @@ class ReadAligner(object):
                 self.exit_map_cluster_reference(start_time, current_iter, total_iter, msg="Skip:Interleaved File empty")
                 return
 
-            # Align interleaved reads to the reference genome
-            self.align_with_reference()
+            # # Align interleaved reads to the reference genome
+            # self.align_with_reference()
 
-            # Convert mapped sam output from reference alignment to bam & sort it positionally
+            # # Convert mapped sam output from reference alignment to bam & sort it positionally
+            # sam_to_sorted_bam(
+            #     input_sam=self.curr_ref_align["mapped_sam"].resolve().as_posix(),
+            #     output_bam=self.curr_ref_align["mapped_bam"].resolve().as_posix(),
+            #     threads=self.inputs['threads']
+            # )
+
+            # # Extract mapped reads from the reference alignment
+            # self.extract_mapped_ref_alignment_reads()
+
+            num_candidates = self.write_candidate_read_ids(genome_to_reads, used_reads)
+
+            if num_candidates == 0:
+                self.exit_map_cluster_reference(
+                    start_time,
+                    current_iter,
+                    total_iter,
+                    msg="Skip: No candidate reads from global mapping"
+                )
+                continue
+
+            self.extract_reads_by_id_file(
+                self.curr_ref_align["mapped_ids"],
+                self.starting_reads,
+                self.curr_ref_align["mapped_fq"]
+            )
+
+            self.extract_current_ref_sam_from_global_sam()
+
             sam_to_sorted_bam(
                 input_sam=self.curr_ref_align["mapped_sam"].resolve().as_posix(),
                 output_bam=self.curr_ref_align["mapped_bam"].resolve().as_posix(),
                 threads=self.inputs['threads']
             )
-
-            # Extract mapped reads from the reference alignment
-            self.extract_mapped_ref_alignment_reads()
 
             self.extract_non_zero_regions()
 
@@ -497,18 +530,21 @@ class ReadAligner(object):
 
             # Extract mapped and unmapped non-zero alignment reads
             self.extract_mapped_nz_alignment_reads()
-            self.extract_unmapped_nz_alignment_reads()
 
-            if file_empty(self.curr_unmapped["unmapped_fq"]):
-                self.exit_map_cluster_reference(start_time, current_iter, total_iter,
-                                                msg="Complete: No more unmapped reads")
-                return
+            used_reads.update(self.load_read_ids_from_file(self.curr_nz_align["mapped_ids"]))
+            
+            # self.extract_unmapped_nz_alignment_reads()
 
-            # Delete the current set of interleaved reads
-            self.interleaved_reads.unlink()
+            # if file_empty(self.curr_unmapped["unmapped_fq"]):
+            #     self.exit_map_cluster_reference(start_time, current_iter, total_iter,
+            #                                     msg="Complete: No more unmapped reads")
+            #     return
 
-            # Set the extracted unmapped reads as interleaved reads for the next iteration
-            self.interleaved_reads = self.curr_unmapped["unmapped_fq"]
+            # # Delete the current set of interleaved reads
+            # self.interleaved_reads.unlink()
+
+            # # Set the extracted unmapped reads as interleaved reads for the next iteration
+            # self.interleaved_reads = self.curr_unmapped["unmapped_fq"]
 
             # Calculate sequence list
 
@@ -686,3 +722,113 @@ class ReadAligner(object):
         write_list_to_file(self.mapped_genomes, mapped_genomes_file_path)
 
         self.debug_output("Single-cluster mode completed")
+
+
+    def normalize_read_id(self, read_id: str) -> str:
+        read_id = read_id.strip()
+        if read_id.startswith("@"):
+            read_id = read_id[1:]
+        read_id = read_id.split()[0]
+
+        read_id = read_id.replace("/1/1", "/1")
+        read_id = read_id.replace("/2/2", "/2")
+
+        return read_id
+
+
+    def normalize_ref_name(self, ref_name: str) -> str:
+        m = re.search(r"GCA_\d+\.\d+", str(ref_name))
+        if m:
+            return m.group(0)
+        return Path(str(ref_name)).name
+
+    def load_genome_to_reads(self):
+        genome_to_reads = defaultdict(set)
+
+        read_to_genome = self.inputs.get("read_to_genome")
+        if not read_to_genome:
+            raise ValueError("--read-to-genome is required")
+
+        with open(read_to_genome, "r") as fh:
+            for line in fh:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 2:
+                    continue
+
+                read_id = self.normalize_read_id(parts[0])
+                ref_name = parts[1]
+
+                genome_name = self.normalize_ref_name(ref_name)
+                genome_to_reads[genome_name].add(read_id)
+
+        return genome_to_reads
+
+
+    def write_candidate_read_ids(self, genome_to_reads, used_reads):
+        curr_key = self.normalize_ref_name(self.curr_ref_name)
+        candidate_reads = genome_to_reads.get(curr_key, set()) - used_reads
+        with open(self.curr_ref_align["mapped_ids"], "w") as out:
+            for read_id in sorted(candidate_reads):
+                out.write(read_id + "\n")
+
+        return len(candidate_reads)
+
+
+    def extract_reads_by_id_file(self, ids_file: Path, source_fq: Path, out_fq: Path):
+        cmd = [
+            "seqkit", "grep", "-I",
+            "-j", str(self.inputs["threads"]),
+            "-f", ids_file.resolve().as_posix(),
+            source_fq.resolve().as_posix()
+        ]
+        run_shell_cmd(cmd, out_fq.resolve().as_posix())
+
+
+    def extract_current_ref_sam_from_global_sam(self):
+        """
+        Build ref_align_mapped.sam for current genome from the cluster SAM.
+        This replaces per-genome minimap2.
+        """
+        global_sam = self.inputs.get("global_sam")
+        if not global_sam:
+            raise ValueError("--global-sam is required")
+
+        target_prefix = self.normalize_ref_name(self.curr_ref_name)
+        candidate_reads = self.load_read_ids_from_file(self.curr_ref_align["mapped_ids"])
+
+        with open(global_sam, "r") as inp, open(self.curr_ref_align["mapped_sam"], "w") as out:
+            for line in inp:
+                if line.startswith("@"):
+                    out.write(line)
+                    continue
+
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 3:
+                    continue
+
+                read_id = self.normalize_read_id(parts[0])
+                flag = int(parts[1])
+                ref_name = parts[2]
+                genome_name = self.normalize_ref_name(ref_name)
+
+                # Reconstruct mate suffix from FLAG when SAM QNAME is bare
+                if not read_id.endswith("/1") and not read_id.endswith("/2"):
+                    if flag & 64:
+                        read_id = read_id + "/1"
+                    elif flag & 128:
+                        read_id = read_id + "/2"
+
+                if genome_name == target_prefix and read_id in candidate_reads:
+                    out.write(line)
+
+
+    def load_read_ids_from_file(self, ids_file: Path):
+        if not ids_file.exists():
+            return set()
+
+        with open(ids_file, "r") as fh:
+            return {
+                self.normalize_read_id(line)
+                for line in fh
+                if line.strip()
+            }
