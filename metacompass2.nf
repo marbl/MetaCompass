@@ -56,6 +56,8 @@ include { refAssemblyCluster } from './pipeline/ref_assembly.nf'
 include { deNovoAssembly } from './pipeline/denovo_assembly.nf'
 include { createOutputs  } from './pipeline/finalize.nf'
 
+include { annotateContigGenes } from './pipeline/gene_annotation.nf'
+
 // -----------------------------------------------------------------------------
 // Helper functions
 // -----------------------------------------------------------------------------
@@ -328,5 +330,10 @@ workflow {
     //     createOutputs(0, refAssembly.out.genomes)
     // }
     // MOUMI: denovo turned off for parallelization
-    createOutputs(0, refAssemblyCluster.out.genomes.collect())
+    def refGuidedGenomes = refAssemblyCluster.out.genomes.collect()
+
+    createOutputs(0, refGuidedGenomes)
+
+    // MOUMI: gene annotation added for final output polishing
+    annotateContigGenes(refGuidedGenomes)
 }
