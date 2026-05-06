@@ -43,6 +43,7 @@ process reduceClusters {
 
     output:
     path "concat_refs_mapped.fq", emit: mapped_reads
+    path "concat_refs_unmapped.fq", emit: unmapped_reads
     path "read_to_genome.tsv", emit: read_to_genome
 
     script:
@@ -80,6 +81,9 @@ process reduceClusters {
     # sort -u read_to_genome.tsv -o read_to_genome.tsv
 
     seqkit grep -I -j ${params.threads} -f aligned_reads.txt ${interleaved_reads} > concat_refs_mapped.fq
+
+    # Reads that did not map to any selected reference during the global mapping step
+    seqkit grep -I -j ${params.threads} -v -f aligned_reads.txt ${interleaved_reads} > concat_refs_unmapped.fq
     """
 }
 
@@ -167,6 +171,7 @@ process refAssemblyCluster {
 
     output:
     path "*.refctgs.fna", emit: genomes
+    path "*.unmapped.fq", emit: unmapped_reads
 
     script:
     """
@@ -188,6 +193,12 @@ process refAssemblyCluster {
         -t ${params.threads} \
         --single-cluster \
         --cluster-id \${cluster_id}
+    
+    if [[ -f unmapped.fq ]]; then
+        mv unmapped.fq "${cluster_name}.unmapped.fq"
+    else
+        touch "${cluster_name}.unmapped.fq"
+    fi
 
     python ${projectDir}/scripts/collate_genomes.py
     """
@@ -226,5 +237,22 @@ process refAssembly {
         -t ${params.threads}
 
     python ${projectDir}/scripts/collate_genomes.py
+    """
+}
+
+process combineClusterUnmappedReads {
+    publishDir "${REFERENCE_ASSEMBLY_DIR}", mode: 'copy'
+
+    input:
+    path initial_unmapped_reads
+    path cluster_unmapped_reads
+
+    output:
+    path "unmapped.fq", emit: unmapped_reads
+
+    script:
+    """
+    cat ${initial_unmapped_reads} ${cluster_unmapped_reads} > unmapped.raw.fq
+    seqkit rmdup -n -j ${params.threads} unmapped.raw.fq > unmapped.fq
     """
 }

@@ -685,4 +685,13 @@ class ReadAligner(object):
         mapped_genomes_file_path = self.inputs["out"] / "mapped_genomes.txt"
         write_list_to_file(self.mapped_genomes, mapped_genomes_file_path)
 
+        # MOUMI: In single-cluster parallel mode, write the final unmapped reads
+        # to the process root so Nextflow can emit them.
+        unmapped_reads_dst = Path(self.inputs["out"]) / "unmapped.fq"
+
+        if self.curr_unmapped and self.curr_unmapped.get("unmapped_fq") and Path(self.curr_unmapped["unmapped_fq"]).exists():
+            shutil.copyfile(Path(self.curr_unmapped["unmapped_fq"]), unmapped_reads_dst)
+        else:
+            unmapped_reads_dst.touch()
+
         self.debug_output("Single-cluster mode completed")

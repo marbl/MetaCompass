@@ -52,6 +52,7 @@ include { refAssembly     } from './pipeline/ref_assembly.nf'
 include { splitClusters } from './pipeline/ref_assembly.nf'
 include { buildClusterReadSubsets } from './pipeline/ref_assembly.nf'
 include { refAssemblyCluster } from './pipeline/ref_assembly.nf'
+include { combineClusterUnmappedReads } from './pipeline/ref_assembly.nf'
 
 include { deNovoAssembly } from './pipeline/denovo_assembly.nf'
 include { createOutputs  } from './pipeline/finalize.nf'
@@ -90,7 +91,7 @@ String usageText() {
       --mincov         Minimum coverage (default: 1)
       --minctglen      Minimum contig length (default: 1)
       --run_valet      Run VALET during reference-guided assembly
-      --denovo         Set to 0 to skip de novo assembly (default: 1)
+      --denovo         Set to 1 to run de novo assembly (default: 0)
       --skip_rs        Skip reference selection (default: false)
       --skip_rc        Skip reference culling (default: false)
       --tracks         Tracks output (default: false)
@@ -320,19 +321,22 @@ workflow {
         ClusterIndex.out.collect()
     )
 
+    def refGuidedGenomes = refAssemblyCluster.out.genomes.collect()
+
+    combineClusterUnmappedReads(
+        reduceClusters.out.unmapped_reads,
+        refAssemblyCluster.out.unmapped_reads.collect()
+    )
+    
     /*
      * Step 8: Optional de novo assembly and final output staging
      */
-    // if ((params.denovo as Integer) > 0) {
-    //     deNovoAssembly(refAssembly.out.unmapped_reads)
-    //     createOutputs(deNovoAssembly.out.flag, refAssembly.out.genomes)
-    // } else {
-    //     createOutputs(0, refAssembly.out.genomes)
-    // }
-    // MOUMI: denovo turned off for parallelization
-    def refGuidedGenomes = refAssemblyCluster.out.genomes.collect()
-
-    createOutputs(0, refGuidedGenomes)
+    if ((params.denovo as Integer) > 0) {
+        deNovoAssembly(combineClusterUnmappedReads.out.unmapped_reads)
+        createOutputs(deNovoAssembly.out.flag, refGuidedGenomes)
+    } else {
+        createOutputs(0, refGuidedGenomes)
+    }
 
     // MOUMI: gene annotation added for final output polishing
     annotateContigGenes(refGuidedGenomes)
