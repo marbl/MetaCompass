@@ -7,6 +7,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Optional
+import pypangraph as pp
+from Bio import SeqIO
 from .tools import ToolsFactory, Mash, Pilon, BBtools, HeapArranger
 from .analyze import DownstreamAnalyzer
 from .utils import run_shell_cmd, align_with_minimap2, extract_reads, sam_to_sorted_bam, get_max_len, file_empty, \
@@ -36,7 +38,8 @@ class ReadAligner(object):
         self.curr_out_dir: Path = Path()  # Path to current reference's result output dir
         self.curr_unmapped = {}  # Current unmapped alignment data
 
-        self.interleaved_reads: Path = Path()  # Path to interleaved reads
+        self.reads_r1: Path = Path()
+        self.reads_r2: Path = Path()
 
         # Dependencies
         self.tools_factory: Optional[ToolsFactory] = None  # Factory for different tool objects used in the script
@@ -55,24 +58,24 @@ class ReadAligner(object):
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             print(f"{timestamp},{message}")
 
-    def set_interleaved_reads(self):
-        # interleaved_reads check
-        print("DEBUG: Checking interleaved reads")
-        forward_reads = self.inputs.get("forward", None)
-        reverse_reads = self.inputs.get("reverse", None)
-        interleaved_reads = self.inputs.get("interleaved_reads", None)
+    # def set_interleaved_reads(self):
+    #     # interleaved_reads check
+    #     print("DEBUG: Checking interleaved reads")
+    #     forward_reads = self.inputs.get("forward", None)
+    #     reverse_reads = self.inputs.get("reverse", None)
+    #     interleaved_reads = self.inputs.get("interleaved_reads", None)
 
-        if forward_reads and reverse_reads:
-            if not interleaved_reads:
-                self.interleaved_reads = Path(self.inputs["out"]) / "interleaved.fq"  # assign
-                self.interleave_reads()  # Generate
-            else:
-                self.interleaved_reads = Path(interleaved_reads)
-        else:
-            if not interleaved_reads:
-                raise FileNotFoundError("Both forward and reverse reads are missing. Interleaved reads are required.")
-            else:
-                self.interleaved_reads = Path(interleaved_reads)
+    #     if forward_reads and reverse_reads:
+    #         if not interleaved_reads:
+    #             self.interleaved_reads = Path(self.inputs["out"]) / "interleaved.fq"  # assign
+    #             self.interleave_reads()  # Generate
+    #         else:
+    #             self.interleaved_reads = Path(interleaved_reads)
+    #     else:
+    #         if not interleaved_reads:
+    #             raise FileNotFoundError("Both forward and reverse reads are missing. Interleaved reads are required.")
+    #         else:
+    #             self.interleaved_reads = Path(interleaved_reads)
 
     def read_inputs(self):
         # Parse command line arguments and store them in self.inputs
@@ -88,8 +91,8 @@ class ReadAligner(object):
         # Input Paths
         input_group.add_argument("-f", "--forward", required=False, type=Path, help="path to forward reads")
         input_group.add_argument("-r", "--reverse", required=False, type=Path, help="path to reverse reads")
-        input_group.add_argument("-ir", "--interleaved-reads", required=False, type=Path,
-                                 help="Path to interleaved forward & reverse reads")
+        # input_group.add_argument("-ir", "--interleaved-reads", required=False, type=Path,
+        #                          help="Path to interleaved forward & reverse reads")
         input_group.add_argument("-u", "--unpaired", required=False, type=Path, help="path to unpaired reads")
         input_group.add_argument("-refs", "--references", required=False, type=Path,
                                  help="path to reference file directory")
@@ -113,6 +116,12 @@ class ReadAligner(object):
                             help="Process only one cluster file and bypass heap-based cluster selection")
         parser.add_argument("--cluster-id", required=False, type=int, default=None,
                             help="Cluster id for single-cluster mode")
+        parser.add_argument("--pangraph-graph", required=False, type=Path, default=None,
+                        help="Pangraph JSON for the current reference cluster")
+        parser.add_argument("--pangraph-refs", required=False, type=Path, default=None,
+                        help="Cluster references retained for Pangraph construction")
+        parser.add_argument("--fragmented-refs", required=False, type=Path, default=None,
+                        help="Fragmented references excluded from Pangraph and mapped after residual blocks")
 
         args = parser.parse_args()
 
@@ -126,7 +135,14 @@ class ReadAligner(object):
         self.init_dependencies()
 
         # set interleaved reads
-        self.set_interleaved_reads()
+        if not self.inputs["forward"] or not self.inputs["reverse"]:
+            raise ValueError("Both forward and reverse reads are required")
+
+        self.reads_r1 = Path(self.inputs["forward"])
+        self.reads_r2 = Path(self.inputs["reverse"])
+
+        self.cluster_mapped_r1 = Path(self.inputs["out"]) / "cluster_mapped_R1.fq"
+        self.cluster_mapped_r2 = Path(self.inputs["out"]) / "cluster_mapped_R2.fq"
 
         self.cluster_mapped_reads = Path(self.inputs["out"]) / "cluster_mapped.fq"
         self.mapped_clusters = Path(self.inputs["out"]) / "mapped_clusters.txt"
@@ -161,7 +177,7 @@ class ReadAligner(object):
         try:
             self.mash_obj = self.tools_factory.get_mash(output_dir=self.inputs["out"])
             self.pilon_obj = self.tools_factory.get_pilon()
-            self.bbtools_obj = self.tools_factory.get_bbtools()
+            # self.bbtools_obj = self.tools_factory.get_bbtools()
             self.heap_arranger = self.tools_factory.get_heap_arranger()
         except FileNotFoundError as fe:
             print(fe)
@@ -173,7 +189,8 @@ class ReadAligner(object):
             "mapped_bam": Path(self.curr_out_dir) / "ref_align_mapped.bam",
             "mapped_sorted": Path(self.curr_out_dir) / "ref_align_mapped_sorted.sam",
             "mapped_ids": Path(self.curr_out_dir) / "ref_align_mapped_ids.txt",
-            "mapped_fq": Path(self.curr_out_dir) / "ref_align_mapped.fq",
+            "mapped_r1": Path(self.curr_out_dir) / "ref_align_mapped_R1.fq",
+            "mapped_r2": Path(self.curr_out_dir) / "ref_align_mapped_R2.fq",
         }
 
         self.curr_nz_align = {
@@ -183,17 +200,47 @@ class ReadAligner(object):
             "mapped_bam": Path(self.curr_out_dir) / "nz_contig_align_mapped.bam",
             "mapped_sorted": Path(self.curr_out_dir) / "nz_contig_align_mapped_sorted.sam",
             "mapped_ids": Path(self.curr_out_dir) / "nz_contig_align_mapped_ids.txt",
-            "mapped_fq": Path(self.curr_out_dir) / "reads_mapped.fq",
-            "unmapped_fq": Path(self.curr_out_dir) / "reads_unmapped.fq",
+            "mapped_r1": Path(self.curr_out_dir) / "reads_mapped_R1.fq",
+            "mapped_r2": Path(self.curr_out_dir) / "reads_mapped_R2.fq",
             "unmapped_bam": Path(self.curr_out_dir) / "nz_contig_align_unmapped.bam",
         }
 
     def init_unmapped_vars(self):
-        """Used for initializing path to current iteration's unmapped alignment data."""
+        """Initialize paired unmapped-read paths."""
         self.curr_unmapped = {
             "unmapped_bam": Path(self.curr_out_dir) / "unmapped.bam",
-            "unmapped_fq": Path(self.curr_out_dir) / "unmapped.fq",
+            "unmapped_r1": Path(self.curr_out_dir) / "unmapped_R1.fq",
+            "unmapped_r2": Path(self.curr_out_dir) / "unmapped_R2.fq",
         }
+
+    def extract_paired_reads(
+        self, mapped_sam, mapped_ids,
+        reads_r1, reads_r2,
+        output_r1, output_r2,
+        mapped=True
+    ):
+        n1 = extract_reads(
+            mapped_sam=str(mapped_sam),
+            mapped_ids=str(mapped_ids),
+            interleaved_reads=str(reads_r1),
+            outfile=str(output_r1),
+            threads=self.inputs["threads"],
+            mapped=mapped
+        )
+
+        n2 = extract_reads(
+            mapped_sam=str(mapped_sam),
+            mapped_ids=str(mapped_ids),
+            interleaved_reads=str(reads_r2),
+            outfile=str(output_r2),
+            threads=self.inputs["threads"],
+            mapped=mapped
+        )
+
+        if n1 != n2:
+            raise ValueError("R1/R2 record counts differ")
+
+        return n1
 
     def align_with_reference(self):
         """Performs DNA sequence read alignment with a reference genome using Minimap2."""
@@ -201,7 +248,8 @@ class ReadAligner(object):
 
         align_with_minimap2(
             ref_genome_path=self.curr_ref_path.resolve().as_posix(),
-            interleaved_reads_path=self.interleaved_reads.resolve().as_posix(),
+            reads_r1_path=self.reads_r1.resolve().as_posix(),
+            reads_r2_path=self.reads_r2.resolve().as_posix(),
             outfile=self.curr_ref_align["mapped_sam"],
             threads=self.inputs.get("threads", 1)
         )
@@ -216,9 +264,10 @@ class ReadAligner(object):
 
         align_with_minimap2(
             ref_genome_path=self.curr_nz_align["contig_fasta"].resolve().as_posix(),
-            interleaved_reads_path=self.curr_ref_align["mapped_fq"].resolve().as_posix(),
+            reads_r1_path=self.curr_ref_align["mapped_r1"].resolve().as_posix(),
+            reads_r2_path=self.curr_ref_align["mapped_r2"].resolve().as_posix(),
             outfile=self.curr_nz_align["mapped_sam"].resolve().as_posix(),
-            threads=self.inputs['threads']
+            threads=self.inputs["threads"]
         )
 
         end_time = time.time()
@@ -283,12 +332,15 @@ class ReadAligner(object):
         """Extract mapped reads from reference alignment"""
         start_time = time.time()
         # Extract mapped reads
-        extract_reads(
-            mapped_sam=self.curr_ref_align["mapped_sam"].resolve().as_posix(),
-            mapped_ids=self.curr_ref_align["mapped_ids"].resolve().as_posix(),
-            interleaved_reads=self.interleaved_reads.resolve().as_posix(),
-            outfile=self.curr_ref_align["mapped_fq"].resolve().as_posix(),
-            threads=self.inputs["threads"], mapped=True)
+        self.extract_paired_reads(
+            mapped_sam=self.curr_ref_align["mapped_sam"],
+            mapped_ids=self.curr_ref_align["mapped_ids"],
+            reads_r1=self.reads_r1,
+            reads_r2=self.reads_r2,
+            output_r1=self.curr_ref_align["mapped_r1"],
+            output_r2=self.curr_ref_align["mapped_r2"],
+            mapped=True
+        )
 
         end_time = time.time()
         time_elapsed = end_time - start_time
@@ -301,12 +353,23 @@ class ReadAligner(object):
         # Extract mapped reads
 
         # the mapped reads after non-zero contig alignment are appended to cluster_mapped_reads.fq file
-        num_lines = extract_reads(
-            mapped_sam=self.curr_nz_align["mapped_sam"].resolve().as_posix(),
-            mapped_ids=self.curr_nz_align["mapped_ids"].resolve().as_posix(),
-            interleaved_reads=self.curr_ref_align["mapped_fq"].resolve().as_posix(),
-            outfile=self.cluster_mapped_reads.resolve().as_posix(),
-            threads=self.inputs["threads"], mapped=True)
+        num_lines = self.extract_paired_reads(
+            mapped_sam=self.curr_nz_align["mapped_sam"],
+            mapped_ids=self.curr_nz_align["mapped_ids"],
+            reads_r1=self.curr_ref_align["mapped_r1"],
+            reads_r2=self.curr_ref_align["mapped_r2"],
+            output_r1=self.curr_nz_align["mapped_r1"],
+            output_r2=self.curr_nz_align["mapped_r2"],
+            mapped=True
+        )
+
+        # Append mapped reads across all references in the cluster
+        for src, dst in (
+            (self.curr_nz_align["mapped_r1"], self.cluster_mapped_r1),
+            (self.curr_nz_align["mapped_r2"], self.cluster_mapped_r2),
+        ):
+            with open(src, "rb") as inp, open(dst, "ab") as out:
+                shutil.copyfileobj(inp, out)
 
         self.cluster_mapped_reads_lines += num_lines
 
@@ -319,25 +382,28 @@ class ReadAligner(object):
         start_time = time.time()
 
         # Extract unmapped mapped reads
-        extract_reads(
-            mapped_sam=self.curr_nz_align["mapped_sam"].resolve().as_posix(),
-            mapped_ids=self.curr_nz_align["mapped_ids"].resolve().as_posix(),
-            interleaved_reads=self.interleaved_reads.resolve().as_posix(),
-            outfile=self.curr_unmapped["unmapped_fq"].resolve().as_posix(),
-            threads=self.inputs["threads"], mapped=False)
+        self.extract_paired_reads(
+            mapped_sam=self.curr_nz_align["mapped_sam"],
+            mapped_ids=self.curr_nz_align["mapped_ids"],
+            reads_r1=self.reads_r1,
+            reads_r2=self.reads_r2,
+            output_r1=self.curr_unmapped["unmapped_r1"],
+            output_r2=self.curr_unmapped["unmapped_r2"],
+            mapped=False
+        )
 
         end_time = time.time()
         time_elapsed = end_time - start_time
         self.debug_output(f"{self.curr_ref_name},Unmapped reads extraction,{time_elapsed}")
 
-    def interleave_reads(self):
-        """Interleave input forward and reverse reads using bbtools"""
-        print("DEBUG: Interleaving reads")
-        self.bbtools_obj.interleave_reads(
-            forward_read=Path(self.inputs['forward']),
-            reverse_read=Path(self.inputs['reverse']),
-            outfile=self.interleaved_reads
-        )
+    # def interleave_reads(self):
+    #     """Interleave input forward and reverse reads using bbtools"""
+    #     print("DEBUG: Interleaving reads")
+    #     self.bbtools_obj.interleave_reads(
+    #         forward_read=Path(self.inputs['forward']),
+    #         reverse_read=Path(self.inputs['reverse']),
+    #         outfile=self.interleaved_reads
+    #     )
 
     def pilon_correction(self):
         """Performs error correction of a non-zero length contig using the Pilon tool."""
@@ -377,8 +443,9 @@ class ReadAligner(object):
         # Delete fq files only if it is not the last iteration
         out_dir = self.curr_out_dir.resolve().as_posix()
         if not is_last_iteration:
-            delete_file(self.curr_ref_align['mapped_fq'].resolve().as_posix())
-            delete_file(self.curr_nz_align['mapped_fq'].resolve().as_posix())
+            for paths in (self.curr_ref_align, self.curr_nz_align):
+                for mate in ("mapped_r1", "mapped_r2"):
+                    delete_file(paths[mate].resolve().as_posix())
 
         # Delete other files
         files_to_remove = ["*.bai", "*.bed", "*.bt1", "*.bt2", "seq_list.txt", "cord.txt", "*.sam", "*.bam"]
@@ -444,9 +511,12 @@ class ReadAligner(object):
 
             self.init_curr_alignment_vars()
 
-            # if the interleaved reads is empty, exit
-            if file_empty(self.interleaved_reads):
-                self.exit_map_cluster_reference(start_time, current_iter, total_iter, msg="Skip:Interleaved File empty")
+            # If either paired-read file is empty, exit
+            if file_empty(self.reads_r1) or file_empty(self.reads_r2):
+                self.exit_map_cluster_reference(
+                    start_time, current_iter, total_iter,
+                    msg="Skip: Paired reads empty"
+                )
                 return
 
             # Align interleaved reads to the reference genome
@@ -499,16 +569,18 @@ class ReadAligner(object):
             self.extract_mapped_nz_alignment_reads()
             self.extract_unmapped_nz_alignment_reads()
 
-            if file_empty(self.curr_unmapped["unmapped_fq"]):
-                self.exit_map_cluster_reference(start_time, current_iter, total_iter,
-                                                msg="Complete: No more unmapped reads")
-                return
+            # if file_empty(self.curr_unmapped["unmapped_fq"]):
+            #     self.exit_map_cluster_reference(start_time, current_iter, total_iter,
+            #                                     msg="Complete: No more unmapped reads")
+            #     return
 
-            # Delete the current set of interleaved reads
-            self.interleaved_reads.unlink()
+            # # Delete the current set of interleaved reads
+            # self.interleaved_reads.unlink()
+            # Remaining paired reads for the next reference
+            self.reads_r1 = self.curr_unmapped["unmapped_r1"]
+            self.reads_r2 = self.curr_unmapped["unmapped_r2"]
 
-            # Set the extracted unmapped reads as interleaved reads for the next iteration
-            self.interleaved_reads = self.curr_unmapped["unmapped_fq"]
+            no_reads_left = file_empty(self.reads_r1) or file_empty(self.reads_r2)
 
             # Calculate sequence list
 
@@ -535,6 +607,9 @@ class ReadAligner(object):
             self.downstream_analysis(seq_list_file)
 
             self.exit_map_cluster_reference(start_time, current_iter, total_iter, msg="Complete")
+
+            if no_reads_left:
+                return            
             # sys.exit(0)
 
     def exit_map_cluster_reference(self, iter_start_time, current_iter, total_iter, msg: str = ""):
@@ -565,21 +640,96 @@ class ReadAligner(object):
         """
         start_time = time.time()
 
+        if file_empty(self.reads_r1) or file_empty(self.reads_r2):
+            self.debug_output(f"Cluster {cluster_num}: empty paired reads; skipping")
+            return
         # Clear the mapped reads from previous cluster
         # if (self.cluster_mapped_reads.exists()):
         #    self.cluster_mapped_reads.unlink()
+
+        pangraph_refs = cluster_refs
+
+        if self.inputs.get("pangraph_refs"):
+
+            pangraph_refs = self.read_single_cluster_file(
+                self.inputs["pangraph_refs"]
+            )
+
+        fragmented_refs = []
+
+        if self.inputs.get("fragmented_refs"):
+
+            fragmented_refs = self.read_single_cluster_file(
+                self.inputs["fragmented_refs"]
+            )
+
+        self.debug_output(
+            f"Cluster {cluster_num},"
+            f"Pangraph refs,{len(pangraph_refs)},"
+            f"Fragmented refs,{len(fragmented_refs)}"
+        )
+
+        if len(pangraph_refs) == 0:
+
+            self.debug_output(
+                f"Cluster {cluster_num}: no Pangraph refs; "
+                f"mapping fragmented references only"
+            )
+
+            if fragmented_refs:
+                self.map_cluster_references(fragmented_refs)
+
+            return
+
+        if len(pangraph_refs) == 1:
+            backbone_ref = Path(pangraph_refs[0])
+            two_level_refs = [backbone_ref]
+            two_level_refs.extend(fragmented_refs)
+            self.map_cluster_references(two_level_refs)
+            return
 
         # Create dirs for storing mash outputs for the current cluster
         _, ref_msh_path, screen_out_path = self.mash_obj.create_cluster_dirs(cluster_num)
 
         # Sketch and screen references
-        self.mash_obj.sketch_references(cluster_refs, ref_msh_path)
+        self.mash_obj.sketch_references(pangraph_refs, ref_msh_path)
 
-        self.mash_obj.screen_references(self.interleaved_reads, ref_msh_path, screen_out_path)
+        self.mash_obj.screen_references(
+            self.reads_r1,
+            self.reads_r2,
+            ref_msh_path,
+            screen_out_path
+        )        
         # Get the mash order and map references accordingly
         ref_mash_order = self.mash_obj.get_mash_order(screen_out_path)
 
-        self.map_cluster_references(ref_mash_order)
+        if not ref_mash_order:
+            self.debug_output(f"Cluster {cluster_num}: no Mash-ranked pangraph references")
+            return
+
+        backbone_ref = Path(ref_mash_order[0])
+
+        self.debug_output(
+            f"Cluster {cluster_num}, "
+            f"Backbone reference,{backbone_ref}"
+        )
+
+        residual_ref = self.build_pangraph_residual_reference(backbone_ref)
+        
+        two_level_refs = [backbone_ref]
+
+        if (
+            residual_ref is not None
+            and residual_ref.exists()
+            and residual_ref.stat().st_size > 0
+        ):
+            two_level_refs.append(residual_ref)
+
+        two_level_refs.extend(fragmented_refs)
+
+        self.map_cluster_references(two_level_refs)
+
+        # self.map_cluster_references(ref_mash_order)
 
         end_time = time.time()
         time_elapsed = end_time - start_time
@@ -669,13 +819,9 @@ class ReadAligner(object):
 
         # In parallel mode, the cluster task receives concat_refs_mapped.fq directly as -ir.
         # Make that starting read file explicit and local.
-        self.starting_reads = Path(self.inputs["interleaved_reads"])
-        self.interleaved_reads = self.starting_reads
-
-        # These files are no longer used for scheduling in parallel mode,
-        # but downstream methods still append to them, so create them.
-        self.cluster_mapped_reads = Path(self.inputs["out"]) / "cluster_mapped.fq"
-        self.cluster_mapped_reads.touch(exist_ok=True)
+        # Paired reads are already initialized in read_inputs()
+        self.cluster_mapped_r1.touch(exist_ok=True)
+        self.cluster_mapped_r2.touch(exist_ok=True)
 
         self.mapped_clusters = Path(self.inputs["out"]) / "mapped_clusters.txt"
         self.mapped_clusters.touch(exist_ok=True)
@@ -687,11 +833,123 @@ class ReadAligner(object):
 
         # MOUMI: In single-cluster parallel mode, write the final unmapped reads
         # to the process root so Nextflow can emit them.
-        unmapped_reads_dst = Path(self.inputs["out"]) / "unmapped.fq"
+        # Export remaining R1/R2 reads
+        for mate, reads in (("R1", self.reads_r1), ("R2", self.reads_r2)):
+            destination = Path(self.inputs["out"]) / f"unmapped_{mate}.fq"
 
-        if self.curr_unmapped and self.curr_unmapped.get("unmapped_fq") and Path(self.curr_unmapped["unmapped_fq"]).exists():
-            shutil.copyfile(Path(self.curr_unmapped["unmapped_fq"]), unmapped_reads_dst)
-        else:
-            unmapped_reads_dst.touch()
+            if reads.resolve() != destination.resolve():
+                shutil.copyfile(reads, destination)
 
         self.debug_output("Single-cluster mode completed")
+
+    def build_pangraph_residual_reference(self, backbone_ref: Path) -> Optional[Path]:
+        """Builds a residual ref FASTA file from a Pangraph by identifying blocks not present in the backbone ref."""
+        graph_path = self.inputs.get("pangraph_graph")
+
+        if not graph_path:
+            return None
+
+        graph_path = Path(graph_path)
+
+        if not graph_path.exists() or graph_path.stat().st_size == 0:
+            self.debug_output(
+                f"No Pangraph graph available; skipping residual reference."
+            )
+            return None
+
+        graph = pp.Pangraph.from_json(str(graph_path))
+
+        # --------------------------------------------------------
+        # Determine which Pangraph paths belong to backbone genome
+        # --------------------------------------------------------
+
+        backbone_sequence_ids = [
+            rec.id
+            for rec in SeqIO.parse(str(backbone_ref), "fasta")
+        ]
+
+        graph_path_names = set(graph.paths.keys())
+
+        backbone_paths = [
+            seq_id
+            for seq_id in backbone_sequence_ids
+            if seq_id in graph_path_names
+        ]
+
+        if not backbone_paths:
+            raise ValueError(
+                "Could not match backbone FASTA sequence names "
+                f"to Pangraph paths.\n"
+                f"Backbone: {backbone_ref}\n"
+                f"FASTA IDs: {backbone_sequence_ids[:10]}"
+            )
+
+        # --------------------------------------------------------
+        # Collect every block present in backbone
+        # --------------------------------------------------------
+
+        backbone_block_ids = set()
+
+        for path_name in backbone_paths:
+
+            path = graph.paths[path_name]
+
+            for node_id in path.nodes:
+
+                node = graph.nodes[node_id]
+                block_id = node["block_id"]
+
+                backbone_block_ids.add(block_id)
+
+        # --------------------------------------------------------
+        # Find graph blocks absent from backbone
+        # --------------------------------------------------------
+
+        all_block_ids = set(graph.blocks.keys())
+
+        residual_block_ids = (
+            all_block_ids - backbone_block_ids
+        )
+
+        residual_ref_dir = (
+            Path(self.inputs["out"])
+            / "pangraph_reference"
+        )
+
+        residual_ref_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        residual_ref = (
+            residual_ref_dir
+            / "pangraph_residual_blocks.fna"
+        )
+
+        # --------------------------------------------------------
+        # One FASTA record per residual Pangraph block
+        # --------------------------------------------------------
+
+        with residual_ref.open("w") as out:
+
+            for block_id in sorted(residual_block_ids):
+
+                block = graph.blocks[block_id]
+
+                seq = str(block.consensus())
+
+                if not seq:
+                    continue
+
+                out.write(
+                    f">pangraph_block_{block_id}\n"
+                    f"{seq}\n"
+                )
+
+        self.debug_output(
+            f"Pangraph residual reference:"
+            f" backbone_blocks={len(backbone_block_ids)},"
+            f" residual_blocks={len(residual_block_ids)}"
+        )
+
+        return residual_ref

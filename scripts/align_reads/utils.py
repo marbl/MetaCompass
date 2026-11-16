@@ -152,14 +152,15 @@ def run_shell_cmd(cmds: List, outfile=None, count_lines=False, stream_to_file=Fa
             out_handle.close()
 
 
-def align_with_minimap2(ref_genome_path: str, interleaved_reads_path: str,
+def align_with_minimap2(ref_genome_path: str, reads_r1_path: str, reads_r2_path: str,
         outfile: Path, threads: str = "1",
                         mapped_only: bool = True):
     """Used to align data using minimap2
 
     Args:
         ref_genome_path (Path): Path to the reference genome file.
-        interleaved_reads_path (Path): Path to the interleaved reads file.
+        reads_r1_path (Path): Path to the first set of reads file.
+        reads_r2_path (Path): Path to the second set of reads file.
         outfile (Path): Path to the output alignment file.
         threads (str, optional): Number of threads for parallel processing. Default is "1".
         mapped_only (bool, optional): Flag to indicate whether to output only mapped reads. Default is True.
@@ -170,22 +171,23 @@ def align_with_minimap2(ref_genome_path: str, interleaved_reads_path: str,
     size_limit_flag = ""
 
     if ref_genome_size > 4:
-        size_limit_flag = f"-I{int(ref_genome_size) + 4}g"  # set the size limit 4 more than the size of the file in GB
+        size_limit_flag = f"-I{int(ref_genome_size) + 4}g"
 
         cmd = ["minimap2", "-t", str(threads), "--heap-sort=yes",
                size_limit_flag, "-ax", "sr",
-               ref_genome_path, interleaved_reads_path]
+               ref_genome_path, reads_r1_path, reads_r2_path]
     else:
-        cmd = ["minimap2", "-t", str(threads), "--heap-sort=yes", "-ax", "sr",
-               ref_genome_path, interleaved_reads_path]
+        cmd = ["minimap2", "-t", str(threads), "--heap-sort=yes",
+               "-ax", "sr",
+               ref_genome_path, reads_r1_path, reads_r2_path]
 
     if file_empty(Path(ref_genome_path)):
         print(f"File {ref_genome_path} is empty")
         sys.exit(1)
 
-    if file_empty(Path(interleaved_reads_path)):
-        print(f"File {interleaved_reads_path} is empty")
-        sys.exit(1)
+    for reads_path in (reads_r1_path, reads_r2_path):
+        if file_empty(Path(reads_path)):
+            raise ValueError(f"Reads file {reads_path} is empty or missing")
 
     if mapped_only:
         cmd.insert(3, "--sam-hit-only")
@@ -224,7 +226,11 @@ def extract_read_ids(sam_file: str, outfile: str, threads: str = "1"):
     cmd1 = ["samtools", "fastq", "-@", str(threads), sam_file]
 
     # Process with awk to extract read IDs
-    cmd2 = ["awk", 'NR%4==1 {print gensub(/^@(.*\\/[12]).*/, "\\\\1", 1)}']
+    # cmd2 = ["awk", 'NR%4==1 {print gensub(/^@(.*\\/[12]).*/, "\\\\1", 1)}']
+    cmd2 = [
+        "awk",
+        'NR%4==1 {id=$1; sub(/^@/, "", id); base=id; sub(/\\/[12]$/, "", base); print base; print base "/1"; print base "/2"}'
+    ]
 
     print("DEBUG: extract_read_ids", cmd1)
     print("DEBUG: awk cmd is ",  cmd2)

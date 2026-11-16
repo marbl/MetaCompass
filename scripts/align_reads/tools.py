@@ -40,18 +40,16 @@ class Mash(object):
 
         run_shell_cmd(cmd)
 
-    def screen_references(self, interleaved_path: Path, ref_msh_path: Path, screen_out_path: Path):
-        """Screen reference genomes against a Mash sketch to identify similarities.
+    def screen_references(self, reads_r1: Path, reads_r2: Path,
+                        ref_msh_path: Path, screen_out_path: Path):
+        """Screen references using separate paired-end FASTQs."""
 
-        Args:
-            interleaved_path (Path): Path to interleaved reads (FQ) file
-            ref_msh_path (Path): Path to the reference Mash sketch file.
-            screen_out_path (Path): Path to the output screen results file.
-        """
+        print("Read paths", reads_r1.resolve(), reads_r2.resolve())
 
-        print("Reference genomes path", interleaved_path.resolve().as_posix())
-        cmd = [self.bin, "screen", "-w", "-p", self.threads, ref_msh_path.resolve().as_posix(),
-               interleaved_path.resolve().as_posix()]
+        cmd = [self.bin, "screen", "-w", "-p", self.threads,
+            ref_msh_path.resolve().as_posix(),
+            reads_r1.resolve().as_posix(),
+            reads_r2.resolve().as_posix()]
 
         run_shell_cmd(cmd, screen_out_path.resolve().as_posix())
 

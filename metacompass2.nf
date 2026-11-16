@@ -46,11 +46,13 @@ include { ConcatFasta   } from './pipeline/ref_culling.nf'
 include { IndexReads    } from './pipeline/ref_culling.nf'
 include { ClusterIndex  } from './pipeline/ref_culling.nf'
 
-include { interleaveReads } from './pipeline/ref_assembly.nf'
+// include { interleaveReads } from './pipeline/ref_assembly.nf'
 include { reduceClusters  } from './pipeline/ref_assembly.nf'
 include { refAssembly     } from './pipeline/ref_assembly.nf'
 include { splitClusters } from './pipeline/ref_assembly.nf'
 include { buildClusterReadSubsets } from './pipeline/ref_assembly.nf'
+include { buildPangraph } from './pipeline/ref_assembly.nf'
+include { preparePangraphRefs } from './pipeline/ref_assembly.nf'
 include { refAssemblyCluster } from './pipeline/ref_assembly.nf'
 include { combineClusterUnmappedReads } from './pipeline/ref_assembly.nf'
 
@@ -166,8 +168,8 @@ Map validateInputs() {
         failWithUsage("Paired-end input requires both --forward and --reverse.")
     }
 
-    if (!hasPaired && !hasUnpaired) {
-        failWithUsage("No reads supplied. Provide paired-end reads or unpaired reads.")
+    if (!hasPaired) {
+        failWithUsage("Both --forward and --reverse are required.")
     }
 
     if (hasPaired) {
@@ -221,15 +223,15 @@ Map buildReadArguments(boolean pairedInput) {
     if (pairedInput) {
         return [
             filterArg    : "${file(params.forward)} ${file(params.reverse)}",
-            indexArg     : "${file(params.forward)}\n${file(params.reverse)}",
-            interleaveArg: "-in1=${file(params.forward)} -in2=${file(params.reverse)}"
+            indexArg     : "${file(params.forward)}\n${file(params.reverse)}"
+            // interleaveArg: "-in1=${file(params.forward)} -in2=${file(params.reverse)}"
         ]
     }
 
     return [
         filterArg    : "${file(params.unpaired)}",
-        indexArg     : "${file(params.unpaired)}",
-        interleaveArg: "-in=${file(params.unpaired)}"
+        indexArg     : "${file(params.unpaired)}"
+        // interleaveArg: "-in=${file(params.unpaired)}"
     ]
 }
 
@@ -278,8 +280,8 @@ workflow {
     /*
      * Step 6: Interleave reads and reduce candidate clusters
      */
-    interleaveReads(readArgs.interleaveArg)
-    reduceClusters(Cluster.out.clusters, interleaveReads.out)
+    // interleaveReads(readArgs.interleaveArg)
+    reduceClusters(Cluster.out.clusters, file(params.forward), file(params.reverse))
 
     /*
      * Step 7: Reference-guided assembly
@@ -294,20 +296,69 @@ workflow {
     // MOUMI: change made for parallelization
     splitClusters(Cluster.out.clusters)
 
+    // Select low-contig genomes for Pangraph
+    preparePangraphRefs(
+        splitClusters.out.cluster_refs.flatten()
+    )
+
+    // Build Pangraph only from filtered FASTAs
+    buildPangraph(
+        preparePangraphRefs.out.pangraph_fasta
+    )
+
     // MOUMI: change made for sending subset reads to corresponding cluster from initial global mapping
     buildClusterReadSubsets(
         Cluster.out.clusters,
-        reduceClusters.out.mapped_reads,
+        reduceClusters.out.mapped_r1,
+        reduceClusters.out.mapped_r2,
         reduceClusters.out.read_to_genome
     )
 
+    def clusterR1 = buildClusterReadSubsets.out.reads_r1.flatten()
+    .map { tuple(it.baseName.replaceFirst(/_R1$/, ''), it) }
+
+    def clusterR2 = buildClusterReadSubsets.out.reads_r2.flatten()
+        .map { tuple(it.baseName.replaceFirst(/_R2$/, ''), it) }
+
+    def clusterReadPairs = clusterR1.join(clusterR2)
+
     def clusterInputs = splitClusters.out.cluster_refs.flatten()
         .map { tuple(it.baseName, it) }
+        .join(clusterReadPairs)
         .join(
-            buildClusterReadSubsets.out.cluster_reads.flatten()
-                .map { tuple(it.baseName, it) }
+            buildPangraph.out.graphs
         )
-        .map { cluster_name, cluster_csv, cluster_fq -> tuple(cluster_name, cluster_csv, cluster_fq) }
+        .join(
+            preparePangraphRefs.out.pangraph_refs
+                .map {
+                    tuple(
+                        it.baseName.replace(".pangraph_refs", ""),
+                        it
+                    )
+                }
+        )
+        .join(
+            preparePangraphRefs.out.fragmented_refs
+                .map {
+                    tuple(
+                        it.baseName.replace(".fragmented_refs", ""),
+                        it
+                    )
+                }
+        )
+        .map { cluster_name, cluster_csv, r1, r2,
+            pangraph_json, pangraph_refs, fragmented_refs ->
+
+            tuple(
+                cluster_name,
+                cluster_csv,
+                r1,
+                r2,
+                pangraph_json,
+                pangraph_refs,
+                fragmented_refs
+            )
+        }
 
     // refAssemblyCluster(
     //     splitClusters.out.cluster_refs.flatten(),
@@ -324,8 +375,11 @@ workflow {
     def refGuidedGenomes = refAssemblyCluster.out.genomes.collect()
 
     combineClusterUnmappedReads(
-        reduceClusters.out.unmapped_reads,
-        refAssemblyCluster.out.unmapped_reads.collect()
+        file(params.forward),
+        file(params.reverse),
+        refAssemblyCluster.out.mapped_reads
+            .flatten()
+            .collect()
     )
     
     /*

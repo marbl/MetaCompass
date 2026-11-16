@@ -157,14 +157,17 @@ def initialize_output_files(outdir: Path, num_clusters: int) -> None:
     can rely on their presence even when a cluster gets zero reads.
     """
     outdir.mkdir(parents=True, exist_ok=True)
+
     for cluster_id in range(1, num_clusters + 1):
-        (outdir / f"cluster_{cluster_id}.fq").touch()
+        for mate in ("R1", "R2"):
+            (outdir / f"cluster_{cluster_id}_{mate}.fq").touch()
 
 
 def write_cluster_fastqs(
     fq_path: Path,
     read_to_clusters: Dict[str, Set[int]],
     outdir: Path,
+    mate: str,
 ) -> None:
     """
     Single-pass FASTQ splitter.
@@ -207,7 +210,9 @@ def write_cluster_fastqs(
 
                 for cluster_id in clusters:
                     if cluster_id not in handles:
-                        handles[cluster_id] = open(outdir / f"cluster_{cluster_id}.fq", "a")
+                        handles[cluster_id] = open(
+                            outdir / f"cluster_{cluster_id}_{mate}.fq", "a"
+                        )
                     handles[cluster_id].write(record)
                     cluster_record_counts[cluster_id] += 1
                     matched_records += 1
@@ -250,10 +255,17 @@ def parse_args() -> argparse.Namespace:
         help="Mapped BAM from global alignment (currently unused, kept for future use)",
     )
     parser.add_argument(
-        "--fq",
+        "--fq1",
         required=True,
         type=Path,
-        help="Global mapped FASTQ produced by reduceClusters (e.g. concat_refs_mapped.fq)",
+        help="Global mapped forward FASTQ",
+    )
+
+    parser.add_argument(
+        "--fq2",
+        required=True,
+        type=Path,
+        help="Global mapped reverse FASTQ",
     )
     parser.add_argument(
         "--ref-map",
@@ -278,8 +290,9 @@ def main() -> None:
 
     if not args.cluster_list.exists():
         raise FileNotFoundError(f"Cluster list not found: {args.cluster_list}")
-    if not args.fq.exists():
-        raise FileNotFoundError(f"Mapped FASTQ not found: {args.fq}")
+    for fq in (args.fq1, args.fq2):
+        if not fq.exists():
+            raise FileNotFoundError(f"Mapped FASTQ not found: {fq}")
     if not args.ref_map.exists():
         raise FileNotFoundError(f"Reference map not found: {args.ref_map}")
 
@@ -292,8 +305,9 @@ def main() -> None:
     initialize_output_files(args.outdir, num_clusters)
 
     read_to_clusters = load_read_to_clusters(args.ref_map, num_clusters)
-    write_cluster_fastqs(args.fq, read_to_clusters, args.outdir)
-
+    write_cluster_fastqs(args.fq1, read_to_clusters, args.outdir, "R1")
+    write_cluster_fastqs(args.fq2, read_to_clusters, args.outdir, "R2")
+    
     print("[INFO] build_cluster_read_subsets.py completed successfully", file=sys.stderr)
 
 
